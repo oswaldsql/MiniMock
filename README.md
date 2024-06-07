@@ -8,6 +8,15 @@ Mini mock is extreamly strict requiring you to specify all methods and propertie
 Unmocked methods and properties will throw an exception if called.
 
 ```csharp
+    public interface ILoveThisLibrary
+    {
+        Version Version { get; set; }
+        bool DownloadExists(string version);
+        Task<bool> DownloadExistsAsync(string version);
+        Version this[string key] { get; set; }
+        event EventHandler<Version> NewVersionAdded;
+    }
+
     [Fact]
     [Mock<ILoveThisLibrary>]
     public void IsLibraryLovable()
@@ -81,7 +90,6 @@ Unmocked properties will throw a exception.
 ```csharp
         var versions = new Dictionary<string, Version>() {{"current", new Version(2,0,0,0)}};
 
-        Action<Version>? triggerNewVersionAdded = default;
         var lovable = Mock.ILoveThisLibrary(config =>
             config
                 .Indexer(values: versions) // Provides a dictionary to retrieve and store versions
@@ -98,6 +106,7 @@ Unmocked properties will throw a exception.
 
 ```csharp
         Action<Version>? triggerNewVersionAdded = null;
+
         var lovable = Mock.ILoveThisLibrary(config =>
             config
                 .NewVersionAdded(trigger: out triggerNewVersionAdded) // Provides a trigger for when a new version is added
@@ -114,6 +123,7 @@ Unmocked properties will throw a exception.
 
 ## Current limitations
 
+- Generic interfaces are not currently supported
 - Limited validation of calls
 - Ref and out parameters are not currently supported
 - Inherited interfaces are not currently supported

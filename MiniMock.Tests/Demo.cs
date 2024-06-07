@@ -19,12 +19,11 @@ public interface IMailService
 
 public record Customer(string Name, Guid Id);
 
-[Mock<ICustomerRepository>]
-[Mock<IMailService>]
-[Mock<ILoveThisLibrary>]
 public class Demo(ITestOutputHelper testOutputHelper)
 {
     [Fact]
+    [Mock<ICustomerRepository>]
+    [Mock<IMailService>]
     public async Task UseCustomerRepo()
     {
         var newGuid = Guid.NewGuid();
@@ -90,7 +89,6 @@ public class Demo(ITestOutputHelper testOutputHelper)
 
         lovable.NewVersionAdded += (sender, version) => testOutputHelper.WriteLine($"New version added: {version}");
         triggerNewVersionAdded?.Invoke(new Version(2, 0, 0, 0));
-
     }
 }
 

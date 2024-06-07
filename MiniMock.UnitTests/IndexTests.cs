@@ -21,8 +21,9 @@ using MiniMock.UnitTests;
 using MiniMock;
 using System;
 
-[Mock<IIndexRepository>]
 public class TestClass{
+    [Mock<IIndexRepository>]
+    public void Test(){}
 }";
 
         var result = new MiniMockGenerator().Generate(source);
