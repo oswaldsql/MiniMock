@@ -25,32 +25,51 @@ internal static class IndexBuilder
                       #region {{returnType}} this[{{indexType}}]
                       """);
 
-            builder.Add($$"""
-                          public partial class Config{
-                              public Config On_{{methodDifferenter}}Index_Get(System.Func<{{indexType}}, {{returnType}}> mock){
-                                  this.On_{{methodDifferenter}}IndexGet = mock;
-                                  return this;
-                              }
-                              internal System.Func<{{indexType}}, {{returnType}}> On_{{methodDifferenter}}IndexGet { get; set; } = (_) => {{BuildNotMockedException(indx)}}
-                          }
+            //builder.Add($$"""
+            //              public partial class Config{
+            //                  public Config On_{{methodDifferenter}}Index_Get(System.Func<{{indexType}}, {{returnType}}> mock){
+            //                      this.On_{{methodDifferenter}}IndexGet = mock;
+            //                      return this;
+            //                  }
+            //                  internal System.Func<{{indexType}}, {{returnType}}> On_{{methodDifferenter}}IndexGet { get; set; } = (_) => {{BuildNotMockedException(indx)}}
+            //              }
 
-                          """);
-            builder.Add($$"""
-                          public partial class Config{
-                              public Config On_{{methodDifferenter}}Index_Set(System.Action<{{indexType}}, {{returnType}}> mock){
-                                  this.On_{{methodDifferenter}}IndexSet = mock;
-                                  return this;
-                              }
-                              internal System.Action<{{indexType}}, {{returnType}}> On_{{methodDifferenter}}IndexSet { get; set; } = (_, _) => {{BuildNotMockedException(indx)}}
-                          }
+            //              """);
+            //builder.Add($$"""
+            //              public partial class Config{
+            //                  public Config On_{{methodDifferenter}}Index_Set(System.Action<{{indexType}}, {{returnType}}> mock){
+            //                      this.On_{{methodDifferenter}}IndexSet = mock;
+            //                      return this;
+            //                  }
+            //                  internal System.Action<{{indexType}}, {{returnType}}> On_{{methodDifferenter}}IndexSet { get; set; } = (_, _) => {{BuildNotMockedException(indx)}}
+            //              }
 
-                          """);
+            //              """);
+
+            builder.Add($$"""
+                      public partial class Config{
+                          internal System.Func<{{indexType}}, {{returnType}}> On_{{methodDifferenter}}IndexGet { get; set; } = (_) => {{BuildNotMockedException(indx)}}
+                          internal System.Action<{{indexType}}, {{returnType}}> On_{{methodDifferenter}}IndexSet { get; set; } = (_, _) => {{BuildNotMockedException(indx)}}
+                      }
+
+                      """);
 
         builder.Add($$"""
                       public partial class Config{
                           public Config Indexer(System.Collections.Generic.Dictionary<{{indexType}}, {{returnType}}> values){
                               this.On_{{methodDifferenter}}IndexGet = s => values[s];
                               this.On_{{methodDifferenter}}IndexSet = (s, v) => values[s] = v;
+                              return this;
+                          }
+                      }
+
+                      """);
+
+        builder.Add($$"""
+                      public partial class Config{
+                          public Config Indexer(System.Func<{{indexType}}, {{returnType}}> get, System.Action<{{indexType}}, {{returnType}}> set){
+                              this.On_{{methodDifferenter}}IndexGet = get;
+                              this.On_{{methodDifferenter}}IndexSet = set;
                               return this;
                           }
                       }

@@ -29,25 +29,19 @@ internal static class PropertyBuilder
                        #region {{{propertyName}}}
                        public partial class Config
                        {
-                           public Config {{{propertyName}}}({{{type.Replace("?", "")}}}? value = null, System.Func<{{{type}}}>? onGet = null, System.Action<{{{type}}}>? onSet = null)
+                           public Config {{{propertyName}}}({{{type.Replace("?", "")}}} value)
                            {
-                             if (value != null)
-                             {
                                this.internal_{{{propertyName}}} = value;
                                this.Get_{{{propertyName}}} = () => this.internal_{{{propertyName}}};
                                this.Set_{{{propertyName}}} = s => this.internal_{{{propertyName}}} = s;
-                             }
-                             
-                             if(onGet != null)
-                             {
-                                 this.Get_{{{propertyName}}} = onGet;
-                             }
-                         
-                             if(onSet != null)
-                             {
-                                 this.Set_{{{propertyName}}} = onSet;
-                             }
                                
+                               return this;
+                           }
+                       
+                           public Config {{{propertyName}}}(System.Func<{{{type}}}> get, System.Action<{{{type}}}> set)
+                           {
+                               this.Get_{{{propertyName}}} = get;
+                               this.Set_{{{propertyName}}} = set;
                                return this;
                            }
                        

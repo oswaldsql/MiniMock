@@ -27,11 +27,10 @@ public class TestClass{
 
 public interface IEventRepository
 {
-    delegate void SampleEventHandler(object sender, string pe);
+//    delegate void SampleEventHandler(object sender, string pe);
 
-    event EventHandler SimpleEvent;
+    //event EventHandler SimpleEvent;
     event EventHandler<string> EventWithArgs;
-    event SampleEventHandler CustomEvent;
+    //event SampleEventHandler CustomEvent;
 }
-
 

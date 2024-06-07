@@ -11,6 +11,7 @@ internal static class EventBuilder
         var eventName = evnt.Name;
         var invokeMethod = evnt.Type.GetMembers().OfType<IMethodSymbol>().First(t => t.Name == "Invoke");
         var parameters = string.Join(" , ", invokeMethod.Parameters.Skip(1).Select(t => t.Type + " " + t.Name));
+        var types = string.Join(" , ", invokeMethod.Parameters.Skip(1).Select(t => t.Type));
         var names = string.Join(" , ", invokeMethod.Parameters.Skip(1).Select(t => t.Name));
 
         builder.Add($$"""
@@ -18,12 +19,10 @@ internal static class EventBuilder
                       #region {{evnt.Type}} {{eventName}}
                       public partial class Config
                       {
-                          public Config Trigger_{{eventName}}({{parameters}})
+                          public void {{eventName}}(out System.Action<{{types}}> trigger)
                           {
-                              this.On{{eventName}}({{names}});
-                              return this;
+                              trigger = args => target.{{eventName}}?.Invoke(target, args);
                           }
-                          private void On{{eventName}}({{parameters}}) => target.{{eventName}}?.Invoke(target, {{names}});
                       }
 
                       {{evnt.AccessibilityString()}} event {{evnt.Type}}? {{eventName}};
@@ -39,3 +38,5 @@ internal static class EventBuilder
         }
     }
 }
+
+

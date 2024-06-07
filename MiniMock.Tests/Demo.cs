@@ -46,10 +46,11 @@ public class Demo(ITestOutputHelper testOutputHelper)
 
     [Fact]
     [Mock<ILoveThisLibrary>]
-    public void IsLibraryLovable()
+    public async Task IsLibraryLovable()
     {
         var versions = new Dictionary<string, Version>() {{"current", new Version(2,0,0,0)}};
 
+        Action<Version>? triggerNewVersionAdded = default;
         var lovable = Mock.ILoveThisLibrary(config =>
             config
                 .DownloadExists(returns: true) // Returns true for all versions
@@ -62,20 +63,34 @@ public class Demo(ITestOutputHelper testOutputHelper)
                 .DownloadExistsAsync(throws: new IndexOutOfRangeException()) // Throws IndexOutOfRangeException for all versions
                 .DownloadExistsAsync(call: s => s.StartsWith("2.0.0") ? true : false) // Returns true for version 2.0.0.x
 
-                .Version(value: new Version(2, 0, 0, 0)) // Sets the version to 2.0.0.0
-                .Version(onGet: () => new Version(2,0,0,0)) // Gets the version as 2.0.0.0
-                .Version(onSet: version => throw new IndexOutOfRangeException()) // Throws IndexOutOfRangeException when setting the version
+                .Version(value: new Version(2, 0, 0, 0)) // Sets the initial version to 2.0.0.0
+                //.Version(get: () => new Version(2,0,0,0), set: version => throw new IndexOutOfRangeException()) // Overwrites the property getter and setter
 
                 .Indexer(values: versions) // Provides a dictionary to retrieve and store versions
-                .On_stringIndex_Get(mock: s => versions[s]) // Calls specific method to get the version
-                .On_stringIndex_Set(mock: (s, v) => versions[s] = v) // Calls specific method to set the version
+                //.Indexer(get: s => new Version(2,0,0,0), set: (s, version) => {}) // Overwrites the indexer getter and setter
 
-                .Trigger_NewVersionAdded(new Version(3,0,0,0))
+                .NewVersionAdded(trigger: out triggerNewVersionAdded) // Provides a trigger for when a new version is added
             );
 
         var actual = lovable.DownloadExists("2.0.0.0");
-
         Assert.True(actual);
+
+        var actualAsync = await lovable.DownloadExistsAsync("2.0.0.0");
+        Assert.True(actualAsync);
+
+        var preVersion = lovable.Version;
+        lovable.Version = new Version(3, 0, 0, 0);
+        var postVersion = lovable.Version;
+        Assert.NotEqual(postVersion, preVersion);
+
+        var preCurrent = lovable["current"];
+        lovable["current"] = new Version(3, 0, 0, 0);
+        var postCurrent = lovable["current"];
+        Assert.NotEqual(preCurrent, postCurrent);
+
+        lovable.NewVersionAdded += (sender, version) => testOutputHelper.WriteLine($"New version added: {version}");
+        triggerNewVersionAdded?.Invoke(new Version(2, 0, 0, 0));
+
     }
 }
 
