@@ -156,5 +156,30 @@ public class TestClass{
 
         Assert.Empty(result.diagnostics.Where(t => t.Severity == DiagnosticSeverity.Error));
     }
+
+    public interface IMethodWithOutArgument
+    {
+        public void Method(out int value);
+    }
+
+    [Fact]
+    public void MethodWithOutArgumentTests()
+    {
+        var source = @"namespace Demo;
+using MiniMock.UnitTests;
+using MiniMock;
+using System;
+
+[Mock<MethodTests.IMethodWithOutArgument>]
+public class TestClass{
+}";
+
+        var result = new MiniMockGenerator().Generate(source);
+
+        testOutputHelper.DumpResult(result);
+
+        Assert.Empty(result.diagnostics.Where(t => t.Severity == DiagnosticSeverity.Error));
+    }
+
 }
 

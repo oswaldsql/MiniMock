@@ -10,6 +10,8 @@ internal static class MethodBuilder
 {
     public static void Build(CodeBuilder builder, IMethodSymbol method, bool isOverloaded, int index)
     {
+
+
         var parameterList = method.ToParameterList(p => $"{p.Type} {p.Name}");
         var typeList = method.ToParameterList(p => $"{p.Type}");
         if (method.Parameters.Length > 0 && !method.ReturnsVoid)
@@ -57,7 +59,6 @@ internal static class MethodBuilder
                 builder.Add($$"""
                               {{method.AccessibilityString()}} {{overrideString}}{{methodReturnType}} {{methodName}}({{parameterList}})
                               {
-                                  _MockConfig._CallEvents.Add(this.GetType().Name, "{{methodName}}", MiniMock.CallEventType.Call);
                                   _MockConfig.{{functionPointer}}.Invoke({{nameList}});
                               }
                               """);
@@ -86,7 +87,6 @@ internal static class MethodBuilder
                 builder.Add($$"""
                               {{method.AccessibilityString()}} {{overrideString}}{{methodReturnType}} {{methodName}}({{parameterList}})
                               {
-                                  _MockConfig._CallEvents.Add(this.GetType().Name, "{{methodName}}", MiniMock.CallEventType.Call);
                                   _MockConfig.{{functionPointer}}.Invoke({{nameList}});
                               }
                               """);
@@ -132,7 +132,6 @@ internal static class MethodBuilder
 
                           {{method.AccessibilityString()}} {{overrideString}}{{methodReturnType}} {{methodName}}({{parameterList}})
                           {
-                              _MockConfig._CallEvents.Add(this.GetType().Name, "{{methodName}}", MiniMock.CallEventType.Call);
                               return _MockConfig.{{functionPointer}}.Invoke({{nameList}});
                           }
                           """);
@@ -161,10 +160,14 @@ internal static class MethodBuilder
 
     public static void BuildMethods(CodeBuilder builder, IEnumerable<IMethodSymbol> methodSymbols)
     {
-        var isOverloaded = methodSymbols.Count() > 1;
+        var enumerable = methodSymbols as IMethodSymbol[] ?? methodSymbols.ToArray();
 
-        int index = 0;
-        foreach (var symbol in methodSymbols)
+
+
+        var isOverloaded = enumerable.Count() > 1;
+
+        var index = 0;
+        foreach (var symbol in enumerable)
         {
             index++;
             Build(builder, symbol, isOverloaded, index);
@@ -172,7 +175,7 @@ internal static class MethodBuilder
 
         if (isOverloaded)
         {
-            BuildOverloadHelpers(builder, methodSymbols);
+            BuildOverloadHelpers(builder, enumerable);
         }
 
     }

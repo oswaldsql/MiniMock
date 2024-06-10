@@ -47,8 +47,6 @@ internal class ClassBuilder(ISymbol target, SourceProductionContext context)
 
                       public partial class Config
                       {
-                          internal MiniMock.CallEvents _CallEvents { get; } = new();
-
                           private readonly {{this.name}} target;
                       
                           public Config({{this.name}} target)

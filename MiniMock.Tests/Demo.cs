@@ -3,6 +3,7 @@ using System;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
+using static MiniMock.Tests.IMethodRepositoryMock2;
 
 public interface ICustomerRepository
 {
@@ -129,14 +130,25 @@ public interface IMethodRepository2
 
 internal class IMethodRepositoryMock2 : IMethodRepository2
 {
+    public delegate bool OutAction<T1, T2>(T1 a, out T2 b);
+
+    public OutAction<string, int> Out { get; set; }
+
     public IMethodRepositoryMock2(System.Action<Config>? config = null)
     {
         var result = new Config(this);
         config = config ?? new System.Action<Config>(t => { });
         config.Invoke(result);
         _MockConfig = result;
+
+        Out = this.TryParse;
+
+    OutAction<string, int> t = this.TryParse;
+    Func<string, int> p = Parse;
     }
-    private Config _MockConfig { get; set; }
+
+
+private Config _MockConfig { get; set; }
 
     public partial class Config
     {
@@ -147,6 +159,18 @@ internal class IMethodRepositoryMock2 : IMethodRepository2
             this.target = target;
         }
     }
+
+    public bool TryParse(string input, out int result)
+    {
+        result = 0;
+        return false;
+    }
+
+    public int Parse(string input)
+    {
+        return 0;
+    }
+
 
     #region System.Threading.Tasks.Task Add(string name)
     public partial class Config

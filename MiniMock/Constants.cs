@@ -6,7 +6,12 @@ public static class Constants
                                             namespace MiniMock { 
                                                 [System.AttributeUsage(System.AttributeTargets.All, AllowMultiple = true)]
                                                 public class Mock<T> : System.Attribute{}
-                                                
+                                            }
+                                            """;
+
+
+    public const string MockCallStackCode = """
+                                            namespace MiniMock { 
                                                 internal class CallEvents //: System.Collections.Generic.IEnumerable<CallEvent>
                                                 {
                                                     private readonly System.Collections.Generic.List<CallEvent> store = new();
@@ -51,4 +56,5 @@ public static class Constants
                                                 }
                                             }
                                             """;
+
 }

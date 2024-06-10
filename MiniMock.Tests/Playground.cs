@@ -287,3 +287,22 @@ internal class IMethodRepositoryMock : IMethodRepository
     #endregion
 
 }
+
+//public interface IMethodWithOutArgument
+//{
+//    public void Method(out int value);
+//}
+
+//public class WithOutTest
+//{
+//    [Mock<IMethodWithOutArgument>]
+//    [Fact]
+//    public void FactMethodName()
+//    {
+//        var sut = Mock.IMethodWithOutArgument(config => config.On_Method(10));
+
+//        sut.Method(out var v);
+
+
+//    }
+//}

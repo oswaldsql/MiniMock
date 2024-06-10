@@ -53,11 +53,9 @@ internal static class PropertyBuilder
                        public {{{overrideString}}}{{{type}}} {{{propertyName}}}
                        {
                            get {
-                             _MockConfig._CallEvents.Add(this.GetType().Name, "{{{propertyName}}}", MiniMock.CallEventType.Get);
                                return _MockConfig.Get_{{{propertyName}}}();
                            }
                            {{{setType}}} { 
-                               _MockConfig._CallEvents.Add(this.GetType().Name, "{{{propertyName}}}", MiniMock.CallEventType.Set);
                                _MockConfig.Set_{{{propertyName}}}(value);
                            }
                        }
