@@ -4,9 +4,7 @@ using System.Runtime.CompilerServices;
 
 /*Missing
  * Inherited interfaces
- * default implementations
  * logging
- * Polymorphism
  * Documentation
  * Static methods
  *
@@ -14,6 +12,8 @@ using System.Runtime.CompilerServices;
  * Nested interfaces
  * Internal classes (with internals visible to)
  * Generic interfaces
+ * Polymorphism
+ * default implementations
  *
  */
 public class ConfigClassTests(ITestOutputHelper testOutputHelper)

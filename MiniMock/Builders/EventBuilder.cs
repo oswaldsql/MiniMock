@@ -10,13 +10,13 @@ internal static class EventBuilder
     {
         var eventName = evnt.Name;
         var invokeMethod = evnt.Type.GetMembers().OfType<IMethodSymbol>().First(t => t.Name == "Invoke");
-        var parameters = string.Join(" , ", invokeMethod.Parameters.Skip(1).Select(t => t.Type + " " + t.Name));
         var types = string.Join(" , ", invokeMethod.Parameters.Skip(1).Select(t => t.Type));
-        var names = string.Join(" , ", invokeMethod.Parameters.Skip(1).Select(t => t.Name));
 
         builder.Add($$"""
 
                       #region {{evnt.Type}} {{eventName}}
+                      {{evnt.AccessibilityString()}} event {{evnt.Type}}? {{eventName}};
+                      
                       public partial class Config
                       {
                           public void {{eventName}}(out System.Action<{{types}}> trigger)
@@ -25,7 +25,6 @@ internal static class EventBuilder
                           }
                       }
 
-                      {{evnt.AccessibilityString()}} event {{evnt.Type}}? {{eventName}};
                       #endregion
                       """);
     }

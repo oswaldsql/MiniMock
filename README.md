@@ -124,6 +124,7 @@ Unmocked properties will throw a exception.
 ## Current limitations
 
 - Generic interfaces are not currently supported
-- Limited validation of calls
+- No validation of calls
 - Ref and out parameters are not currently supported
 - Inherited interfaces are not currently supported
+- Base classes with constructors with parameters are not currently supported

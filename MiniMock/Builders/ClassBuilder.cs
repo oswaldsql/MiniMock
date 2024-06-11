@@ -37,12 +37,15 @@ internal class ClassBuilder(ISymbol target, SourceProductionContext context)
                       internal class {{this.name}} : {{this.fullName}}
                       {
                       ->
-                      public {{this.name}}(System.Action<Config>? config = null) {
+                      private {{this.name}}(System.Action<Config>? config = null) {
                           var result = new Config(this);
                           config = config ?? new System.Action<Config>(t => { });
                           config.Invoke(result);
                           _MockConfig = result;
                       }
+                      
+                      public static {{this.fullName}} Create(System.Action<Config>? config = null) => new {{this.name}}(config);
+                      
                       internal Config _MockConfig { get; set; }
 
                       public partial class Config

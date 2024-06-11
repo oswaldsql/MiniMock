@@ -28,7 +28,7 @@ public static class MockClassBuilder
                 methodName = symbol.Name + "_" + types;
             }
 
-            result.Add($"internal static {symbol} {methodName}(System.Action<{symbol.ContainingNamespace}.{name}.Config>? mock = null) => new {symbol.ContainingNamespace}.{name}(mock);");
+            result.Add($"internal static {symbol} {methodName}(System.Action<{symbol.ContainingNamespace}.{name}.Config>? mock = null) => {symbol.ContainingNamespace}.{name}.Create(mock);");
         }
 
         result.Unindent().Add("}");

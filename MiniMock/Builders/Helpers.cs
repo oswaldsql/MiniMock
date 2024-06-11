@@ -25,10 +25,10 @@ public static class Helpers
         return overrideString;
     }
 
-    public static string ToParameterList(this IMethodSymbol m, Func<IParameterSymbol, string> selector)
+    public static string ToString(this IMethodSymbol m, Func<IParameterSymbol, string> selector, string separator = ", ")
     {
         var Parameters = m.Parameters.Select(selector);
-        var parameterList = string.Join(", ", Parameters);
+        var parameterList = string.Join(separator, Parameters);
         return parameterList;
     }
 
