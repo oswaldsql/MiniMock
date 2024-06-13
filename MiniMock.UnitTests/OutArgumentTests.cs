@@ -28,7 +28,10 @@ public class OutArgumentTests(ITestOutputHelper testOutputHelper)
             value = 10;
         }
 
-        public void RefMethod(ref int value) => throw new NotImplementedException();
+        public delegate void RefMethod_Delegate(ref int value);
+        public RefMethod_Delegate On_RefMethod { get; set; } = (ref int value) => { value = 10; };
+
+        public void RefMethod(ref int value) => this.On_RefMethod(ref value);
     }
 
     [Fact]

@@ -18,16 +18,13 @@ public interface IMethodRepository
 
     static string StaticMethod() => "StaticMethod";
 
-    public string DefaultImp()
-    {
-        return "Test";
-    }
+    public string DefaultImp() => "Test";
 }
 
 public class MethodTests(ITestOutputHelper testOutputHelper)
 {
     [Fact]
-    public void IMethodRepositoryTests()
+    public void MethodRepositoryTests()
     {
         var source = @"namespace Demo;
 using MiniMock.UnitTests;
@@ -135,6 +132,8 @@ public class TestClass{
         public void Method(string s, int i);
         public Task Method(string s, CancellationToken token);
         public Task<int> Method(int i, CancellationToken token);
+        public Task MethodAsync();
+        public Task MethodAsync(int i);
     }
 
     [Fact]

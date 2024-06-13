@@ -12,7 +12,7 @@ public class PropertyTest(ITestOutputHelper testOutputHelper)
     }
 
     [Fact]
-    public void IPropertyRepositoryTests()
+    public void PropertyRepositoryTests()
     {
         var source = @"namespace Demo;
 using MiniMock.UnitTests;

@@ -1,6 +1,5 @@
 namespace MiniMock.Builders;
 
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -43,14 +42,12 @@ internal static class MethodBuilder
         var methodName = method.Name;
         var methodReturnType = (INamedTypeSymbol)method.ReturnType;
 
-        var functionPointer = "On_" + methodName;
-        if (isOverloaded)
-            functionPointer = functionPointer + "_" + index;
+        var functionPointer = isOverloaded ? "On_" + methodName + "_" + index : "On_" + methodName;
 
         builder.Add($$"""
-                            
-                            #region Method : {{(ITypeSymbol)methodReturnType}} {{methodName}}({{parameterList}})
-                            """);
+
+                      #region Method : {{(ITypeSymbol)methodReturnType}} {{methodName}}({{parameterList}})
+                      """);
 
         if (method.ReturnsVoid)
         {
@@ -153,15 +150,16 @@ internal static class MethodBuilder
 
             if (methodReturnType.IsTask())
             {
-                //builder.Add("//------------Here we are------------------");
                 if (method.HasParameters())
                 {
                     var typeList2 = method.ToString(p => $"{p.Type}");
                     builder.Add($$"""public Config {{methodName}}(System.Action<{{typeList2}}> call) => this._{{methodName}}(({{nameList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""");
+                    builder.Add($$"""public Config {{methodName}}() => this._{{methodName}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""");
                 }
                 else
                 {
                     builder.Add($$"""public Config {{methodName}}(System.Action call) => this._{{methodName}}(({{nameList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""");
+                    builder.Add($$"""public Config {{methodName}}() => this._{{methodName}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""");
                 }
             }
 
@@ -184,16 +182,82 @@ internal static class MethodBuilder
 
         builder.Add("public partial class Config {").Indent();
 
-        builder.BuildTrowHelpers(name, enumerable);
+//        builder.Add("//------------------------- HERE ------------------");
+        var signatures = BuildMethodSignatures(enumerable).ToLookup(t => t.Signature);
 
-        builder.BuildRawValueReturn(enumerable);
+        foreach (var grouping in signatures)
+        {
+            builder.Add($"public Config {name}({grouping.Key}) {{");
+            foreach (var mse in grouping)
+            {
+                builder.Add("    " + mse.Code);
+            }
+
+            builder.Add("    return this;");
+            builder.Add(" }");
+            builder.Add();
+        }
 
         builder.Unindent().Add("}");
     }
 
+    private static IEnumerable<MethodSignature> BuildMethodSignatures(IEnumerable<IMethodSymbol> methodSymbols)
+    {
+        foreach (var method in methodSymbols)
+        {
+            var methodName = method.Name;
+            var methodReturnType = (INamedTypeSymbol)method.ReturnType;
+
+            var lambdaList = method.ToString(p => $"{p.Type} _");
+            yield return new("System.Exception throws", $$"""this.{{method.Name}}(({{lambdaList}}) => throw throws);""");
+
+            if (method.ReturnsVoid)
+            {
+                yield return new("", $$"""this._{{method.Name}}(({{lambdaList}}) => {});""");
+            }
+            else
+            {
+                yield return new(methodReturnType + " returns", $$"""this._{{method.Name}}(({{lambdaList}}) => returns);""");
+            }
+
+            if (methodReturnType.IsTask())
+            {
+                var nameList = method.ToString(p => $"{p.Name}");
+                var PList = method.ToString(p => $"{p.Type} {p.Name}");
+
+                if (method.HasParameters())
+                {
+                    var typeList2 = method.ToString(p => $"{p.Type}");
+                    yield return new ($"System.Action<{typeList2}> call", $$"""this._{{methodName}}(({{PList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""");
+                    yield return new ("", $$"""this._{{methodName}}(({{lambdaList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""");
+                }
+                else
+                {
+                    yield return new ("System.Action call", $$"""this._{{methodName}}(({{lambdaList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""");
+                    yield return new ("", $$"""this._{{methodName}}(({{lambdaList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""");
+                }
+            }
+
+            if (methodReturnType.IsGenericTask())
+            {
+                var genericType = ((INamedTypeSymbol)method.ReturnType).TypeArguments.First();
+                yield return new(genericType + " returns", $$"""this._{{methodName}}(({{lambdaList}}) => System.Threading.Tasks.Task.FromResult(returns));""");
+
+                //var typeList = method.ToString(p => $"{p.Type}");
+                //if (method.Parameters.Length > 0 && !method.ReturnsVoid)
+                //{
+                //    typeList += ", ";
+                //}
+                //var nameList = method.ToString(p => $"{p.Name}");
+
+                //yield return new MS($"System.Func<{typeList}{genericType}> call", $$"""this._{{methodName}}(({{lambdaList}}) => System.Threading.Tasks.Task.FromResult(call({{nameList}}))); //c""");
+            }
+        }
+    }
+
     private static void BuildRawValueReturn(this CodeBuilder builder, params IMethodSymbol[] enumerable)
     {
-        var returnTypes = enumerable.ToLookup(t => t.ReturnType, comparer: SymbolEqualityComparer.Default).Where(t => t.Key.ToString() != "void");
+        var returnTypes = enumerable.ToLookup(t => t.ReturnType, comparer: SymbolEqualityComparer.Default).Where(t => t.Key?.ToString() != "void");
 
         foreach (var method in returnTypes)
         {
@@ -226,3 +290,14 @@ internal static class MethodBuilder
     }
 }
 
+public class MethodSignature
+{
+    public string Signature { get; }
+    public string Code { get; }
+
+    public MethodSignature(string signature, string code)
+    {
+        this.Signature = signature;
+        this.Code = code;
+    }
+}

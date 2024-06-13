@@ -1,19 +1,27 @@
-#nullable enable
 namespace MiniMock.UnitTests;
 
 using Microsoft.CodeAnalysis;
 
 public class EventTests(ITestOutputHelper testOutputHelper)
 {
+    public interface IEventRepository
+    {
+        delegate void SampleEventHandler(object sender, string pe);
+
+        event EventHandler SimpleEvent;
+        event EventHandler<string> EventWithArgs;
+        event SampleEventHandler CustomEvent;
+    }
+
     [Fact]
-    public void IEventRepositoryTests()
+    public void EventRepositoryTests()
     {
         var source = @"namespace Demo;
 using MiniMock.UnitTests;
 using MiniMock;
 using System;
 
-[Mock<IEventRepository>]
+[Mock<EventTests.IEventRepository>]
 public class TestClass{
 }";
 
@@ -24,13 +32,3 @@ public class TestClass{
         Assert.Empty(result.diagnostics.Where(t => t.Severity == DiagnosticSeverity.Error));
     }
 }
-
-public interface IEventRepository
-{
-//    delegate void SampleEventHandler(object sender, string pe);
-
-    //event EventHandler SimpleEvent;
-    event EventHandler<string> EventWithArgs;
-    //event SampleEventHandler CustomEvent;
-}
-

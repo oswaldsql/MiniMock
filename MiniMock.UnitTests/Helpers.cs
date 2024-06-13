@@ -1,6 +1,5 @@
 namespace MiniMock.UnitTests;
 
-using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -35,7 +34,7 @@ public static class TestGenerator
                 out var outputCompilation, out var diagnosticsResult);
 
         var syntaxTrees = outputCompilation.SyntaxTrees
-            .Where(t => !(t.FilePath.EndsWith(".Input.cs"))).ToArray();
+            .Where(t => !t.FilePath.EndsWith(".Input.cs")).ToArray();
 
         var success = outputCompilation.Emit(new MemoryStream());
         var diagnostics = success.Diagnostics.Where(t => t.Severity > DiagnosticSeverity.Hidden)

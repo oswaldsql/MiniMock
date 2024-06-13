@@ -9,6 +9,6 @@ using MiniMock.UnitTests;
 using MiniMock;
 using System;
 
-[Mock<{typeof(T).FullName.Replace("+", ".")}>]
+[Mock<{typeof(T).FullName!.Replace("+", ".")}>]
 public class TestClass{{}}";
 }

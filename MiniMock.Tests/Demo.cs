@@ -3,7 +3,6 @@ using System;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
-using static MiniMock.Tests.IMethodRepositoryMock2;
 
 public interface ICustomerRepository
 {
@@ -35,15 +34,19 @@ public class Demo(ITestOutputHelper testOutputHelper)
             .Read((guid, _) => new("test", guid)));
 
         var mail = Mock.IMailService(config => config
-                   .SendMail(Task.CompletedTask));
+            .SendMail(Task.CompletedTask));
 
         repo.Create("test", CancellationToken.None);
 
-        var actual = await Assert.ThrowsAsync<InvalidOperationException>(() => repo.Delete(newGuid, CancellationToken.None));
+        var actual =
+            await Assert.ThrowsAsync<InvalidOperationException>(() => repo.Delete(newGuid, CancellationToken.None));
 
         testOutputHelper.WriteLine(actual.Source);
     }
+}
 
+public class Demo2(ITestOutputHelper testOutputHelper)
+{
     [Fact]
     [Mock<ILoveThisLibrary>]
     public async Task IsLibraryLovable()
@@ -57,17 +60,17 @@ public class Demo(ITestOutputHelper testOutputHelper)
                 .DownloadExists(throws: new IndexOutOfRangeException()) // Throws IndexOutOfRangeException for all versions
                 .DownloadExists(call: s => s.StartsWith("2.0.0") ? true : false ) // Returns true for version 2.0.0.x
 
-                .DownloadExistsAsync(returns: Task.FromResult(true)) // Returns true for all versions
-                .DownloadExistsAsync(call: s => Task.FromResult(s.StartsWith("2.0.0") ? true : false)) // Returns true for version 2.0.0.x
-                .DownloadExistsAsync(returns: true) // Returns true for all versions
-                .DownloadExistsAsync(throws: new IndexOutOfRangeException()) // Throws IndexOutOfRangeException for all versions
-                .DownloadExistsAsync(call: s => s.StartsWith("2.0.0") ? true : false) // Returns true for version 2.0.0.x
+                .DownloadLinkAsync(returns: Task.FromResult(new Uri("http://downloads/2.0.0"))) // Returns true for all versions
+                .DownloadLinkAsync(call: s => Task.FromResult(s.StartsWith("2.0.0") ? new Uri("http://downloads/2.0.0") : new Uri("http://downloads/UnknownVersion"))) // Returns true for version 2.0.0.x
+                .DownloadLinkAsync(new Uri("http://downloads/2.0.0")) // Returns true for all versions
+                .DownloadLinkAsync(throws: new IndexOutOfRangeException()) // Throws IndexOutOfRangeException for all versions
+                .DownloadLinkAsync(call: s => s.StartsWith("2.0.0") ? new Uri("http://downloads/2.0.0") : new Uri("http://downloads/UnknownVersion")) // Returns true for version 2.0.0.x
 
-                .Version(value: new Version(2, 0, 0, 0)) // Sets the initial version to 2.0.0.0
-                //.Version(get: () => new Version(2,0,0,0), set: version => throw new IndexOutOfRangeException()) // Overwrites the property getter and setter
+                .CurrentVersion(get: () => new Version(2, 0, 0, 0), set: version => throw new IndexOutOfRangeException()) // Overwrites the property getter and setter
+                .CurrentVersion(value: new Version(2, 0, 0, 0)) // Sets the initial version to 2.0.0.0
 
+                .Indexer(get: s => new Version(2,0,0,0), set: (s, version) => {}) // Overwrites the indexer getter and setter
                 .Indexer(values: versions) // Provides a dictionary to retrieve and store versions
-                //.Indexer(get: s => new Version(2,0,0,0), set: (s, version) => {}) // Overwrites the indexer getter and setter
 
                 .NewVersionAdded(trigger: out triggerNewVersionAdded) // Provides a trigger for when a new version is added
             );
@@ -75,12 +78,12 @@ public class Demo(ITestOutputHelper testOutputHelper)
         var actual = lovable.DownloadExists("2.0.0.0");
         Assert.True(actual);
 
-        var actualAsync = await lovable.DownloadExistsAsync("2.0.0.0");
-        Assert.True(actualAsync);
+        var actualAsync = await lovable.DownloadLinkAsync("2.0.0.0");
+        Assert.Equal(new Uri("http://downloads/2.0.0"), actualAsync);
 
-        var preVersion = lovable.Version;
-        lovable.Version = new Version(3, 0, 0, 0);
-        var postVersion = lovable.Version;
+        var preVersion = lovable.CurrentVersion;
+        lovable.CurrentVersion = new Version(3, 0, 0, 0);
+        var postVersion = lovable.CurrentVersion;
         Assert.NotEqual(postVersion, preVersion);
 
         var preCurrent = lovable["current"];
@@ -95,10 +98,10 @@ public class Demo(ITestOutputHelper testOutputHelper)
 
 public interface ILoveThisLibrary
 {
-    Version Version { get; set; }
+    Version CurrentVersion { get; set; }
 
     bool DownloadExists(string version);
-    Task<bool> DownloadExistsAsync(string version);
+    Task<Uri> DownloadLinkAsync(string version);
 
     Version this[string key] { get; set; }
 

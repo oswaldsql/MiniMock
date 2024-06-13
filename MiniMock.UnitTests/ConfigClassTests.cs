@@ -1,7 +1,5 @@
 namespace MiniMock.UnitTests;
 
-using System.Runtime.CompilerServices;
-
 /*Missing
  * Inherited interfaces
  * logging
@@ -23,7 +21,7 @@ public class ConfigClassTests(ITestOutputHelper testOutputHelper)
     }
 
     [Fact]
-    public void IEmptyInterfaceTests()
+    public void EmptyInterfaceTests()
     {
         var source = TestSourceBuilder.BuildEmptyClassWithAttribute<IEmptyInterface>();
 
@@ -39,7 +37,7 @@ public class ConfigClassTests(ITestOutputHelper testOutputHelper)
     }
 
     [Fact]
-    public void IEmptyClassTests()
+    public void EmptyClassTests()
     {
         var source = TestSourceBuilder.BuildEmptyClassWithAttribute<EmptyClass>();
 
@@ -83,5 +81,3 @@ public class ConfigClassTests(ITestOutputHelper testOutputHelper)
         Assert.True(diagnostics.HasNoErrors());
     }
 }
-
-public class Test(string tester){}

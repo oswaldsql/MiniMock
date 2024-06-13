@@ -1,9 +1,10 @@
 namespace MiniMock.Tests.MethodTests;
 
 using Xunit;
+using Xunit.Abstractions;
 
 [Mock<IOverloadedMethods>]
-public class OverloadedMethodTests
+public class OverloadedMethodTests(ITestOutputHelper testOutputHelper)
 {
     public interface IOverloadedMethods
     {
@@ -14,12 +15,25 @@ public class OverloadedMethodTests
     }
 
     [Fact]
-    public void OverloadedMethod_WhenMockNotInitialized_ShouldThrowException()
+    public void OverloadedMethod_WhenNotInitialized_AllOverloadsShouldThrowException()
     {
         // Arrange
         var sut = Mock.IOverloadedMethods();
 
-        Mock.IOverloadedMethods(m => m.OverloadedMethod((string _,int _) => "test"));
+        // Act
+
+        // Assert
+        Assert.Throws<InvalidOperationException>(() => sut.OverloadedMethod());
+        Assert.Throws<InvalidOperationException>(() => sut.OverloadedMethod("name"));
+        Assert.Throws<InvalidOperationException>(() => sut.OverloadedMethod("name", 10));
+        Assert.Throws<InvalidOperationException>(() => sut.OverloadedMethod(10, "name"));
+    }
+
+    [Fact]
+    public void OverloadedMethod_WhenMockNotInitialized_ShouldThrowException()
+    {
+        // Arrange
+        var sut = Mock.IOverloadedMethods();
 
         // Act
         var actual = Assert.Throws<InvalidOperationException>(() => sut.OverloadedMethod());
@@ -28,20 +42,6 @@ public class OverloadedMethodTests
         Assert.NotNull(actual);
         Assert.Contains("OverloadedMethod", actual.Message);
         Assert.Contains("OverloadedMethod", actual.Source);
-    }
-
-    [Fact]
-    public void OverloadedMethod_WhenInitializedWithException_AllOverloadsShouldThrowException()
-    {
-        // Arrange
-        var sut = Mock.IOverloadedMethods(mock => mock.OverloadedMethod(new ArgumentException()));
-
-        // Act
-
-        // Assert
-        Assert.Throws<ArgumentException>(() => sut.OverloadedMethod());
-        Assert.Throws<ArgumentException>(() => sut.OverloadedMethod("name"));
-        Assert.Throws<ArgumentException>(() => sut.OverloadedMethod("name", 10));
     }
 
     [Fact]

@@ -14,7 +14,7 @@ public class IndexTests(ITestOutputHelper testOutputHelper)
     }
 
     [Fact]
-    public void IIndexRepositoryTests()
+    public void IndexRepositoryTests()
     {
         var source = @"namespace Demo;
 using MiniMock.UnitTests;

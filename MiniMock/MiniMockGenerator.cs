@@ -1,15 +1,12 @@
 namespace MiniMock;
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
+using Builders;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using MiniMock.Builders;
 
 [Generator]
 public sealed class MiniMockGenerator : IIncrementalGenerator
@@ -36,11 +33,11 @@ public sealed class MiniMockGenerator : IIncrementalGenerator
             .Distinct(SymbolEqualityComparer.Default)
             .ToArray();
 
-        foreach (var d in typeSymbols)
+        foreach (var symbol in typeSymbols)
         {
-            var source = ClassBuilder.Build(d, arg1);
+            var source = ClassBuilder.Build(symbol, arg1);
 
-            var fileName = d.ToString().Replace("<", "_").Replace(">", "");
+            var fileName = symbol.ToString().Replace("<", "_").Replace(">", "");
 
             arg1.AddSource(fileName + ".g.cs", source);
         }

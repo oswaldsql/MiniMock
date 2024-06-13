@@ -128,3 +128,4 @@ Unmocked properties will throw a exception.
 - Ref and out parameters are not currently supported
 - Inherited interfaces are not currently supported
 - Base classes with constructors with parameters are not currently supported
+- Default values?
