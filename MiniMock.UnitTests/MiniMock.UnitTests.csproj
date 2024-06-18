@@ -8,6 +8,7 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
+    <LanguageVersion>10</LanguageVersion>
   </PropertyGroup>
 
   <ItemGroup>

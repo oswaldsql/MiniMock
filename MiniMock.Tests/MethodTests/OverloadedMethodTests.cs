@@ -4,7 +4,7 @@ using Xunit;
 using Xunit.Abstractions;
 
 [Mock<IOverloadedMethods>]
-public class OverloadedMethodTests(ITestOutputHelper testOutputHelper)
+public class OverloadedMethodTests(ITestOutputHelper output)
 {
     public interface IOverloadedMethods
     {
@@ -40,6 +40,7 @@ public class OverloadedMethodTests(ITestOutputHelper testOutputHelper)
 
         // Assert
         Assert.NotNull(actual);
+        output.WriteLine(actual.Message);
         Assert.Contains("OverloadedMethod", actual.Message);
         Assert.Contains("OverloadedMethod", actual.Source);
     }

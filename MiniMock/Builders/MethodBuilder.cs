@@ -9,181 +9,18 @@ internal static class MethodBuilder
     public static void BuildMethods(CodeBuilder builder, IEnumerable<IMethodSymbol> methodSymbols)
     {
         var enumerable = methodSymbols as IMethodSymbol[] ?? methodSymbols.ToArray();
-
-        var isOverloaded = enumerable.Count() > 1;
-
-        var index = 0;
-        foreach (var symbol in enumerable)
-        {
-            index++;
-            Build(builder, symbol, isOverloaded, index);
-        }
-
-        if (isOverloaded)
-        {
-            BuildOverloadHelpers(builder, enumerable);
-        }
-    }
-
-    private static void Build(CodeBuilder builder, IMethodSymbol method, bool isOverloaded, int index)
-    {
-        var parameterList = method.ToString(p => $"{p.Type} {p.Name}");
-        var typeList = method.ToString(p => $"{p.Type}");
-        if (method.Parameters.Length > 0 && !method.ReturnsVoid)
-        {
-            typeList += ", ";
-        }
-
-        var nameList = method.ToString(p => $"{p.Name}");
-        var lambdaList = method.ToString(_ => "_");
-
-        var overrideString = method.OverrideString();
-
-        var methodName = method.Name;
-        var methodReturnType = (INamedTypeSymbol)method.ReturnType;
-
-        var functionPointer = isOverloaded ? "On_" + methodName + "_" + index : "On_" + methodName;
-
-        builder.Add($$"""
-
-                      #region Method : {{(ITypeSymbol)methodReturnType}} {{methodName}}({{parameterList}})
-                      """);
-
-        if (method.ReturnsVoid)
-        {
-            if (method.HasParameters())
-            {
-                builder.Add($$"""
-                              {{method.AccessibilityString()}} {{overrideString}}{{methodReturnType}} {{methodName}}({{parameterList}})
-                              {
-                                  this.{{functionPointer}}.Invoke({{nameList}});
-                              }
-                              internal System.Action<{{typeList}}> {{functionPointer}} {get;set;} = ({{lambdaList}}) => {{BuildNotMockedException(method)}}
-
-                              public partial class Config{
-                                  private Config _{{methodName}}(System.Action<{{typeList}}> mock){
-                                      target.{{functionPointer}} = mock;
-                                      return this;
-                                  }
-                                  
-                                  public Config {{methodName}}(System.Action<{{typeList}}> call) => this._{{methodName}}(call);
-                              }
-                              """);
-            }
-            else
-            {
-                builder.Add($$"""
-                              {{method.AccessibilityString()}} {{overrideString}}{{methodReturnType}} {{methodName}}({{parameterList}})
-                              {
-                                  this.{{functionPointer}}.Invoke({{nameList}});
-                              }
-                              internal System.Action {{functionPointer}} {get;set;} = ({{lambdaList}}) => {{BuildNotMockedException(method)}}
-
-                              public partial class Config{
-                                  private Config _{{methodName}}(System.Action mock){
-                                        target.{{functionPointer}} = mock;
-                                        return this;
-                                  }
-                              
-                                  public Config {{methodName}}(System.Action call) => this._{{methodName}}(call);
-                              }
-                              """);
-            }
-        }
-        else
-        {
-            builder.Add($$"""
-                          {{method.AccessibilityString()}} {{overrideString}}{{methodReturnType}} {{methodName}}({{parameterList}})
-                          {
-                              return this.{{functionPointer}}.Invoke({{nameList}});
-                          }
-                          internal System.Func<{{typeList}}{{methodReturnType}}> {{functionPointer}} {get;set;} = ({{lambdaList}}) => {{BuildNotMockedException(method)}}
-                          
-                          public partial class Config{
-                              private Config _{{methodName}}(System.Func<{{typeList}}{{methodReturnType}}> call){
-                                  target.{{functionPointer}} = call;
-                                  return this;
-                              }
-                              
-                              public Config {{methodName}}(System.Func<{{typeList}}{{methodReturnType}}> call) => this._{{methodName}}(call);
-                          }
-                          """);
-        }
-
-        if (!isOverloaded)
-        {
-            BuildHelpers(builder, method);
-        }
-
-        builder.Add("#endregion").Add();
-    }
-
-    private static bool HasParameters(this IMethodSymbol method) => method.Parameters.Length >0;
-
-    private static string BuildNotMockedException(this IMethodSymbol symbol) => $"throw new System.InvalidOperationException(\"The method '{symbol.Name}' in '{symbol.ContainingType.Name}' is not explicitly mocked.\") {{Source = \"{symbol}\"}};";
-
-    private static bool IsTask(this INamedTypeSymbol methodReturnType) => methodReturnType.ToString().Equals("System.Threading.Tasks.Task");
-
-    private static bool IsGenericTask(this INamedTypeSymbol methodReturnType) => methodReturnType.ToString().StartsWith("System.Threading.Tasks.Task<") && methodReturnType.TypeArguments.Length > 0;
-
-    private static void BuildHelpers(CodeBuilder builder, IMethodSymbol method)
-    {
-        var typeList = method.ToString(p => $"{p.Type}");
-        if (method.Parameters.Length > 0 && !method.ReturnsVoid)
-        {
-            typeList += ", ";
-        }
-
-        var nameList = method.ToString(p => $"{p.Name}");
-        var lambdaList = method.ToString(_ => "_");
-
-        var methodName = method.Name;
-        var methodReturnType = (INamedTypeSymbol)method.ReturnType;
-
-        builder.Add("public partial class Config{").Indent();
-
-        builder.BuildTrowHelpers(methodName, method);
-
-        if (!method.ReturnsVoid)
-        {
-            builder.BuildRawValueReturn(method);
-
-            if (methodReturnType.IsTask())
-            {
-                if (method.HasParameters())
-                {
-                    var typeList2 = method.ToString(p => $"{p.Type}");
-                    builder.Add($$"""public Config {{methodName}}(System.Action<{{typeList2}}> call) => this._{{methodName}}(({{nameList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""");
-                    builder.Add($$"""public Config {{methodName}}() => this._{{methodName}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""");
-                }
-                else
-                {
-                    builder.Add($$"""public Config {{methodName}}(System.Action call) => this._{{methodName}}(({{nameList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""");
-                    builder.Add($$"""public Config {{methodName}}() => this._{{methodName}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""");
-                }
-            }
-
-            if (methodReturnType.IsGenericTask())
-            {
-                var genericType = ((INamedTypeSymbol)method.ReturnType).TypeArguments.First();
-                builder.Add($$"""public Config {{methodName}}({{genericType}} returns) => this._{{methodName}}(({{lambdaList}}) => System.Threading.Tasks.Task.FromResult(returns));""");
-                builder.Add($$"""public Config {{methodName}}(System.Func<{{typeList}}{{genericType}}> call) => this._{{methodName}}(({{nameList}}) => System.Threading.Tasks.Task.FromResult(call({{nameList}})));""");
-            }
-        }
-
-        builder.Unindent().Add("}").Add();
-    }
-
-    private static void BuildOverloadHelpers(CodeBuilder builder, IEnumerable<IMethodSymbol> methodSymbols)
-    {
-        var enumerable = methodSymbols as IMethodSymbol[] ?? methodSymbols.ToArray();
-
         var name = enumerable.First().Name;
 
-        builder.Add("public partial class Config {").Indent();
+        var helpers = new List<MethodSignature>();
+        for (var i = 0; i < enumerable.Length; i++)
+        {
+            var symbol = enumerable[i];
+            helpers.AddRange(Build(builder, symbol, i));
+        }
 
-//        builder.Add("//------------------------- HERE ------------------");
-        var signatures = BuildMethodSignatures(enumerable).ToLookup(t => t.Signature);
+        var signatures = helpers.ToLookup(t => t.Signature);
+
+        builder.Add("public partial class Config {").Indent();
 
         foreach (var grouping in signatures)
         {
@@ -201,93 +38,156 @@ internal static class MethodBuilder
         builder.Unindent().Add("}");
     }
 
-    private static IEnumerable<MethodSignature> BuildMethodSignatures(IEnumerable<IMethodSymbol> methodSymbols)
+    private static IEnumerable<MethodSignature> Build(CodeBuilder builder, IMethodSymbol method, int index)
     {
-        foreach (var method in methodSymbols)
+        var parameterList = method.ToString(p => $"{p.Type} {p.Name}");
+        var typeList = method.ToString(p => $"{p.Type}");
+        if (method.Parameters.Length > 0 && !method.ReturnsVoid)
         {
-            var methodName = method.Name;
-            var methodReturnType = (INamedTypeSymbol)method.ReturnType;
+            typeList += ", ";
+        }
 
-            var lambdaList = method.ToString(p => $"{p.Type} _");
-            yield return new("System.Exception throws", $$"""this.{{method.Name}}(({{lambdaList}}) => throw throws);""");
+        var nameList = method.ToString(p => $"{p.Name}");
+        var lambdaList = method.ToString(p => $"{p.Type} _");
 
-            if (method.ReturnsVoid)
+        var overrideString = method.OverrideString();
+
+        var methodName = method.Name;
+        var methodReturnType = (INamedTypeSymbol)method.ReturnType;
+
+        var functionPointer = index == 0 ? "On_" + methodName : "On_" + methodName + "_" + index;
+
+        if (method.ReturnsVoid)
+        {
+            if (method.HasParameters())
             {
-                yield return new("", $$"""this._{{method.Name}}(({{lambdaList}}) => {});""");
+                 return BuildVoidMethodsWithParamerets(builder, method, overrideString, methodReturnType, methodName, parameterList, functionPointer, nameList, typeList, lambdaList).ToArray();
+                
             }
             else
             {
-                yield return new(methodReturnType + " returns", $$"""this._{{method.Name}}(({{lambdaList}}) => returns);""");
-            }
-
-            if (methodReturnType.IsTask())
-            {
-                var nameList = method.ToString(p => $"{p.Name}");
-                var PList = method.ToString(p => $"{p.Type} {p.Name}");
-
-                if (method.HasParameters())
-                {
-                    var typeList2 = method.ToString(p => $"{p.Type}");
-                    yield return new ($"System.Action<{typeList2}> call", $$"""this._{{methodName}}(({{PList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""");
-                    yield return new ("", $$"""this._{{methodName}}(({{lambdaList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""");
-                }
-                else
-                {
-                    yield return new ("System.Action call", $$"""this._{{methodName}}(({{lambdaList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""");
-                    yield return new ("", $$"""this._{{methodName}}(({{lambdaList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""");
-                }
-            }
-
-            if (methodReturnType.IsGenericTask())
-            {
-                var genericType = ((INamedTypeSymbol)method.ReturnType).TypeArguments.First();
-                yield return new(genericType + " returns", $$"""this._{{methodName}}(({{lambdaList}}) => System.Threading.Tasks.Task.FromResult(returns));""");
-
-                //var typeList = method.ToString(p => $"{p.Type}");
-                //if (method.Parameters.Length > 0 && !method.ReturnsVoid)
-                //{
-                //    typeList += ", ";
-                //}
-                //var nameList = method.ToString(p => $"{p.Name}");
-
-                //yield return new MS($"System.Func<{typeList}{genericType}> call", $$"""this._{{methodName}}(({{lambdaList}}) => System.Threading.Tasks.Task.FromResult(call({{nameList}}))); //c""");
+                 return BuildVoidMethodsWithoutParamerets(builder, method, overrideString, methodReturnType, methodName, parameterList, functionPointer, nameList, lambdaList).ToArray();
+                
             }
         }
-    }
-
-    private static void BuildRawValueReturn(this CodeBuilder builder, params IMethodSymbol[] enumerable)
-    {
-        var returnTypes = enumerable.ToLookup(t => t.ReturnType, comparer: SymbolEqualityComparer.Default).Where(t => t.Key?.ToString() != "void");
-
-        foreach (var method in returnTypes)
+        else
         {
-            var name = method.First().Name;
-            builder.Add($$"""public Config {{name}}({{method.Key}} returns) {""").Indent();
-
-            foreach (var symbol in method)
-            {
-                var lambdaList = symbol.ToString(p => $"{p.Type} _");
-
-                builder.Add($"this.{name}(({lambdaList}) => returns);");
-            }
-
-            builder.Add("return this;").Unindent().Add("}");
+            return BuildNoneVoidMethods(builder, method, overrideString, methodReturnType, methodName, parameterList, functionPointer, nameList, typeList, lambdaList).ToArray();
+            ;
+            
         }
     }
 
-    private static void BuildTrowHelpers(this CodeBuilder builder, string name, params IMethodSymbol[] enumerable)
+    private static IEnumerable<MethodSignature> BuildNoneVoidMethods(CodeBuilder builder, IMethodSymbol method, string overrideString,
+        INamedTypeSymbol methodReturnType, string methodName, string parameterList, string functionPointer, string nameList,
+        string typeList, string lambdaList)
     {
-        builder.Add($$"""public Config {{name}}(System.Exception throws) {""").Indent();
+        builder.Add($$$"""
+                       
+                       #region Method : {{{(ITypeSymbol)methodReturnType}}} {{{methodName}}}({{{parameterList}}})
+                       {{{method.AccessibilityString()}}} {{{overrideString}}}{{{methodReturnType}}} {{{methodName}}}({{{parameterList}}})
+                       {
+                           return this.{{{functionPointer}}}.Invoke({{{nameList}}});
+                       }
+                       internal System.Func<{{{typeList}}}{{{methodReturnType}}}> {{{functionPointer}}} {get;set;} = ({{{lambdaList}}}) => {{{BuildNotMockedException(method)}}}
 
-        foreach (var method in enumerable)
+                       public partial class Config{
+                           private Config _{{{methodName}}}(System.Func<{{{typeList}}}{{{methodReturnType}}}> call){
+                               target.{{{functionPointer}}} = call;
+                               return this;
+                           }
+                       }
+                       
+                       #endregion
+                       """);
+
+        yield return new($"System.Func<{typeList}{methodReturnType}> call", $"this._{methodName}(call);");
+        yield return new("System.Exception throws", $"this._{method.Name}(({lambdaList}) => throw throws);");
+        yield return new(methodReturnType + " returns", $"this._{method.Name}(({lambdaList}) => returns);");
+
+        if (methodReturnType.IsTask())
         {
-            var lambdaList = method.ToString(p => $"{p.Type} _");
-
-            builder.Add($$"""this._{{name}}(({{lambdaList}}) => throw throws);""");
+            if (method.HasParameters())
+            {
+                var typeList2 = method.ToString(p => $"{p.Type}");
+                yield return new($"System.Action<{typeList2}> call",$$"""this._{{methodName}}(({{parameterList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""");
+                yield return new("",$$"""this._{{methodName}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""");
+            }
+            else
+            {
+                yield return new("System.Action call", $$"""this._{{methodName}}(({{nameList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""");
+                yield return new("", $$"""this._{{methodName}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""");
+            }
         }
 
-        builder.Add("return this;").Unindent().Add("}");
+        if (methodReturnType.IsGenericTask())
+        {
+            var genericType = ((INamedTypeSymbol)method.ReturnType).TypeArguments.First();
+            yield return new($$"""{{genericType}} returns""",$$"""this._{{methodName}}(({{lambdaList}}) => System.Threading.Tasks.Task.FromResult(returns));""");
+            yield return new($$"""System.Func<{{typeList}}{{genericType}}> call""",$$"""this._{{methodName}}(({{nameList}}) => System.Threading.Tasks.Task.FromResult(call({{nameList}})));""");
+        }
     }
+
+    private static IEnumerable<MethodSignature> BuildVoidMethodsWithoutParamerets(CodeBuilder builder, IMethodSymbol method,
+        string overrideString, INamedTypeSymbol methodReturnType, string methodName, string parameterList,
+        string functionPointer, string nameList, string lambdaList)
+    {
+        builder.Add($$"""
+                      
+                      #region Method : {{(ITypeSymbol)methodReturnType}}{{methodName}}({{parameterList}})
+                      {{method.AccessibilityString()}} {{overrideString}}{{methodReturnType}} {{methodName}}({{parameterList}})
+                      {
+                          this.{{functionPointer}}.Invoke({{nameList}});
+                      }
+                      internal System.Action {{functionPointer}} {get;set;} = ({{lambdaList}}) => {{BuildNotMockedException(method)}}
+
+                      public partial class Config{
+                          private Config _{{methodName}}(System.Action mock){
+                                target.{{functionPointer}} = mock;
+                                return this;
+                          }
+                      }
+                      #endregion
+                      """);
+
+        yield return new($"System.Action call", $"this._{methodName}(call);");
+        yield return new("System.Exception throws", $$"""this._{{method.Name}}(({{lambdaList}}) => throw throws);""");
+        yield return new("", $$"""this._{{method.Name}}(({{lambdaList}}) => {});""");
+    }
+
+    private static IEnumerable<MethodSignature> BuildVoidMethodsWithParamerets(CodeBuilder builder, IMethodSymbol method, string overrideString,
+        INamedTypeSymbol methodReturnType, string methodName, string parameterList, string functionPointer, string nameList,
+        string typeList, string lambdaList)
+    {
+        builder.Add($$"""
+                      
+                      #region Method : {{(ITypeSymbol)methodReturnType}}{{methodName}}({{parameterList}})
+                      {{method.AccessibilityString()}} {{overrideString}}{{methodReturnType}} {{methodName}}({{parameterList}})
+                      {
+                          this.{{functionPointer}}.Invoke({{nameList}});
+                      }
+                      internal System.Action<{{typeList}}> {{functionPointer}} {get;set;} = ({{lambdaList}}) => {{BuildNotMockedException(method)}}
+
+                      public partial class Config{
+                          private Config _{{methodName}}(System.Action<{{typeList}}> mock){
+                              target.{{functionPointer}} = mock;
+                              return this;
+                          }
+                      }
+                      #endregion
+                      """);
+        yield return new($"System.Action<{typeList}> call", $"this._{methodName}(call);");
+        yield return new("System.Exception throws", $$"""this._{{method.Name}}(({{lambdaList}}) => throw throws);""");
+        yield return new("", $$"""this._{{method.Name}}(({{lambdaList}}) => {});""");
+    }
+
+    private static bool HasParameters(this IMethodSymbol method) => method.Parameters.Length >0;
+
+    private static string BuildNotMockedException(this IMethodSymbol symbol) => $"throw new System.InvalidOperationException(\"The method '{symbol.Name}' in '{symbol.ContainingType.Name}' is not explicitly mocked.\") {{Source = \"{symbol}\"}};";
+
+    private static bool IsTask(this INamedTypeSymbol methodReturnType) => methodReturnType.ToString().Equals("System.Threading.Tasks.Task");
+
+    private static bool IsGenericTask(this INamedTypeSymbol methodReturnType) => methodReturnType.ToString().StartsWith("System.Threading.Tasks.Task<") && methodReturnType.TypeArguments.Length > 0;
 }
 
 public class MethodSignature

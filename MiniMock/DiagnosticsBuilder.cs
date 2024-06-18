@@ -1,12 +1,19 @@
 namespace MiniMock;
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
 internal static class DiagnosticsBuilder
 {
+    private static readonly DiagnosticDescriptor MM0001 = new("MM0001", "Creating mock",
+        "Creating mock for '{0}'", "MiniMock", DiagnosticSeverity.Info,
+        true);
+
+    public static void AddCreatingMockFor(this SourceProductionContext context, IEnumerable<Location> locations,
+        ITypeSymbol sourceType) =>
+        context.ReportDiagnostic(Diagnostic.Create(MM0001, locations.FirstOrDefault(), sourceType));
+
     //private static readonly DiagnosticDescriptor Em0001 = new("EM0001", "Converter not found",
     //    "Unable to find converter for mapping '{0}' ({1}) to '{2}' ({3})", "EasyMapper", DiagnosticSeverity.Error,
     //    true);
@@ -37,10 +44,6 @@ internal static class DiagnosticsBuilder
     //private static readonly DiagnosticDescriptor Em9999 = new("EM9999", "Unknown exception happened during mapping", "{0}",
     //    "EasyMapper", DiagnosticSeverity.Error, true);
 
-    //public static void AddConverterNotFound(this List<Diagnostic> target, IEnumerable<Location> locations, string sourcePath, ITypeSymbol sourceType, string targetPath, ITypeSymbol targetType)
-    //{
-    //    target.Add(Diagnostic.Create(Em0001, locations.FirstOrDefault(), sourcePath, sourceType, targetPath, targetType));
-    //}
 
     //public static void AddSpecifiedConverterNotFound(this List<Diagnostic> target, IEnumerable<Location> locations, string targetPath, string converter)
     //{

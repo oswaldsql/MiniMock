@@ -19,7 +19,7 @@ public sealed class MiniMockGenerator : IIncrementalGenerator
         var enums = context.SyntaxProvider.ForAttributeWithMetadataName("MiniMock.Mock`1",
                 (syntaxNode, _) => syntaxNode is SyntaxNode, this.GetAttributes)
             .Where(static enumData => enumData is not null)
-            .SelectMany((enumerable, token) => enumerable)
+            .SelectMany((enumerable, _) => enumerable)
             .Collect();
 
         context.RegisterSourceOutput(enums, this.Build);
@@ -33,7 +33,7 @@ public sealed class MiniMockGenerator : IIncrementalGenerator
             .Distinct(SymbolEqualityComparer.Default)
             .ToArray();
 
-        foreach (var symbol in typeSymbols)
+        foreach (var symbol in typeSymbols.Where(t => t != null))
         {
             var source = ClassBuilder.Build(symbol, arg1);
 
