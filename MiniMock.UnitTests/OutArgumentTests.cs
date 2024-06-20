@@ -1,7 +1,5 @@
 namespace MiniMock.UnitTests;
 
-using Microsoft.CodeAnalysis;
-
 public class OutArgumentTests(ITestOutputHelper testOutputHelper)
 {
     [Fact]
@@ -9,11 +7,11 @@ public class OutArgumentTests(ITestOutputHelper testOutputHelper)
     {
         var source = Build.TestClass<IMethodWithOutArgument>();
 
-        var result = new MiniMockGenerator().Generate(source);
+        var generate = new MiniMockGenerator().Generate(source);
 
-        testOutputHelper.DumpResult(result);
+        testOutputHelper.DumpResult(generate);
 
-        Assert.Empty(result.diagnostics.Where(t => t.Severity == DiagnosticSeverity.Error));
+        Assert.Empty(generate.GetErrors());
     }
 
     public interface IMethodWithOutArgument

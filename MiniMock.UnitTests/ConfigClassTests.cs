@@ -1,5 +1,7 @@
 namespace MiniMock.UnitTests;
 
+using static Microsoft.CodeAnalysis.CSharp.SyntaxTokenParser;
+
 /*Missing
  * Inherited interfaces
  * logging
@@ -25,11 +27,11 @@ public class ConfigClassTests(ITestOutputHelper testOutputHelper)
     {
         var source = Build.TestClass<IEmptyInterface>();
 
-        var result = new MiniMockGenerator().Generate(source);
+        var generate = new MiniMockGenerator().Generate(source);
 
-        testOutputHelper.DumpResult(result);
+        testOutputHelper.DumpResult(generate);
 
-        Assert.True(result.diagnostics.HasNoErrors());
+        Assert.Empty(generate.GetErrors());
     }
 
     internal class EmptyClass
@@ -41,11 +43,11 @@ public class ConfigClassTests(ITestOutputHelper testOutputHelper)
     {
         var source = Build.TestClass<EmptyClass>();
 
-        var result = new MiniMockGenerator().Generate(source);
+        var generate = new MiniMockGenerator().Generate(source);
 
-        testOutputHelper.DumpResult(result);
+        testOutputHelper.DumpResult(generate);
 
-        Assert.True(result.diagnostics.HasNoErrors());
+        Assert.Empty(generate.GetErrors());
     }
 
     internal sealed class SealedClass
@@ -57,12 +59,12 @@ public class ConfigClassTests(ITestOutputHelper testOutputHelper)
     {
         var source = Build.TestClass<SealedClass>();
 
-        var (syntaxTrees, diagnostics) = new MiniMockGenerator().Generate(source);
+        var generate = new MiniMockGenerator().Generate(source);
 
-        testOutputHelper.DumpResult(syntaxTrees, diagnostics);
+        testOutputHelper.DumpResult(generate);
 
-        Assert.True(diagnostics.HasErrors());
-        Assert.Contains(diagnostics, t => t.Id == "CS0509"); // Inheritance of sealed class is not allowed
+        Assert.True(generate.diagnostics.HasErrors());
+        Assert.Contains(generate.GetErrors(), t => t.Id == "CS0509"); // Inheritance of sealed class is not allowed
     }
 
     internal abstract class AbstractClass
@@ -74,10 +76,10 @@ public class ConfigClassTests(ITestOutputHelper testOutputHelper)
     {
         var source = Build.TestClass<AbstractClass>();
 
-        var (syntaxTrees, diagnostics) = new MiniMockGenerator().Generate(source);
+        var generate= new MiniMockGenerator().Generate(source);
 
-        testOutputHelper.DumpResult(syntaxTrees, diagnostics);
+        testOutputHelper.DumpResult(generate);
 
-        Assert.True(diagnostics.HasNoErrors());
+        Assert.Empty(generate.GetErrors());
     }
 }

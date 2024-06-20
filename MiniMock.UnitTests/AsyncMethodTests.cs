@@ -1,7 +1,7 @@
 namespace MiniMock.UnitTests;
 
 using System.ComponentModel;
-using Microsoft.CodeAnalysis;
+using System.Numerics;
 
 public class AsyncMethodTests(ITestOutputHelper testOutputHelper)
 {
@@ -16,14 +16,14 @@ public class AsyncMethodTests(ITestOutputHelper testOutputHelper)
     {
         var source = Build.TestClass<ISimpleTaskMethods>();
 
-        var result = new MiniMockGenerator().Generate(source);
+        var generate = new MiniMockGenerator().Generate(source);
 
-        testOutputHelper.DumpResult(result);
+        testOutputHelper.DumpResult(generate);
 
-        Assert.Empty(result.diagnostics.Where(t => t.Severity == DiagnosticSeverity.Error));
+        Assert.Empty(generate.GetErrors());
     }
 
-    public interface IGenericTaskMethods
+    public interface IGenericTaskMethods 
     {
         Task<string> WithParameter(string name);
         Task<int> WithoutParameter();
@@ -34,11 +34,11 @@ public class AsyncMethodTests(ITestOutputHelper testOutputHelper)
     {
         var source = Build.TestClass<IGenericTaskMethods>(); 
 
-        var result = new MiniMockGenerator().Generate(source);
+        var generate = new MiniMockGenerator().Generate(source);
 
-        testOutputHelper.DumpResult(result);
+        testOutputHelper.DumpResult(generate);
 
-        Assert.Empty(result.diagnostics.Where(t => t.Severity == DiagnosticSeverity.Error));
+        Assert.Empty(generate.GetErrors());
     }
 
     [Fact]
@@ -46,10 +46,10 @@ public class AsyncMethodTests(ITestOutputHelper testOutputHelper)
     {
         var source = Build.TestClass<INotifyPropertyChanged>();
 
-        var result = new MiniMockGenerator().Generate(source);
+        var generate = new MiniMockGenerator().Generate(source);
 
-        testOutputHelper.DumpResult(result);
+        testOutputHelper.DumpResult(generate);
 
-        Assert.True(result.diagnostics.HasNoErrors());
+        Assert.Empty(generate.GetErrors());
     }
 }

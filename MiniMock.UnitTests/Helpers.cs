@@ -99,4 +99,5 @@ public static class AssertExtensions
     public static bool HasNoWarnings(this Diagnostic[] diagnostics) => diagnostics.All(t => t.Severity < DiagnosticSeverity.Warning);
 
     public static Diagnostic[] GetErrors(this Diagnostic[] diagnostics) => diagnostics.Where(t => t.Severity == DiagnosticSeverity.Error).ToArray();
+    public static Diagnostic[] GetErrors(this (SyntaxTree[] syntaxTrees, Diagnostic[] diagnostics) source) => source.diagnostics.Where(t => t.Severity == DiagnosticSeverity.Error).ToArray();
 }

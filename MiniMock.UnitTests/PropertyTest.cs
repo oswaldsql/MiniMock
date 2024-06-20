@@ -16,10 +16,10 @@ public class PropertyTest(ITestOutputHelper testOutputHelper)
     {
         var source = Build.TestClass<IPropertyInterface>();
 
-        var result = new MiniMockGenerator().Generate(source);
+        var generate = new MiniMockGenerator().Generate(source);
 
-        testOutputHelper.DumpResult(result);
+        testOutputHelper.DumpResult(generate);
 
-        Assert.True(result.diagnostics.HasNoWarnings());
+        Assert.Empty(generate.GetErrors());
     }
 }

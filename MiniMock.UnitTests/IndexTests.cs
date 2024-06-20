@@ -18,10 +18,10 @@ public class IndexTests(ITestOutputHelper testOutputHelper)
     {
         var source = Build.TestClass<IIndexRepository>();
 
-        var result = new MiniMockGenerator().Generate(source);
+        var generate = new MiniMockGenerator().Generate(source);
 
-        testOutputHelper.DumpResult(result);
+        testOutputHelper.DumpResult(generate);
 
-        Assert.Empty(result.diagnostics.Where(t => t.Severity == DiagnosticSeverity.Error));
+        Assert.Empty(generate.GetErrors());
     }
 }
