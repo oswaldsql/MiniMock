@@ -16,7 +16,7 @@ public interface IMethodRepository
 
     void Unlike() { }
 
-    static string StaticMethod() => "StaticMethod";
+    //static string StaticMethod() => "StaticMethod";
 
     public string DefaultImp() => "Test";
 }
@@ -26,20 +26,13 @@ public class MethodTests(ITestOutputHelper testOutputHelper)
     [Fact]
     public void MethodRepositoryTests()
     {
-        var source = @"namespace Demo;
-using MiniMock.UnitTests;
-using MiniMock;
-using System;
-
-[Mock<IMethodRepository>]
-public class TestClass{
-}";
+        var source = Build.TestClass<IMethodRepository>();
 
         var result = new MiniMockGenerator().Generate(source);
 
         testOutputHelper.DumpResult(result);
 
-        Assert.Empty(result.diagnostics.Where(t => t.Severity == DiagnosticSeverity.Error));
+        Assert.Empty(result.diagnostics.GetErrors());
     }
 
     public interface IDefaultImplementation
@@ -55,14 +48,7 @@ public class TestClass{
     [Fact]
     public void DefaultImplementationTests()
     {
-        var source = @"namespace Demo;
-using MiniMock.UnitTests;
-using MiniMock;
-using System;
-
-[Mock<MethodTests.IDefaultImplementation>]
-public class TestClass{
-}";
+        var source = Build.TestClass<IDefaultImplementation>();
 
         var result = new MiniMockGenerator().Generate(source);
 
@@ -80,7 +66,7 @@ public class TestClass{
     [Fact]
     public void GenericTests()
     {
-        var source = @"namespace Demo;
+        var source =  @"namespace Demo;
 using MiniMock.UnitTests;
 using MiniMock;
 using System;
@@ -107,14 +93,7 @@ public class TestClass{
     [Fact]
     public void AbstractClassTests()
     {
-        var source = @"namespace Demo;
-using MiniMock.UnitTests;
-using MiniMock;
-using System;
-
-[Mock<MethodTests.AbstractClass>]
-public class TestClass{
-}";
+        var source = Build.TestClass<AbstractClass>();
 
         var result = new MiniMockGenerator().Generate(source);
 
@@ -139,14 +118,7 @@ public class TestClass{
     [Fact]
     public void InterfaceWithOverloadsTests()
     {
-        var source = @"namespace Demo;
-using MiniMock.UnitTests;
-using MiniMock;
-using System;
-
-[Mock<MethodTests.WithOverloads>]
-public class TestClass{
-}";
+        var source = Build.TestClass<WithOverloads>();
 
         var result = new MiniMockGenerator().Generate(source);
 
@@ -238,160 +210,6 @@ public class TestClass{
 
         testOutputHelper.DumpResult(result);
 
-        Assert.Empty(result.diagnostics.Where(t => t.Severity == DiagnosticSeverity.Error));
-    }
-
-
-    internal class ILoveThisLibraryMock2 : MiniMock.UnitTests.LargeTest.ILoveThisLibrary
-    {
-        public ILoveThisLibraryMock2(System.Action<Config>? config = null)
-        {
-            var result = new Config(this);
-            config = config ?? new System.Action<Config>(t => { });
-            config.Invoke(result);
-            _MockConfig = result;
-        }
-        internal Config _MockConfig { get; set; }
-
-        public partial class Config
-        {
-            private readonly ILoveThisLibraryMock2 target;
-
-            public Config(ILoveThisLibraryMock2 target)
-            {
-                this.target = target;
-            }
-        }
-
-        #region bool DownloadExists(string version)
-        public partial class Config
-        {
-            internal System.Func<string, bool> On_DownloadExists { get; set; } = (_) => throw new System.InvalidOperationException("The method 'DownloadExists' in 'ILoveThisLibrary' is not explicitly mocked.") { Source = "MiniMock.UnitTests.LargeTest.ILoveThisLibrary.DownloadExists(string)" };
-            private Config _DownloadExists(System.Func<string, bool> call)
-            {
-                this.On_DownloadExists = call;
-                return this;
-            }
-
-            public Config DownloadExists(System.Func<string, bool> call) => this._DownloadExists(call);
-            public Config DownloadExists(System.Exception throws) => this._DownloadExists((_) => throw throws);
-            public Config DownloadExists(bool returns) => this._DownloadExists((_) => returns);
-        }
-
-
-        bool ILoveThisLibrary.DownloadExists(string version)
-        {
-            return _MockConfig.On_DownloadExists.Invoke(version);
-        }
-        #endregion
-
-
-        #region System.Threading.Tasks.Task<bool> DownloadExistsAsync(string version)
-        public partial class Config
-        {
-            internal System.Func<string, System.Threading.Tasks.Task<bool>> On_DownloadExistsAsync { get; set; } = (_) => throw new System.InvalidOperationException("The method 'DownloadExistsAsync' in 'ILoveThisLibrary' is not explicitly mocked.") { Source = "MiniMock.UnitTests.LargeTest.ILoveThisLibrary.DownloadExistsAsync(string)" };
-            private Config _DownloadExistsAsync(System.Func<string, System.Threading.Tasks.Task<bool>> call)
-            {
-                this.On_DownloadExistsAsync = call;
-                return this;
-            }
-
-            public Config DownloadExistsAsync(System.Func<string, System.Threading.Tasks.Task<bool>> call) => this._DownloadExistsAsync(call);
-            public Config DownloadExistsAsync(System.Exception throws) => this._DownloadExistsAsync((_) => throw throws);
-            public Config DownloadExistsAsync(System.Threading.Tasks.Task<bool> returns) => this._DownloadExistsAsync((_) => returns);
-            public Config DownloadExistsAsync(bool returns) => this._DownloadExistsAsync((_) => System.Threading.Tasks.Task.FromResult(returns));
-            public Config DownloadExistsAsync(System.Func<string, bool> call) => this._DownloadExistsAsync((version) => System.Threading.Tasks.Task.FromResult(call(version)));
-        }
-
-
-        public System.Threading.Tasks.Task<bool> DownloadExistsAsync(string version)
-        {
-            return _MockConfig.On_DownloadExistsAsync.Invoke(version);
-        }
-        #endregion
-
-
-        #region Version
-        public partial class Config
-        {
-            public Config Version(System.Version value)
-            {
-                this.internal_Version = value;
-                this.Get_Version = () => this.internal_Version;
-                this.Set_Version = s => this.internal_Version = s;
-
-                return this;
-            }
-
-            public Config Version(System.Func<System.Version> get, System.Action<System.Version> set)
-            {
-                this.Get_Version = get;
-                this.Set_Version = set;
-                return this;
-            }
-
-            private System.Version? internal_Version;
-            internal System.Func<System.Version> Get_Version { get; set; } = () => throw new System.InvalidOperationException("The property 'Version' in 'ILoveThisLibrary' is not explicitly mocked.") { Source = "MiniMock.UnitTests.LargeTest.ILoveThisLibrary.Version" };
-            internal System.Action<System.Version> Set_Version { get; set; } = s => throw new System.InvalidOperationException("The property 'Version' in 'ILoveThisLibrary' is not explicitly mocked.") { Source = "MiniMock.UnitTests.LargeTest.ILoveThisLibrary.Version" };
-        }
-
-        public System.Version Version
-        {
-            get
-            {
-                return _MockConfig.Get_Version();
-            }
-            set
-            {
-                _MockConfig.Set_Version(value);
-            }
-        }
-        #endregion
-
-        #region System.Version this[string]
-        public partial class Config
-        {
-            internal System.Func<string, System.Version> On_stringIndexGet { get; set; } = (_) => throw new System.InvalidOperationException("The indexer 'this[]' in 'ILoveThisLibrary' is not explicitly mocked.") { Source = "MiniMock.UnitTests.LargeTest.ILoveThisLibrary.this[string]" };
-            internal System.Action<string, System.Version> On_stringIndexSet { get; set; } = (_, _) => throw new System.InvalidOperationException("The indexer 'this[]' in 'ILoveThisLibrary' is not explicitly mocked.") { Source = "MiniMock.UnitTests.LargeTest.ILoveThisLibrary.this[string]" };
-        }
-
-        public partial class Config
-        {
-            public Config Indexer(System.Collections.Generic.Dictionary<string, System.Version> values)
-            {
-                this.On_stringIndexGet = s => values[s];
-                this.On_stringIndexSet = (s, v) => values[s] = v;
-                return this;
-            }
-        }
-
-        public partial class Config
-        {
-            public Config Indexer(System.Func<string, System.Version> get, System.Action<string, System.Version> set)
-            {
-                this.On_stringIndexGet = get;
-                this.On_stringIndexSet = set;
-                return this;
-            }
-        }
-
-        public System.Version this[string index]
-        {
-            get => _MockConfig.On_stringIndexGet(index);
-            set => _MockConfig.On_stringIndexSet(index, value);
-        }
-        #endregion
-
-        #region System.EventHandler<System.Version> NewVersionAdded
-        public partial class Config
-        {
-            public void NewVersionAdded(out System.Action<System.Version> trigger)
-            {
-                trigger = args => target.NewVersionAdded?.Invoke(target, args);
-            }
-        }
-
-        public event System.EventHandler<System.Version>? NewVersionAdded;
-        #endregion
+        Assert.Empty(result.diagnostics.GetErrors());
     }
 }

@@ -16,14 +16,7 @@ public class EventTests(ITestOutputHelper testOutputHelper)
     [Fact]
     public void EventRepositoryTests()
     {
-        var source = @"namespace Demo;
-using MiniMock.UnitTests;
-using MiniMock;
-using System;
-
-[Mock<EventTests.IEventRepository>]
-public class TestClass{
-}";
+        var source = Build.TestClass<IEventRepository>();
 
         var result = new MiniMockGenerator().Generate(source);
 

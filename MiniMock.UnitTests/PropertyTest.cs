@@ -14,14 +14,7 @@ public class PropertyTest(ITestOutputHelper testOutputHelper)
     [Fact]
     public void PropertyRepositoryTests()
     {
-        var source = @"namespace Demo;
-using MiniMock.UnitTests;
-using MiniMock;
-using System;
-
-[Mock<PropertyTest.IPropertyInterface>]
-public class TestClass{
-}";
+        var source = Build.TestClass<IPropertyInterface>();
 
         var result = new MiniMockGenerator().Generate(source);
 

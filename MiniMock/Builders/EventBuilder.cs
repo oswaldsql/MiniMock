@@ -15,7 +15,7 @@ internal static class EventBuilder
         builder.Add($$"""
 
                       #region {{evnt.Type}} {{eventName}}
-                      {{evnt.AccessibilityString()}} event {{evnt.Type}}? {{eventName}};
+                      {{evnt.AccessibilityString()}} event {{evnt.Type}} {{eventName}};
                       
                       public partial class Config
                       {

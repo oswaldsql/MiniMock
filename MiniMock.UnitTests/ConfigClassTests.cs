@@ -23,7 +23,7 @@ public class ConfigClassTests(ITestOutputHelper testOutputHelper)
     [Fact]
     public void EmptyInterfaceTests()
     {
-        var source = TestSourceBuilder.BuildEmptyClassWithAttribute<IEmptyInterface>();
+        var source = Build.TestClass<IEmptyInterface>();
 
         var result = new MiniMockGenerator().Generate(source);
 
@@ -39,7 +39,7 @@ public class ConfigClassTests(ITestOutputHelper testOutputHelper)
     [Fact]
     public void EmptyClassTests()
     {
-        var source = TestSourceBuilder.BuildEmptyClassWithAttribute<EmptyClass>();
+        var source = Build.TestClass<EmptyClass>();
 
         var result = new MiniMockGenerator().Generate(source);
 
@@ -55,7 +55,7 @@ public class ConfigClassTests(ITestOutputHelper testOutputHelper)
     [Fact]
     public void SealedClassTests()
     {
-        var source = TestSourceBuilder.BuildEmptyClassWithAttribute<SealedClass>();
+        var source = Build.TestClass<SealedClass>();
 
         var (syntaxTrees, diagnostics) = new MiniMockGenerator().Generate(source);
 
@@ -72,7 +72,7 @@ public class ConfigClassTests(ITestOutputHelper testOutputHelper)
     [Fact]
     public void AbstractClassTests()
     {
-        var source = TestSourceBuilder.BuildEmptyClassWithAttribute<AbstractClass>();
+        var source = Build.TestClass<AbstractClass>();
 
         var (syntaxTrees, diagnostics) = new MiniMockGenerator().Generate(source);
 
