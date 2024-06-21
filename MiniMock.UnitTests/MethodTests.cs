@@ -1,6 +1,7 @@
 namespace MiniMock.UnitTests;
 
 using Microsoft.CodeAnalysis;
+using MiniMock.UnitTests.Util;
 
 public interface IMethodRepository
 {
@@ -14,7 +15,7 @@ public interface IMethodRepository
 
     (string name, int age) GetCustomerInfo(string name);
 
-    void Unlike() { }
+    virtual void Unlike() { }
 
     //static string StaticMethod() => "StaticMethod";
 
@@ -32,7 +33,7 @@ public class MethodTests(ITestOutputHelper testOutputHelper)
 
         testOutputHelper.DumpResult(generate);
 
-        Assert.Empty(generate.GetErrors());
+        Assert.Empty(generate.GetWarnings());
     }
 
     public interface IDefaultImplementation

@@ -1,6 +1,7 @@
 namespace MiniMock.UnitTests;
 
 using Microsoft.CodeAnalysis;
+using MiniMock.UnitTests.Util;
 
 public class IndexTests(ITestOutputHelper testOutputHelper)
 {

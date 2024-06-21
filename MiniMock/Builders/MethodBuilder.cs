@@ -1,21 +1,58 @@
 namespace MiniMock.Builders;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
+using guard = System.Func<CodeBuilder, Microsoft.CodeAnalysis.IMethodSymbol, System.Action<string, string>, bool>;
+
 internal static class MethodBuilder
 {
+    private static readonly guard[] Strategies =
+    [
+        IgnoreIrrelevantMethods,
+        TryBuildMethodHavingOutParameters,
+        TryBuildVoidMethodsHavingParameters,
+        TryBuildVoidMethodsWithoutParameters,
+        TryBuildNoneVoidMethods
+    ];
+
+    private static bool IgnoreIrrelevantMethods(CodeBuilder arg1, IMethodSymbol arg2, Action<string, string> arg3)
+    {
+        if (arg2.IsAbstract || arg2.IsVirtual)
+        {
+            return false;
+        }
+
+        arg1.Add().Add("// Ignoring " + arg2);
+
+        return true;
+    }
+
+    private static int methodCount = 0;
+
     public static void BuildMethods(CodeBuilder builder, IEnumerable<IMethodSymbol> methodSymbols)
     {
         var enumerable = methodSymbols as IMethodSymbol[] ?? methodSymbols.ToArray();
         var name = enumerable.First().Name;
 
         var helpers = new List<MethodSignature>();
-        for (var i = 0; i < enumerable.Length; i++)
+        void AddHelper(string signature, string code) => helpers.Add(new(signature, code));
+
+        foreach (var symbol in enumerable)
         {
-            var symbol = enumerable[i];
-            helpers.AddRange(Build(builder, symbol, i));
+            Build(builder, symbol, AddHelper);
+        }
+
+        BuildHelpers(builder, helpers, name);
+    }
+
+    private static void BuildHelpers(CodeBuilder builder, List<MethodSignature> helpers, string name)
+    {
+        if(helpers.Count == 0)
+        {
+            return;
         }
 
         var signatures = helpers.ToLookup(t => t.Signature);
@@ -24,62 +61,52 @@ internal static class MethodBuilder
 
         foreach (var grouping in signatures)
         {
-            builder.Add($"public Config {name}({grouping.Key}) {{");
+            builder.Add($"public Config {name}({grouping.Key}) {{").Indent();
             foreach (var mse in grouping)
             {
-                builder.Add("    " + mse.Code);
+                builder.Add(mse.Code);
             }
 
-            builder.Add("    return this;");
-            builder.Add(" }");
+            builder.Unindent().Add("    return this;");
+            builder.Add("}");
             builder.Add();
         }
 
         builder.Unindent().Add("}");
     }
 
-    private static IEnumerable<MethodSignature> Build(CodeBuilder builder, IMethodSymbol method, int index)
+    private static bool Build(CodeBuilder builder, IMethodSymbol method, Action<string, string> addHelper)
     {
-        if(method.HasParameters() && method.Parameters.Any(p => p.RefKind == RefKind.Out || p.RefKind == RefKind.Ref))
+        foreach (var strategy in Strategies)
         {
-            return BuildOutMethods(builder, method, index);
+            if(strategy(builder, method, addHelper)) { return true; }
         }
 
-        if (method.ReturnsVoid && method.HasParameters())
-        {
-            return BuildVoidMethodsWithParamerets(builder, method, index);
-        }
-        
-        if (method.ReturnsVoid && !method.HasParameters())
-        {
-            return BuildVoidMethodsWithoutParameres(builder, method, index);
-        }
-
-        if (!method.ReturnsVoid)
-        {
-            return BuildNoneVoidMethods(builder, method, index);
-        }
-
-        return Enumerable.Empty<MethodSignature>();
+        return false;
     }
 
-    private static IEnumerable<MethodSignature> BuildOutMethods(CodeBuilder builder, IMethodSymbol method, int index)
+    private static bool TryBuildMethodHavingOutParameters(CodeBuilder builder, IMethodSymbol method, Action<string,string> addHelper)
     {
-        var parameterList = method.ToString(p => $"{outString(p)}{p.Type} {p.Name}");
+        if(!(method.HasParameters() && method.Parameters.Any(p => p.RefKind == RefKind.Out || p.RefKind == RefKind.Ref)))
+        {
+            return false;
+        }
+
+        var parameterList = method.ToString(p => $"{p.OutString()}{p.Type} {p.Name}");
         var methodReturnType = (INamedTypeSymbol)method.ReturnType;
 
-        var nameList = method.ToString(p => $"{outString(p)}{p.Name}");
+        var nameList = method.ToString(p => $"{p.OutString()}{p.Name}");
 
         var overrideString = method.OverrideString();
 
         var methodName = method.Name;
-        var functionPointer = index == 0 ? "On_" + methodName : "On_" + methodName + "_" + index;
+        var functionPointer = "On_" + methodName + "_" + methodCount++;
 
         var returnString = method.ReturnsVoid ? "" : "return ";
         var containingSymbol = method.ContainingSymbol;
 
         builder.Add($$$"""
-                       // 
+
                        #region Method : {{{methodReturnType}}} {{{methodName}}}({{{parameterList}}})
                        public delegate {{{methodReturnType}}} {{{methodName}}}_Delegate({{{parameterList}}});
 
@@ -100,26 +127,19 @@ internal static class MethodBuilder
 
                        """);
 
-        yield return new($"{methodName}_Delegate call", $"this._{methodName}(call);");
-        yield return new("System.Exception throws", $"this._{method.Name}(({parameterList}) => throw throws);");
+        addHelper($"{methodName}_Delegate call", $"this._{methodName}(call);");
+        addHelper("System.Exception throws", $"this._{method.Name}(({parameterList}) => throw throws);");
+
+        return true;
     }
 
-    private static string outString(IParameterSymbol parameterSymbol)
+    private static bool TryBuildNoneVoidMethods(CodeBuilder builder, IMethodSymbol method, Action<string, string> addHelper)
     {
-        if(parameterSymbol.RefKind == RefKind.Out)
+        if (method.ReturnsVoid)
         {
-            return "out ";
-        }
-        if(parameterSymbol.RefKind == RefKind.Ref)
-        {
-            return "ref  ";
+            return false;
         }
 
-        return "";
-    }
-
-    private static IEnumerable<MethodSignature> BuildNoneVoidMethods(CodeBuilder builder, IMethodSymbol method, int index)
-    {
         var parameterList = method.ToString(p => $"{p.Type} {p.Name}");
         var typeList = method.ToString(p => $"{p.Type}");
         var methodReturnType = (INamedTypeSymbol)method.ReturnType;
@@ -134,7 +154,7 @@ internal static class MethodBuilder
         var overrideString = method.OverrideString();
 
         var methodName = method.Name;
-        var functionPointer = index == 0 ? "On_" + methodName : "On_" + methodName + "_" + index;
+        var functionPointer = "On_" + methodName + "_" + methodCount++;
 
         builder.Add($$$"""
                        
@@ -155,35 +175,42 @@ internal static class MethodBuilder
                        #endregion
                        """);
 
-        yield return new($"System.Func<{typeList}{methodReturnType}> call", $"this._{methodName}(call);");
-        yield return new("System.Exception throws", $"this._{methodName}(({lambdaList}) => throw throws);");
-        yield return new(methodReturnType + " returns", $"this._{methodName}(({lambdaList}) => returns);");
+        addHelper($"System.Func<{typeList}{methodReturnType}> call", $"this._{methodName}(call);");
+        addHelper("System.Exception throws", $"this._{methodName}(({lambdaList}) => throw throws);");
+        addHelper(methodReturnType + " returns", $"this._{methodName}(({lambdaList}) => returns);");
 
         if (methodReturnType.IsTask())
         {
             if (method.HasParameters())
             {
                 var typeList2 = method.ToString(p => $"{p.Type}");
-                yield return new($"System.Action<{typeList2}> call",$$"""this._{{methodName}}(({{parameterList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""");
-                yield return new("",$$"""this._{{methodName}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""");
+                addHelper($"System.Action<{typeList2}> call",$$"""this._{{methodName}}(({{parameterList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""");
+                addHelper("",$$"""this._{{methodName}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""");
             }
             else
             {
-                yield return new("System.Action call", $$"""this._{{methodName}}(({{nameList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""");
-                yield return new("", $$"""this._{{methodName}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""");
+                addHelper("System.Action call", $$"""this._{{methodName}}(({{nameList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""");
+                addHelper("", $$"""this._{{methodName}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""");
             }
         }
 
         if (methodReturnType.IsGenericTask())
         {
             var genericType = ((INamedTypeSymbol)method.ReturnType).TypeArguments.First();
-            yield return new($"{genericType} returns",$"this._{methodName}(({lambdaList}) => System.Threading.Tasks.Task.FromResult(returns));");
-            yield return new($"System.Func<{typeList}{genericType}> call",$"this._{methodName}(({nameList}) => System.Threading.Tasks.Task.FromResult(call({nameList})));");
+            addHelper($"{genericType} returns",$"this._{methodName}(({lambdaList}) => System.Threading.Tasks.Task.FromResult(returns));");
+            addHelper($"System.Func<{typeList}{genericType}> call",$"this._{methodName}(({nameList}) => System.Threading.Tasks.Task.FromResult(call({nameList})));");
         }
+
+        return true;
     }
 
-    private static IEnumerable<MethodSignature> BuildVoidMethodsWithoutParameres(CodeBuilder builder, IMethodSymbol method, int index)
+    private static bool TryBuildVoidMethodsWithoutParameters(CodeBuilder builder, IMethodSymbol method, Action<string, string> addHelper)
     {
+        if (!(method.ReturnsVoid && !method.HasParameters()))
+        {
+            return false;
+        }
+
         var parameterList = method.ToString(p => $"{p.Type} {p.Name}");
 
         var nameList = method.ToString(p => $"{p.Name}");
@@ -192,7 +219,7 @@ internal static class MethodBuilder
         var overrideString = method.OverrideString();
 
         var methodName = method.Name;
-        var functionPointer = index == 0 ? "On_" + methodName : "On_" + methodName + "_" + index;
+        var functionPointer = "On_" + methodName + "_" + methodCount++;
 
         builder.Add($$"""
                       
@@ -212,13 +239,20 @@ internal static class MethodBuilder
                       #endregion
                       """);
 
-        yield return new($"System.Action call", $"this._{methodName}(call);");
-        yield return new("System.Exception throws", $$"""this._{{methodName}}(({{lambdaList}}) => throw throws);""");
-        yield return new("", $$"""this._{{methodName}}(({{lambdaList}}) => {});""");
+        addHelper($"System.Action call", $"this._{methodName}(call);");
+        addHelper("System.Exception throws", $$"""this._{{methodName}}(({{lambdaList}}) => throw throws);""");
+        addHelper("", $$"""this._{{methodName}}(({{lambdaList}}) => {});""");
+
+        return true;
     }
 
-    private static IEnumerable<MethodSignature> BuildVoidMethodsWithParamerets(CodeBuilder builder, IMethodSymbol method, int index)
+    private static bool TryBuildVoidMethodsHavingParameters(CodeBuilder builder, IMethodSymbol method, Action<string, string> addHelper)
     {
+        if (!(method.ReturnsVoid && method.HasParameters()))
+        {
+            return false;
+        }
+
         var parameterList = method.ToString(p => $"{p.Type} {p.Name}");
         var typeList = method.ToString(p => $"{p.Type}");
 
@@ -226,8 +260,7 @@ internal static class MethodBuilder
         var overrideString = method.OverrideString();
 
         var methodName = method.Name;
-        var functionPointer = index == 0 ? "On_" + methodName : "On_" + methodName + "_" + index;
-
+        var functionPointer = "On_" + methodName + "_" + methodCount++;
 
         builder.Add($$"""
                       
@@ -246,10 +279,22 @@ internal static class MethodBuilder
                       }
                       #endregion
                       """);
-        yield return new($"System.Action<{typeList}> call", $"this._{methodName}(call);");
-        yield return new("System.Exception throws", $$"""this._{{methodName}}(({{parameterList}}) => throw throws);""");
-        yield return new("", $$"""this._{{methodName}}(({{parameterList}}) => {});""");
+        addHelper($"System.Action<{typeList}> call", $"this._{methodName}(call);");
+        addHelper("System.Exception throws", $$"""this._{{methodName}}(({{parameterList}}) => throw throws);""");
+        addHelper("", $$"""this._{{methodName}}(({{parameterList}}) => {});""");
+
+        return true;
     }
+
+    private static string OutString(this IParameterSymbol parameterSymbol) =>
+        parameterSymbol.RefKind switch
+        {
+            RefKind.Out => "out ",
+            RefKind.Ref => "ref ",
+            RefKind.In => "in ",
+            RefKind.RefReadOnlyParameter => "ref readonly ",
+            _ => ""
+        };
 
     private static bool HasParameters(this IMethodSymbol method) => method.Parameters.Length >0;
 

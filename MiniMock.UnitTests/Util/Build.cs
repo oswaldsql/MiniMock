@@ -1,4 +1,4 @@
-namespace MiniMock.UnitTests;
+namespace MiniMock.UnitTests.Util;
 
 public static class Build
 {

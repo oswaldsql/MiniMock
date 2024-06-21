@@ -1,5 +1,7 @@
 namespace MiniMock.UnitTests;
 
+using MiniMock.UnitTests.Util;
+
 public class LargeTest(ITestOutputHelper testOutputHelper)
 {
     public interface ILoveThisLibrary
