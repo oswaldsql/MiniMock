@@ -10,5 +10,8 @@ public static class AssertExtensions
 
     public static Diagnostic[] GetErrors(this Diagnostic[] diagnostics) => diagnostics.Where(t => t.Severity == DiagnosticSeverity.Error).ToArray();
     public static Diagnostic[] GetErrors(this (SyntaxTree[] syntaxTrees, Diagnostic[] diagnostics) source) => source.diagnostics.Where(t => t.Severity >= DiagnosticSeverity.Warning).ToArray();
-    public static Diagnostic[] GetWarnings(this (SyntaxTree[] syntaxTrees, Diagnostic[] diagnostics) source) => source.diagnostics.Where(t => t.Severity == DiagnosticSeverity.Warning).ToArray();
+    public static Diagnostic[] GetWarnings(this (SyntaxTree[] syntaxTrees, Diagnostic[] diagnostics) source) => source.diagnostics.Where(t => t.Severity >= DiagnosticSeverity.Warning).ToArray();
+
+    public static IEnumerable<string> GetFileContent(this (SyntaxTree[] syntaxTrees, Diagnostic[] diagnostics) source, string filePathPart) => source.syntaxTrees.Where(t => t.FilePath.Contains(filePathPart)).Select(t => t.GetText().ToString());
+
 }

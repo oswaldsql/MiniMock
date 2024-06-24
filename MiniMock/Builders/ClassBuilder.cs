@@ -1,6 +1,8 @@
 namespace MiniMock.Builders;
 
 using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
@@ -58,7 +60,11 @@ internal class ClassBuilder(ISymbol target, SourceProductionContext context)
                       }
                       """);
 
-        var memberGroups = ((INamedTypeSymbol)target).GetMembers().ToLookup(t => t.Name);
+        var memberCandidates = new List<ISymbol>(((INamedTypeSymbol)target).GetMembers());
+
+        this.AddInheritedInterfaces(memberCandidates, (INamedTypeSymbol)target);
+
+        var memberGroups = memberCandidates.ToLookup(t => t.Name);
 
         foreach (var members in memberGroups)
         {
@@ -88,5 +94,15 @@ internal class ClassBuilder(ISymbol target, SourceProductionContext context)
                     """);
 
         return builder.ToString();
+    }
+
+    private void AddInheritedInterfaces(List<ISymbol> memberCandidates, INamedTypeSymbol namedTypeSymbol)
+    {
+        var allInterfaces = namedTypeSymbol.AllInterfaces;
+        foreach (var interface2 in allInterfaces)
+        {
+            memberCandidates.AddRange(interface2.GetMembers());
+            this.AddInheritedInterfaces(memberCandidates, interface2);
+        }
     }
 }

@@ -5,11 +5,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
-using guard = System.Func<CodeBuilder, Microsoft.CodeAnalysis.IMethodSymbol, System.Action<string, string>, bool>;
+using Strategy = System.Func<CodeBuilder, Microsoft.CodeAnalysis.IMethodSymbol, System.Action<string, string>, bool>;
 
 internal static class MethodBuilder
 {
-    private static readonly guard[] Strategies =
+    private static readonly Strategy[] Strategies =
     [
         IgnoreIrrelevantMethods,
         TryBuildMethodHavingOutParameters,
@@ -17,18 +17,6 @@ internal static class MethodBuilder
         TryBuildVoidMethodsWithoutParameters,
         TryBuildNoneVoidMethods
     ];
-
-    private static bool IgnoreIrrelevantMethods(CodeBuilder arg1, IMethodSymbol arg2, Action<string, string> arg3)
-    {
-        if (arg2.IsAbstract || arg2.IsVirtual)
-        {
-            return false;
-        }
-
-        arg1.Add().Add("// Ignoring " + arg2);
-
-        return true;
-    }
 
     private static int methodCount = 0;
 
@@ -85,6 +73,18 @@ internal static class MethodBuilder
         return false;
     }
 
+    private static bool IgnoreIrrelevantMethods(CodeBuilder builder, IMethodSymbol method, Action<string, string> addHelper)
+    {
+        if (method.IsAbstract || method.IsVirtual)
+        {
+            return false;
+        }
+
+        builder.Add().Add("// Ignoring " + method);
+
+        return true;
+    }
+
     private static bool TryBuildMethodHavingOutParameters(CodeBuilder builder, IMethodSymbol method, Action<string,string> addHelper)
     {
         if(!(method.HasParameters() && method.Parameters.Any(p => p.RefKind == RefKind.Out || p.RefKind == RefKind.Ref)))
@@ -103,22 +103,29 @@ internal static class MethodBuilder
         var functionPointer = "On_" + methodName + "_" + methodCount++;
 
         var returnString = method.ReturnsVoid ? "" : "return ";
-        var containingSymbol = method.ContainingSymbol;
 
-        builder.Add($$$"""
+        var containingSymbol = "";
+        var accessibilityString = method.AccessibilityString();
+        if (method.ContainingType.TypeKind == TypeKind.Interface)
+        {
+            containingSymbol = method.ContainingSymbol.ToString() + ".";
+            accessibilityString = "";
+        }
 
-                       #region Method : {{{methodReturnType}}} {{{methodName}}}({{{parameterList}}})
-                       public delegate {{{methodReturnType}}} {{{methodName}}}_Delegate({{{parameterList}}});
+        builder.Add($$"""
 
-                       {{{method.AccessibilityString()}}} {{{overrideString}}}{{{methodReturnType}}} {{{methodName}}}({{{parameterList}}})
+                       #region Method : {{methodReturnType}} {{methodName}}({{parameterList}})
+                       public delegate {{methodReturnType}} {{methodName}}_{{methodCount}}_Delegate({{parameterList}});
+
+                       {{accessibilityString}} {{overrideString}}{{methodReturnType}} {{containingSymbol}}{{methodName}}({{parameterList}})
                        {
-                           {{{returnString}}}this.{{{functionPointer}}}.Invoke({{{nameList}}});
+                           {{returnString}}this.{{functionPointer}}.Invoke({{nameList}});
                        }
-                       internal {{{methodName}}}_Delegate {{{functionPointer}}} {get;set;} = ({{{parameterList}}}) => {{{BuildNotMockedException(method)}}}
+                       internal {{methodName}}_{{methodCount}}_Delegate {{functionPointer}} {get;set;} = ({{parameterList}}) => {{BuildNotMockedException(method)}}
 
                        public partial class Config{
-                           private Config _{{{methodName}}}({{{methodName}}}_Delegate call){
-                               target.{{{functionPointer}}} = call;
+                           private Config _{{methodName}}_{{methodCount}}({{methodName}}_{{methodCount}}_Delegate call){
+                               target.{{functionPointer}} = call;
                                return this;
                            }
                        }
@@ -127,8 +134,8 @@ internal static class MethodBuilder
 
                        """);
 
-        addHelper($"{methodName}_Delegate call", $"this._{methodName}(call);");
-        addHelper("System.Exception throws", $"this._{method.Name}(({parameterList}) => throw throws);");
+        addHelper($"{methodName}_{methodCount}_Delegate call", $"this._{methodName}_{methodCount}(call);");
+        addHelper("System.Exception throws", $"this._{method.Name}_{methodCount}(({parameterList}) => throw throws);");
 
         return true;
     }
@@ -156,17 +163,25 @@ internal static class MethodBuilder
         var methodName = method.Name;
         var functionPointer = "On_" + methodName + "_" + methodCount++;
 
+        var containingSymbol = "";
+        var accessibilityString = method.AccessibilityString();
+        if (method.ContainingType.TypeKind == TypeKind.Interface)
+        {
+            containingSymbol = method.ContainingSymbol.ToString() + ".";
+            accessibilityString = "";
+        }
+
         builder.Add($$$"""
                        
                        #region Method : {{{methodReturnType}}} {{{methodName}}}({{{parameterList}}})
-                       {{{method.AccessibilityString()}}} {{{overrideString}}}{{{methodReturnType}}} {{{methodName}}}({{{parameterList}}})
+                       {{{accessibilityString}}} {{{overrideString}}}{{{methodReturnType}}} {{{containingSymbol}}}{{{methodName}}}({{{parameterList}}})
                        {
                            return this.{{{functionPointer}}}.Invoke({{{nameList}}});
                        }
                        internal System.Func<{{{typeList}}}{{{methodReturnType}}}> {{{functionPointer}}} {get;set;} = ({{{lambdaList}}}) => {{{BuildNotMockedException(method)}}}
 
                        public partial class Config{
-                           private Config _{{{methodName}}}(System.Func<{{{typeList}}}{{{methodReturnType}}}> call){
+                           private Config _{{{methodName}}}_{{{methodCount}}}(System.Func<{{{typeList}}}{{{methodReturnType}}}> call){
                                target.{{{functionPointer}}} = call;
                                return this;
                            }
@@ -175,30 +190,30 @@ internal static class MethodBuilder
                        #endregion
                        """);
 
-        addHelper($"System.Func<{typeList}{methodReturnType}> call", $"this._{methodName}(call);");
-        addHelper("System.Exception throws", $"this._{methodName}(({lambdaList}) => throw throws);");
-        addHelper(methodReturnType + " returns", $"this._{methodName}(({lambdaList}) => returns);");
+        addHelper($"System.Func<{typeList}{methodReturnType}> call", $"this._{methodName}_{methodCount}(call);");
+        addHelper("System.Exception throws", $"this._{methodName}_{methodCount}(({lambdaList}) => throw throws);");
+        addHelper(methodReturnType + " returns", $"this._{methodName}_{methodCount}(({lambdaList}) => returns);");
 
         if (methodReturnType.IsTask())
         {
             if (method.HasParameters())
             {
                 var typeList2 = method.ToString(p => $"{p.Type}");
-                addHelper($"System.Action<{typeList2}> call",$$"""this._{{methodName}}(({{parameterList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""");
-                addHelper("",$$"""this._{{methodName}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""");
+                addHelper($"System.Action<{typeList2}> call",$$"""this._{{methodName}}_{{methodCount}}(({{parameterList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""");
+                addHelper("",$$"""this._{{methodName}}_{{methodCount}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""");
             }
             else
             {
-                addHelper("System.Action call", $$"""this._{{methodName}}(({{nameList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""");
-                addHelper("", $$"""this._{{methodName}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""");
+                addHelper("System.Action call", $$"""this._{{methodName}}_{{methodCount}}(({{nameList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""");
+                addHelper("", $$"""this._{{methodName}}_{{methodCount}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""");
             }
         }
 
         if (methodReturnType.IsGenericTask())
         {
             var genericType = ((INamedTypeSymbol)method.ReturnType).TypeArguments.First();
-            addHelper($"{genericType} returns",$"this._{methodName}(({lambdaList}) => System.Threading.Tasks.Task.FromResult(returns));");
-            addHelper($"System.Func<{typeList}{genericType}> call",$"this._{methodName}(({nameList}) => System.Threading.Tasks.Task.FromResult(call({nameList})));");
+            addHelper($"{genericType} returns",$"this._{methodName}_{methodCount}(({lambdaList}) => System.Threading.Tasks.Task.FromResult(returns));");
+            addHelper($"System.Func<{typeList}{genericType}> call",$"this._{methodName}_{methodCount}(({nameList}) => System.Threading.Tasks.Task.FromResult(call({nameList})));");
         }
 
         return true;
@@ -221,17 +236,25 @@ internal static class MethodBuilder
         var methodName = method.Name;
         var functionPointer = "On_" + methodName + "_" + methodCount++;
 
+        var containingSymbol = "";
+        var accessibilityString = method.AccessibilityString();
+        if (method.ContainingType.TypeKind == TypeKind.Interface)
+        {
+            containingSymbol = method.ContainingSymbol.ToString() + ".";
+            accessibilityString = "";
+        }
+
         builder.Add($$"""
                       
                       #region Method : void {{methodName}}({{parameterList}})
-                      {{method.AccessibilityString()}} {{overrideString}} void {{methodName}}({{parameterList}})
+                      {{accessibilityString}} {{overrideString}} void {{containingSymbol}}{{methodName}}({{parameterList}})
                       {
                           this.{{functionPointer}}.Invoke({{nameList}});
                       }
                       internal System.Action {{functionPointer}} {get;set;} = ({{lambdaList}}) => {{BuildNotMockedException(method)}}
 
                       public partial class Config{
-                          private Config _{{methodName}}(System.Action mock){
+                          private Config _{{methodName}}_{{methodCount}}(System.Action mock){
                                 target.{{functionPointer}} = mock;
                                 return this;
                           }
@@ -239,9 +262,9 @@ internal static class MethodBuilder
                       #endregion
                       """);
 
-        addHelper($"System.Action call", $"this._{methodName}(call);");
-        addHelper("System.Exception throws", $$"""this._{{methodName}}(({{lambdaList}}) => throw throws);""");
-        addHelper("", $$"""this._{{methodName}}(({{lambdaList}}) => {});""");
+        addHelper($"System.Action call", $"this._{methodName}_{methodCount}(call);");
+        addHelper("System.Exception throws", $$"""this._{{methodName}}_{{methodCount}}(({{lambdaList}}) => throw throws);""");
+        addHelper("", $$"""this._{{methodName}}_{{methodCount}}(({{lambdaList}}) => {});""");
 
         return true;
     }
@@ -262,26 +285,34 @@ internal static class MethodBuilder
         var methodName = method.Name;
         var functionPointer = "On_" + methodName + "_" + methodCount++;
 
+        var containingSymbol = "";
+        var accessibilityString = method.AccessibilityString();
+        if (method.ContainingType.TypeKind == TypeKind.Interface)
+        {
+            containingSymbol = method.ContainingSymbol.ToString() + ".";
+            accessibilityString = "";
+        }
+
         builder.Add($$"""
                       
                       #region Method : void {{methodName}}({{parameterList}})
-                      {{method.AccessibilityString()}} {{overrideString}} void {{methodName}}({{parameterList}})
+                      {{accessibilityString}} {{overrideString}} void {{containingSymbol}}{{methodName}}({{parameterList}})
                       {
                           this.{{functionPointer}}.Invoke({{nameList}});
                       }
                       internal System.Action<{{typeList}}> {{functionPointer}} {get;set;} = ({{parameterList}}) => {{BuildNotMockedException(method)}}
 
                       public partial class Config{
-                          private Config _{{methodName}}(System.Action<{{typeList}}> mock){
+                          private Config _{{methodName}}_{{methodCount}}(System.Action<{{typeList}}> mock){
                               target.{{functionPointer}} = mock;
                               return this;
                           }
                       }
                       #endregion
                       """);
-        addHelper($"System.Action<{typeList}> call", $"this._{methodName}(call);");
-        addHelper("System.Exception throws", $$"""this._{{methodName}}(({{parameterList}}) => throw throws);""");
-        addHelper("", $$"""this._{{methodName}}(({{parameterList}}) => {});""");
+        addHelper($"System.Action<{typeList}> call", $"this._{methodName}_{methodCount}(call);");
+        addHelper("System.Exception throws", $$"""this._{{methodName}}_{{methodCount}}(({{parameterList}}) => throw throws);""");
+        addHelper("", $$"""this._{{methodName}}_{{methodCount}}(({{parameterList}}) => {});""");
 
         return true;
     }

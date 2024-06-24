@@ -3,29 +3,21 @@ namespace MiniMock.Builders;
 using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using MiniMock;
 
 public static class Helpers
 {
     public static string OverrideString(this ISymbol method)
     {
-        var overrideString = "";
-        if (method.ContainingType.TypeKind == TypeKind.Class)
+        if (method.ContainingType.TypeKind == TypeKind.Class && (method.IsAbstract || method.IsVirtual))
         {
-            if (method.IsAbstract)
-            {
-                overrideString = "override ";
-            }
-            else if (method.IsVirtual)
-            {
-                overrideString = "override ";
-            }
+            return "override ";
         }
 
-        return overrideString;
+        return "";
     }
 
-    public static string ToString(this IMethodSymbol m, Func<IParameterSymbol, string> selector, string separator = ", ")
+    public static string ToString(this IMethodSymbol m, Func<IParameterSymbol, string> selector,
+        string separator = ", ")
     {
         var Parameters = m.Parameters.Select(selector);
         var parameterList = string.Join(separator, Parameters);

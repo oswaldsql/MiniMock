@@ -6,12 +6,20 @@ public class InheritanceTests(ITestOutputHelper testOutputHelper)
 {
     public interface IInheritance
     {
-        void method1();
+        bool method1();
+        void method2();
+        bool method3(string name);
+        bool method4(out string name);
+        void method5(string name);
     }
 
     public interface IInheritance2 : IInheritance
     {
+        bool method1();
         void method2();
+        bool method3(string name);
+        bool method4(out string name);
+        void method5(string name);
     }
 
     [Fact]
@@ -23,13 +31,36 @@ public class InheritanceTests(ITestOutputHelper testOutputHelper)
 
         testOutputHelper.DumpResult(generate);
 
-        Assert.Empty(generate.GetErrors());
+        Assert.Empty(generate.GetWarnings());
     }
 
-    public class Inheritance
+    public interface IBase
     {
-        public void method1() { }
-        public virtual void method2() { }
+        string Name { get; set; }
+    }
+
+    public interface IDerived : IBase
+    {
+        string Name { get; set; }
+    }
+
+    [Fact]
+    public void ClassInheritanceTests2()
+    {
+        var source = Build.TestClass<IDerived>();
+
+        var generate = new MiniMockGenerator().Generate(source);
+
+        testOutputHelper.DumpResult(generate);
+
+        Assert.Empty(generate.GetWarnings());
+    }
+
+    public abstract class Inheritance
+    {
+        public void Method1() { }
+        public virtual void Method2() { }
+        public abstract void Method3();
     }
 
     [Fact]
@@ -42,6 +73,12 @@ public class InheritanceTests(ITestOutputHelper testOutputHelper)
         testOutputHelper.DumpResult(generate);
 
         Assert.Empty(generate.GetWarnings());
+        var file = Assert.Single(generate.GetFileContent(nameof(Inheritance)));
+        Assert.DoesNotContain("void Method1()", file);
+        Assert.Contains("void Method2()", file);
+        Assert.Contains("void Method3()", file);
     }
 
 }
+
+
