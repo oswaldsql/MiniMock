@@ -36,12 +36,16 @@ public class InheritanceTests(ITestOutputHelper testOutputHelper)
 
     public interface IBase
     {
-        string Name { get; set; }
+        string Name1 { get; set; }
+        string Name2 { set; }
+        string Name3 { get; }
     }
 
     public interface IDerived : IBase
     {
         string Name { get; set; }
+        string Name2 { set; }
+        string Name3 { get; }
     }
 
     [Fact]
@@ -77,6 +81,56 @@ public class InheritanceTests(ITestOutputHelper testOutputHelper)
         Assert.DoesNotContain("void Method1()", file);
         Assert.Contains("void Method2()", file);
         Assert.Contains("void Method3()", file);
+    }
+
+    public interface IBaseWithEvent
+    {
+        event EventHandler MyEvent;
+    }
+
+    public interface IDerivedWithEvent : IBaseWithEvent
+    {
+        event EventHandler MyEvent;
+    }
+
+    [Fact]
+    public void EventInheritanceTests()
+    {
+        var source = Build.TestClass<IDerivedWithEvent>();
+
+        var generate = new MiniMockGenerator().Generate(source);
+
+        testOutputHelper.DumpResult(generate);
+
+        Assert.Empty(generate.GetWarnings());
+
+    }
+
+    public interface IBaseWithIndexer
+    {
+        int this[uint index] { set; }
+        int this[int index] { get; }
+        int this[string index] { get; set; }
+    }
+
+    public interface IDerivedWithIndexer : IBaseWithIndexer
+    {
+        int this[uint index] { set; }
+        int this[int index] { get; }
+        int this[string index] { get; set; }
+    }
+
+    [Fact]
+    public void IndexerInheritanceTests()
+    {
+        var source = Build.TestClass<IDerivedWithIndexer>();
+
+        var generate = new MiniMockGenerator().Generate(source);
+
+        testOutputHelper.DumpResult(generate);
+
+        Assert.Empty(generate.GetWarnings());
+
     }
 
 }

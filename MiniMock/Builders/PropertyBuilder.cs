@@ -53,10 +53,6 @@ internal static class PropertyBuilder
             containingSymbol = property.ContainingSymbol.ToString() + ".";
             accessibilityString = "";
         }
-        else
-        {
-
-        }
 
         builder.Add($$"""
 
