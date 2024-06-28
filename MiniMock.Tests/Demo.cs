@@ -71,7 +71,7 @@ public class Demo2(ITestOutputHelper testOutputHelper)
                 .Indexer(get: s => new Version(2,0,0,0), set: (s, version) => {}) // Overwrites the indexer getter and setter
                 .Indexer(values: versions) // Provides a dictionary to retrieve and store versions
 
-                .NewVersionAdded(null, new Version(2,0,0,0))
+                .NewVersionAdded(eventArgs: new Version(2,0,0,0))
                 .NewVersionAdded(trigger: out triggerNewVersionAdded) // Provides a trigger for when a new version is added
             );
 
@@ -92,7 +92,7 @@ public class Demo2(ITestOutputHelper testOutputHelper)
         Assert.NotEqual(preCurrent, postCurrent);
 
         lovable.NewVersionAdded += (sender, version) => testOutputHelper.WriteLine($"New version added: {version}");
-        triggerNewVersionAdded?.Invoke(new Version(2, 0, 0, 0));
+        triggerNewVersionAdded(new Version(2, 0, 0, 0));
     }
 }
 
@@ -106,97 +106,4 @@ public interface ILoveThisLibrary
     Version this[string key] { get; set; }
 
     event EventHandler<Version> NewVersionAdded;
-}
-
-
-public interface IMethodRepository2
-{
-    //Task<Guid> AddG(string name);
-    Task Add(string name);
-
-    //void Drop();
-    //void DropThis(string name);
-    //string ReturnValue();
-    //Guid CreateNewCustomer(string name);
-
-    //(string name, int age) GetCustomerInfo(string name);
-
-    //void Unlike() { }
-
-    //static string StaticMethod() => "StaticMethod";
-
-    //public string DefaultImp()
-    //{
-    //    return "Test";
-    //}
-}
-
-internal class IMethodRepositoryMock2 : IMethodRepository2
-{
-    public delegate bool OutAction<T1, T2>(T1 a, out T2 b);
-
-    public OutAction<string, int> Out { get; set; }
-
-    public IMethodRepositoryMock2(System.Action<Config>? config = null)
-    {
-        var result = new Config(this);
-        config = config ?? new System.Action<Config>(t => { });
-        config.Invoke(result);
-        _MockConfig = result;
-
-        Out = this.TryParse;
-
-    OutAction<string, int> t = this.TryParse;
-    Func<string, int> p = Parse;
-    }
-
-
-private Config _MockConfig { get; set; }
-
-    public partial class Config
-    {
-        private readonly IMethodRepositoryMock2 target;
-
-        public Config(IMethodRepositoryMock2 target)
-        {
-            this.target = target;
-        }
-    }
-
-    public bool TryParse(string input, out int result)
-    {
-        result = 0;
-        return false;
-    }
-
-    public int Parse(string input)
-    {
-        return 0;
-    }
-
-
-    #region System.Threading.Tasks.Task Add(string name)
-    public partial class Config
-    {
-        internal System.Func<string, System.Threading.Tasks.Task> On_Add { get; set; } = (_) => throw new System.NotImplementedException();
-        private Config _Add(System.Func<string, System.Threading.Tasks.Task> call)
-        {
-            this.On_Add = call;
-            return this;
-        }
-        public Config Add(System.Func<string, System.Threading.Tasks.Task> call) => this._Add(call);
-
-        public Config Add(System.Exception throws) => this._Add((_) => throw throws);
-        public Config Add(System.Threading.Tasks.Task returns) => this._Add((_) => returns);
-
-        public Config Add(System.Action<string> call) => this._Add((name) => { call(name); return System.Threading.Tasks.Task.CompletedTask; });
-    }
-
-
-    public System.Threading.Tasks.Task Add(string name)
-    {
-        return _MockConfig.On_Add.Invoke(name);
-    }
-    #endregion
-
 }

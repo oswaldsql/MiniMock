@@ -2,28 +2,32 @@ namespace MiniMock.UnitTests;
 
 public class InheritanceTests(ITestOutputHelper testOutputHelper)
 {
-    public interface IInheritance
+    public interface IBaseM
     {
         bool Method1();
         void Method2();
         bool Method3(string name);
         bool Method4(out string name);
         void Method5(string name);
+        string Method6() => "base";
+        bool Method7(ref string name);
     }
 
-    public interface IInheritance2 : IInheritance
+    public interface IDerivedM : IBaseM
     {
         new bool Method1();
         new void Method2();
         new bool Method3(string name);
         new bool Method4(out string name);
         new void Method5(string name);
+        new string Method6() => "Derived ";
+        new bool Method7(ref string name);
     }
 
     [Fact]
     public void SimpleInheritanceTests()
     {
-        var source = Build.TestClass<IInheritance2>();
+        var source = Build.TestClass<IDerivedM>();
 
         var generate = new MiniMockGenerator().Generate(source);
 
@@ -130,3 +134,4 @@ public class InheritanceTests(ITestOutputHelper testOutputHelper)
         Assert.Empty(generate.GetWarnings());
     }
 }
+

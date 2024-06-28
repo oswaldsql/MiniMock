@@ -7,65 +7,73 @@ using Microsoft.CodeAnalysis;
 
 internal static class EventBuilder
 {
-    private static int eventCount;
-
     public static void BuildEvents(CodeBuilder builder, IEnumerable<IEventSymbol> eventSymbols)
     {
         var enumerable = eventSymbols as IEventSymbol[] ?? eventSymbols.ToArray();
         var name = enumerable.First().Name;
         var helpers = new List<MethodSignature>();
 
-        void AddHelper(string signature, string code, string documentation)
-        {
-            helpers.Add(new(signature, code, documentation));
-        }
+        builder.Add($"#region event : {name}");
 
+        int eventCount = 0;
         foreach (var symbol in enumerable)
         {
-            BuildEvent(builder, symbol, AddHelper);
+            eventCount++;
+            BuildEvent(builder, symbol, helpers, eventCount);
         }
 
         helpers.BuildHelpers(builder, name);
+
+        builder.Add($"#endregion");
     }
 
-    internal static void BuildEvent(CodeBuilder builder, IEventSymbol evnt, Action<string, string, string> addHelper)
+    private static void BuildEvent(CodeBuilder builder, IEventSymbol symbol, List<MethodSignature> helpers, int eventCount)
     {
-        eventCount++;
-
-        var eventName = evnt.Name;
-        var invokeMethod = evnt.Type.GetMembers().OfType<IMethodSymbol>().First(t => t.Name == "Invoke");
+        var eventName = symbol.Name;
+        var invokeMethod = symbol.Type.GetMembers().OfType<IMethodSymbol>().First(t => t.Name == "Invoke");
         var types = string.Join(" , ", invokeMethod.Parameters.Skip(1).Select(t => t.Type));
-        var typeSymbol = evnt.Type.ToString().Trim('?');
+        var typeSymbol = symbol.Type.ToString().Trim('?');
 
-        var containingSymbol = "";
-        var accessibilityString = evnt.AccessibilityString();
-        if (evnt.ContainingType.TypeKind == TypeKind.Interface)
-        {
-            containingSymbol = evnt.ContainingSymbol + ".";
-            accessibilityString = "";
-        }
+        var eventFunction = eventCount == 1 ? eventName : $"{eventName}_{eventCount}";
 
-        var pa = invokeMethod.ToString(symbol => $"{symbol.Type} {symbol.Name}");
-        var na = invokeMethod.ToString(symbol => $"{symbol.Name}");
+        var (containingSymbol, accessibilityString, _) = symbol.Overwrites();
+
+        var (parameterList, typeList, nameList) = invokeMethod.ParameterStrings();
 
         builder.Add($$"""
 
-                      #region {{evnt.Type}} {{eventName}}
-                      internal event {{typeSymbol}}? {{eventName}}_{{eventCount}};
+                      private event {{typeSymbol}}? {{eventFunction}};
                       {{accessibilityString}} event {{typeSymbol}}? {{containingSymbol}}{{eventName}}
                       {
-                          add => this.{{eventName}}_{{eventCount}} += value;
-                          remove => this.{{eventName}}_{{eventCount}} -= value;
+                          add => this.{{eventFunction}} += value;
+                          remove => this.{{eventFunction}} -= value;
                       }
-                      internal void trigger_{{eventName}}_{{eventCount}}({{pa}})
+                      private void trigger_{{eventFunction}}({{parameterList}})
                       {
-                          {{eventName}}_{{eventCount}}?.Invoke({{na}});
+                          {{eventFunction}}?.Invoke({{nameList}});
                       }
 
-                      #endregion
                       """);
 
-        addHelper($"out System.Action<{types}> trigger", $"trigger = args => {eventName}(target, args);", $"Returns a action that can be used for triggering {eventName}.");
-        addHelper(pa, $"target.trigger_{eventName}_{eventCount}({na});", $"Trigger {eventName} directly.");
+        if (types == "System.EventArgs")
+        {
+            helpers.Add(new($"out System.Action trigger",
+                $"trigger = () => this.{eventName}();",
+                $"Returns an action that can be used for triggering {eventName}."));
+
+            helpers.Add(new("",
+                $"target.trigger_{eventFunction}(target, System.EventArgs.Empty);",
+                $"Trigger {eventName} directly."));
+        }
+        else
+        {
+            helpers.Add(new($"out System.Action<{types}> trigger",
+                $"trigger = args => this.{eventName}(args);",
+                $"Returns an action that can be used for triggering {eventName}."));
+
+            helpers.Add(new(types + " eventArgs",
+                $"target.trigger_{eventFunction}(target, eventArgs);",
+                $"Trigger {eventName} directly."));
+        }
     }
 }

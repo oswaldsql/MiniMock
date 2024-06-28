@@ -53,4 +53,3 @@ public class AsyncMethodTests(ITestOutputHelper testOutputHelper)
         Assert.Empty(generate.GetErrors());
     }
 }
-

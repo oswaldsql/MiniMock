@@ -1,105 +1,70 @@
 namespace MiniMock.Builders;
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
 internal static class PropertyBuilder
 {
-    private static int propertyCount;
-
     public static void BuildProperties(CodeBuilder builder, IEnumerable<IPropertySymbol> propertySymbols)
     {
         var enumerable = propertySymbols as IPropertySymbol[] ?? propertySymbols.ToArray();
         var name = enumerable.First().Name;
         var helpers = new List<MethodSignature>();
 
-        void AddHelper(string signature, string code, string documentation)
-        {
-            helpers.Add(new(signature, code, documentation));
-        }
+        builder.Add($"#region Property : {name}");
 
+        var index = 0;
         foreach (var symbol in enumerable)
         {
-            BuildProperty(builder, symbol, AddHelper);
+            index++;
+            BuildProperty(builder, symbol, helpers, index);
         }
 
         helpers.BuildHelpers(builder, name);
+
+        builder.Add("#endregion");
     }
 
-    internal static void BuildProperty(CodeBuilder builder, IPropertySymbol property, Action<string, string, string> addHelper)
+    internal static void BuildProperty(CodeBuilder builder, IPropertySymbol symbol, List<MethodSignature> helpers, int index)
     {
-        propertyCount++;
+        var propertyName = symbol.Name;
+        var internalName = index == 1 ? propertyName : $"{propertyName}_{index}";
+        var type = symbol.Type.ToString();
+        var setType = symbol.SetMethod?.IsInitOnly == true ? "init" : "set";
 
-        var propertyName = property.Name;
-        var type = property.Type.ToString();
-        var setType = property.SetMethod?.IsInitOnly == true ? "init" : "set";
+        var (containingSymbol, accessibilityString, overrideString) = symbol.Overwrites();
 
-        var overrideString = "";
-        if (property.ContainingType.TypeKind == TypeKind.Class)
-        {
-            if (property.IsAbstract)
-            {
-                overrideString = "override ";
-            }
-            else if (property.IsVirtual)
-            {
-                overrideString = "override ";
-            }
-        }
-
-        var containingSymbol = "";
-        var accessibilityString = property.AccessibilityString();
-        if (property.ContainingType.TypeKind == TypeKind.Interface)
-        {
-            containingSymbol = property.ContainingSymbol + ".";
-            accessibilityString = "";
-        }
+        var hasGet = symbol.GetMethod != null;
+        var hasSet = symbol.SetMethod != null;
 
         builder.Add($$"""
 
-                      #region Property : {{propertyName}}
                       {{accessibilityString}} {{overrideString}}{{type}} {{containingSymbol}}{{propertyName}}
                       {
-                      """);
-
-        if (property.GetMethod != null)
-        {
-            builder.Add($$"""
-                              get {
-                                  return this.Get_{{propertyName}}_{{propertyCount}}();
-                              }
-                          """);
-        }
-
-        if (property.SetMethod != null)
-        {
-            builder.Add($$"""
-                              {{setType}} { 
-                                  this.Set_{{propertyName}}_{{propertyCount}}(value);
-                              }
-                          """);
-        }
-
-        builder.Add("""}""");
-
+                      """).Indent();
+        builder.Add(hasGet, () => $"get => this._{internalName}_get();");
+        builder.Add(hasSet, () => $"{setType} => this._{internalName}_set(value);");
+        builder.Unindent().Add("}");
 
         builder.Add($$"""
-                      internal {{type.TrimEnd('?')}}? internal_{{propertyName}}_{{propertyCount}};
-                      internal System.Func<{{type}}> Get_{{propertyName}}_{{propertyCount}} { get; set; } = () => {{BuildNotMockedException(property)}}
-                      internal System.Action<{{type}}> Set_{{propertyName}}_{{propertyCount}} { get; set; } = s => {{BuildNotMockedException(property)}}
+                      private {{type.TrimEnd('?')}}? _{{internalName}};
+                      private System.Func<{{type}}> _{{internalName}}_get { get; set; } = () => {{symbol.BuildNotMockedException()}}
+                      private System.Action<{{type}}> _{{internalName}}_set { get; set; } = s => {{symbol.BuildNotMockedException()}}
 
-                      #endregion
                       """);
 
-        addHelper($"{type.Replace("?", "")} value", $"target.internal_{propertyName}_{propertyCount} = value;", $"Sets a initial value for {propertyName}.");
-        addHelper($"{type.Replace("?", "")} value", $"target.Get_{propertyName}_{propertyCount} = () => target.internal_{propertyName}_{propertyCount};","");
-        addHelper($"{type.Replace("?", "")} value", $"target.Set_{propertyName}_{propertyCount} = s => target.internal_{propertyName}_{propertyCount} = s;","");
-        addHelper($"System.Func<{type}> get, System.Action<{type}> set", $"target.Get_{propertyName}_{propertyCount} = get;", $"Specifies a getter and setter method to call when the property {propertyName} is called.");
-        addHelper($"System.Func<{type}> get, System.Action<{type}> set", $"target.Set_{propertyName}_{propertyCount} = set;","");
-    }
+        var initialValue = $"""
+                             target._{internalName} = value;
+                             target._{internalName}_get = () => target._{internalName};
+                             target._{internalName}_set = s => target._{internalName} = s;
+                             """;
+        helpers.Add(new($"{type.Replace("?", "")} value", initialValue, $"Sets a initial value for {propertyName}."));
 
-    private static string BuildNotMockedException(this IPropertySymbol symbol) =>
-        $"throw new System.InvalidOperationException(\"The property '{symbol.Name}' in '{symbol.ContainingType.Name}' is not explicitly mocked.\") {{Source = \"{symbol}\"}};";
+        var getSet = $"""
+                      target._{internalName}_get = get; 
+                      target._{internalName}_set = set;
+                      """;
+        helpers.Add(new($"System.Func<{type}> get, System.Action<{type}> set", getSet, $"Specifies a getter and setter method to call when the property {propertyName} is called."));
+    }
 }
