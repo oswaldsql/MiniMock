@@ -36,44 +36,7 @@ internal static class MethodBuilder
             Build(builder, symbol, AddHelper);
         }
 
-        BuildHelpers(builder, helpers, name);
-    }
-
-    private static void BuildHelpers(CodeBuilder builder, List<MethodSignature> helpers, string name)
-    {
-        if (helpers.Count == 0)
-        {
-            return;
-        }
-
-        var signatures = helpers.ToLookup(t => t.Signature);
-
-        builder.Add("public partial class Config {").Indent();
-
-        foreach (var grouping in signatures)
-        {
-            builder.Add($"""
-                         
-                         /// <summary>
-                         """);
-            grouping.Select(t => t.Documentation).Where(t => !string.IsNullOrWhiteSpace(t)).Distinct().ToList().ForEach(t => builder.Add("///     " + t));
-            builder.Add($"""
-                         /// </summary>
-                         /// <returns>The updated configuration.</returns>
-                         """);
-
-            builder.Add($"public Config {name}({grouping.Key}) {{").Indent();
-            foreach (var mse in grouping)
-            {
-                builder.Add(mse.Code);
-            }
-
-            builder.Unindent().Add("    return this;");
-            builder.Add("}");
-            builder.Add();
-        }
-
-        builder.Unindent().Add("}");
+        helpers.BuildHelpers(builder, name);
     }
 
     private static bool Build(CodeBuilder builder, IMethodSymbol method, Action<string, string, string> addHelper)

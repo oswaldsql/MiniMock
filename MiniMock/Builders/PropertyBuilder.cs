@@ -25,7 +25,7 @@ internal static class PropertyBuilder
             BuildProperty(builder, symbol, AddHelper);
         }
 
-        BuildHelpers(builder, helpers, name);
+        helpers.BuildHelpers(builder, name);
     }
 
     internal static void BuildProperty(CodeBuilder builder, IPropertySymbol property, Action<string, string, string> addHelper)
@@ -98,43 +98,6 @@ internal static class PropertyBuilder
         addHelper($"{type.Replace("?", "")} value", $"target.Set_{propertyName}_{propertyCount} = s => target.internal_{propertyName}_{propertyCount} = s;","");
         addHelper($"System.Func<{type}> get, System.Action<{type}> set", $"target.Get_{propertyName}_{propertyCount} = get;", $"Specifies a getter and setter method to call when the property {propertyName} is called.");
         addHelper($"System.Func<{type}> get, System.Action<{type}> set", $"target.Set_{propertyName}_{propertyCount} = set;","");
-    }
-
-    private static void BuildHelpers(CodeBuilder builder, List<MethodSignature> helpers, string name)
-    {
-        if (helpers.Count == 0)
-        {
-            return;
-        }
-
-        var signatures = helpers.ToLookup(t => t.Signature);
-
-        builder.Add("public partial class Config {").Indent();
-
-        foreach (var grouping in signatures)
-        {
-            builder.Add($"""
-
-                         /// <summary>
-                         """);
-            grouping.Select(t => t.Documentation).Where(t => !string.IsNullOrWhiteSpace(t)).Distinct().ToList().ForEach(t => builder.Add("///     " + t));
-            builder.Add($"""
-                         /// </summary>
-                         /// <returns>The updated configuration.</returns>
-                         """);
-
-            builder.Add($"public Config {name}({grouping.Key}) {{").Indent();
-            foreach (var mse in grouping)
-            {
-                builder.Add(mse.Code);
-            }
-
-            builder.Unindent().Add("    return this;");
-            builder.Add("}");
-            builder.Add();
-        }
-
-        builder.Unindent().Add("}");
     }
 
     private static string BuildNotMockedException(this IPropertySymbol symbol) =>

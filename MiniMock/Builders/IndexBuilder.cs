@@ -3,6 +3,7 @@ namespace MiniMock.Builders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
 
 internal static class IndexBuilder
@@ -23,7 +24,7 @@ internal static class IndexBuilder
             BuildIndex(builder, symbol, AddHelper);
         }
 
-        BuildHelpers(builder, helpers, "Indexer");
+        helpers.BuildHelpers(builder, "Indexer");
     }
 
     internal static void BuildIndex(CodeBuilder builder, IPropertySymbol indx, Action<string, string, string> addHelper)
@@ -69,41 +70,4 @@ internal static class IndexBuilder
 
     private static string BuildNotMockedException(this IPropertySymbol symbol) =>
         $"throw new System.InvalidOperationException(\"The indexer '{symbol.Name}' in '{symbol.ContainingType.Name}' is not explicitly mocked.\") {{Source = \"{symbol}\"}};";
-
-    private static void BuildHelpers(CodeBuilder builder, List<MethodSignature> helpers, string name)
-    {
-        if (helpers.Count == 0)
-        {
-            return;
-        }
-
-        var signatures = helpers.ToLookup(t => t.Signature);
-
-        builder.Add("public partial class Config {").Indent();
-
-        foreach (var grouping in signatures)
-        {
-            builder.Add($"""
-
-                         /// <summary>
-                         """);
-            grouping.Select(t => t.Documentation).Where(t => !string.IsNullOrWhiteSpace(t)).Distinct().ToList().ForEach(t => builder.Add("///     " + t));
-            builder.Add($"""
-                         /// </summary>
-                         /// <returns>The updated configuration.</returns>
-                         """);
-
-            builder.Add($"public Config {name}({grouping.Key}) {{").Indent();
-            foreach (var code in grouping.Select(t => t.Code).Distinct())
-            {
-                builder.Add(code);
-            }
-
-            builder.Unindent().Add("    return this;");
-            builder.Add("}");
-            builder.Add();
-        }
-
-        builder.Unindent().Add("}");
-    }
 }
