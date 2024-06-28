@@ -7,13 +7,16 @@ using Microsoft.CodeAnalysis;
 
 internal static class IndexBuilder
 {
-    private static int IndexerCount = 0;
-    
+    private static int indexerCount;
+
     public static void BuildIndexes(CodeBuilder builder, IEnumerable<IPropertySymbol> indexerSymbols)
     {
         var helpers = new List<MethodSignature>();
 
-        void AddHelper(string signature, string code) => helpers.Add(new(signature, code));
+        void AddHelper(string signature, string code)
+        {
+            helpers.Add(new(signature, code));
+        }
 
         foreach (var symbol in indexerSymbols)
         {
@@ -25,7 +28,7 @@ internal static class IndexBuilder
 
     internal static void BuildIndex(CodeBuilder builder, IPropertySymbol indx, Action<string, string> addHelper)
     {
-        IndexerCount++;
+        indexerCount++;
 
         var returnType = indx.Type.ToString();
         var indexType = indx.Parameters[0].Type.ToString();
@@ -35,7 +38,7 @@ internal static class IndexBuilder
         var accessibilityString = indx.AccessibilityString();
         if (indx.ContainingType.TypeKind == TypeKind.Interface)
         {
-            containingSymbol = indx.ContainingSymbol.ToString() + ".";
+            containingSymbol = indx.ContainingSymbol + ".";
             accessibilityString = "";
         }
 
@@ -47,24 +50,29 @@ internal static class IndexBuilder
                       {{accessibilityString}} {{returnType}} {{containingSymbol}}this[{{indexType}} index]
                       {
                       """);
-        builder.Add(hasGet, () => $"get => this.On_IndexGet_{IndexerCount}(index);");
-        builder.Add(hasSet, () => $"set => this.On_IndexSet_{IndexerCount}(index, value);");
+        builder.Add(hasGet, () => $"get => this.On_IndexGet_{indexerCount}(index);");
+        builder.Add(hasSet, () => $"set => this.On_IndexSet_{indexerCount}(index, value);");
         builder.Add($$"""
                           }
                       
-                          internal System.Func<{{indexType}}, {{returnType}}> On_IndexGet_{{IndexerCount}} { get; set; } = (_) => {{exception}}
-                          internal System.Action<{{indexType}}, {{returnType}}> On_IndexSet_{{IndexerCount}} { get; set; } = (_, _) => {{exception}}
+                          internal System.Func<{{indexType}}, {{returnType}}> On_IndexGet_{{indexerCount}} { get; set; } = (_) => {{exception}}
+                          internal System.Action<{{indexType}}, {{returnType}}> On_IndexSet_{{indexerCount}} { get; set; } = (_, _) => {{exception}}
 
                       #endregion
                       """);
 
-        addHelper($"System.Collections.Generic.Dictionary<{indexType}, {returnType}> values", $"target.On_IndexGet_{IndexerCount} = s => values[s];");
-        addHelper($"System.Collections.Generic.Dictionary<{indexType}, {returnType}> values", $"target.On_IndexSet_{IndexerCount} = (s, v) => values[s] = v;");
-        addHelper($"System.Func<{indexType}, {returnType}> get, System.Action<{indexType}, {returnType}> set", $"target.On_IndexGet_{IndexerCount} = get;");
-        addHelper($"System.Func<{indexType}, {returnType}> get, System.Action<{indexType}, {returnType}> set", $"target.On_IndexSet_{IndexerCount} = set;");
+        addHelper($"System.Collections.Generic.Dictionary<{indexType}, {returnType}> values",
+            $"target.On_IndexGet_{indexerCount} = s => values[s];");
+        addHelper($"System.Collections.Generic.Dictionary<{indexType}, {returnType}> values",
+            $"target.On_IndexSet_{indexerCount} = (s, v) => values[s] = v;");
+        addHelper($"System.Func<{indexType}, {returnType}> get, System.Action<{indexType}, {returnType}> set",
+            $"target.On_IndexGet_{indexerCount} = get;");
+        addHelper($"System.Func<{indexType}, {returnType}> get, System.Action<{indexType}, {returnType}> set",
+            $"target.On_IndexSet_{indexerCount} = set;");
     }
 
-    private static string BuildNotMockedException(this IPropertySymbol symbol) => $"throw new System.InvalidOperationException(\"The indexer '{symbol.Name}' in '{symbol.ContainingType.Name}' is not explicitly mocked.\") {{Source = \"{symbol}\"}};";
+    private static string BuildNotMockedException(this IPropertySymbol symbol) =>
+        $"throw new System.InvalidOperationException(\"The indexer '{symbol.Name}' in '{symbol.ContainingType.Name}' is not explicitly mocked.\") {{Source = \"{symbol}\"}};";
 
     private static void BuildHelpers(CodeBuilder builder, List<MethodSignature> helpers, string name)
     {
@@ -92,5 +100,4 @@ internal static class IndexBuilder
 
         builder.Unindent().Add("}");
     }
-
 }

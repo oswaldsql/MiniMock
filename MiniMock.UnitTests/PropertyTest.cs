@@ -1,7 +1,5 @@
 namespace MiniMock.UnitTests;
 
-using MiniMock.UnitTests.Util;
-
 public class PropertyTest(ITestOutputHelper testOutputHelper)
 {
     public interface IPropertyInterface

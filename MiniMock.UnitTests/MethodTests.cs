@@ -1,7 +1,6 @@
 namespace MiniMock.UnitTests;
 
 using Microsoft.CodeAnalysis;
-using MiniMock.UnitTests.Util;
 
 public interface IMethodRepository
 {
@@ -15,9 +14,9 @@ public interface IMethodRepository
 
     (string name, int age) GetCustomerInfo(string name);
 
-    virtual void Unlike() { }
+    void Unlike() { }
 
-    //static string StaticMethod() => "StaticMethod";
+    static string StaticMethod() => "StaticMethod";
 
     public string DefaultImp() => "Test";
 }
@@ -36,16 +35,6 @@ public class MethodTests(ITestOutputHelper testOutputHelper)
         Assert.Empty(generate.GetWarnings());
     }
 
-    public interface IDefaultImplementation
-    {
-        public string NotDefault();
-
-        public string DefaultImp()
-        {
-            return "Test";
-        }
-    }
-
     [Fact]
     public void DefaultImplementationTests()
     {
@@ -58,16 +47,10 @@ public class MethodTests(ITestOutputHelper testOutputHelper)
         Assert.Empty(generate.GetErrors());
     }
 
-    public interface IGeneric<T>
-    {
-        public T ReturnGenericType();
-        public void GenericParameter(T source);
-    }
-
     [Fact]
     public void GenericTests()
     {
-        var source =  @"namespace Demo;
+        var source = @"namespace Demo;
 using MiniMock.UnitTests;
 using MiniMock;
 using System;
@@ -83,14 +66,6 @@ public class TestClass{
         Assert.Empty(generate.diagnostics.Where(t => t.Severity == DiagnosticSeverity.Error));
     }
 
-    public abstract class AbstractClass
-    {
-        public abstract void AbstractMethod();
-        public virtual void VirtualMethod() { }
-        public abstract string AbstractProperty { get; set; }
-        public virtual string VirtualProperty { get; set; }
-    }
-
     [Fact]
     public void AbstractClassTests()
     {
@@ -101,6 +76,39 @@ public class TestClass{
         testOutputHelper.DumpResult(generate);
 
         Assert.Empty(generate.GetErrors());
+    }
+
+    [Fact]
+    public void InterfaceWithOverloadsTests()
+    {
+        var source = Build.TestClass<WithOverloads>();
+
+        var generate = new MiniMockGenerator().Generate(source);
+
+        testOutputHelper.DumpResult(generate);
+
+        Assert.Empty(generate.GetErrors());
+    }
+
+    public interface IDefaultImplementation
+    {
+        public string NotDefault();
+
+        public string DefaultImp() => "Test";
+    }
+
+    public interface IGeneric<T>
+    {
+        public T ReturnGenericType();
+        public void GenericParameter(T source);
+    }
+
+    public abstract class AbstractClass
+    {
+        public abstract string AbstractProperty { get; set; }
+        public virtual string VirtualProperty { get; set; }
+        public abstract void AbstractMethod();
+        public virtual void VirtualMethod() { }
     }
 
     public interface WithOverloads
@@ -114,17 +122,5 @@ public class TestClass{
         public Task<int> Method(int i, CancellationToken token);
         public Task MethodAsync();
         public Task MethodAsync(int i);
-    }
-
-    [Fact]
-    public void InterfaceWithOverloadsTests()
-    {
-        var source = Build.TestClass<WithOverloads>();
-
-        var generate = new MiniMockGenerator().Generate(source);
-
-        testOutputHelper.DumpResult(generate);
-
-        Assert.Empty(generate.GetErrors());
     }
 }

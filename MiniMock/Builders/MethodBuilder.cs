@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-
 using Strategy = System.Func<CodeBuilder, Microsoft.CodeAnalysis.IMethodSymbol, System.Action<string, string>, bool>;
 
 internal static class MethodBuilder
@@ -18,7 +17,7 @@ internal static class MethodBuilder
         TryBuildNoneVoidMethods
     ];
 
-    private static int methodCount = 0;
+    private static int methodCount;
 
     public static void BuildMethods(CodeBuilder builder, IEnumerable<IMethodSymbol> methodSymbols)
     {
@@ -26,7 +25,11 @@ internal static class MethodBuilder
         var name = enumerable.First().Name;
 
         var helpers = new List<MethodSignature>();
-        void AddHelper(string signature, string code) => helpers.Add(new(signature, code));
+
+        void AddHelper(string signature, string code)
+        {
+            helpers.Add(new(signature, code));
+        }
 
         foreach (var symbol in enumerable)
         {
@@ -38,7 +41,7 @@ internal static class MethodBuilder
 
     private static void BuildHelpers(CodeBuilder builder, List<MethodSignature> helpers, string name)
     {
-        if(helpers.Count == 0)
+        if (helpers.Count == 0)
         {
             return;
         }
@@ -67,13 +70,14 @@ internal static class MethodBuilder
     {
         foreach (var strategy in Strategies)
         {
-            if(strategy(builder, method, addHelper)) { return true; }
+            if (strategy(builder, method, addHelper)) { return true; }
         }
 
         return false;
     }
 
-    private static bool IgnoreIrrelevantMethods(CodeBuilder builder, IMethodSymbol method, Action<string, string> addHelper)
+    private static bool IgnoreIrrelevantMethods(CodeBuilder builder, IMethodSymbol method,
+        Action<string, string> addHelper)
     {
         if (method.IsAbstract || method.IsVirtual)
         {
@@ -85,9 +89,11 @@ internal static class MethodBuilder
         return true;
     }
 
-    private static bool TryBuildMethodHavingOutParameters(CodeBuilder builder, IMethodSymbol method, Action<string,string> addHelper)
+    private static bool TryBuildMethodHavingOutParameters(CodeBuilder builder, IMethodSymbol method,
+        Action<string, string> addHelper)
     {
-        if(!(method.HasParameters() && method.Parameters.Any(p => p.RefKind == RefKind.Out || p.RefKind == RefKind.Ref)))
+        if (!(method.HasParameters() &&
+              method.Parameters.Any(p => p.RefKind == RefKind.Out || p.RefKind == RefKind.Ref)))
         {
             return false;
         }
@@ -108,31 +114,31 @@ internal static class MethodBuilder
         var accessibilityString = method.AccessibilityString();
         if (method.ContainingType.TypeKind == TypeKind.Interface)
         {
-            containingSymbol = method.ContainingSymbol.ToString() + ".";
+            containingSymbol = method.ContainingSymbol + ".";
             accessibilityString = "";
         }
 
         builder.Add($$"""
 
-                       #region Method : {{methodReturnType}} {{methodName}}({{parameterList}})
-                       public delegate {{methodReturnType}} {{methodName}}_{{methodCount}}_Delegate({{parameterList}});
+                      #region Method : {{methodReturnType}} {{methodName}}({{parameterList}})
+                      public delegate {{methodReturnType}} {{methodName}}_{{methodCount}}_Delegate({{parameterList}});
 
-                       {{accessibilityString}} {{overrideString}}{{methodReturnType}} {{containingSymbol}}{{methodName}}({{parameterList}})
-                       {
-                           {{returnString}}this.{{functionPointer}}.Invoke({{nameList}});
-                       }
-                       internal {{methodName}}_{{methodCount}}_Delegate {{functionPointer}} {get;set;} = ({{parameterList}}) => {{BuildNotMockedException(method)}}
+                      {{accessibilityString}} {{overrideString}}{{methodReturnType}} {{containingSymbol}}{{methodName}}({{parameterList}})
+                      {
+                          {{returnString}}this.{{functionPointer}}.Invoke({{nameList}});
+                      }
+                      internal {{methodName}}_{{methodCount}}_Delegate {{functionPointer}} {get;set;} = ({{parameterList}}) => {{BuildNotMockedException(method)}}
 
-                       public partial class Config{
-                           private Config _{{methodName}}_{{methodCount}}({{methodName}}_{{methodCount}}_Delegate call){
-                               target.{{functionPointer}} = call;
-                               return this;
-                           }
-                       }
+                      public partial class Config{
+                          private Config _{{methodName}}_{{methodCount}}({{methodName}}_{{methodCount}}_Delegate call){
+                              target.{{functionPointer}} = call;
+                              return this;
+                          }
+                      }
 
-                       #endregion
+                      #endregion
 
-                       """);
+                      """);
 
         addHelper($"{methodName}_{methodCount}_Delegate call", $"this._{methodName}_{methodCount}(call);");
         addHelper("System.Exception throws", $"this._{method.Name}_{methodCount}(({parameterList}) => throw throws);");
@@ -140,7 +146,8 @@ internal static class MethodBuilder
         return true;
     }
 
-    private static bool TryBuildNoneVoidMethods(CodeBuilder builder, IMethodSymbol method, Action<string, string> addHelper)
+    private static bool TryBuildNoneVoidMethods(CodeBuilder builder, IMethodSymbol method,
+        Action<string, string> addHelper)
     {
         if (method.ReturnsVoid)
         {
@@ -167,12 +174,12 @@ internal static class MethodBuilder
         var accessibilityString = method.AccessibilityString();
         if (method.ContainingType.TypeKind == TypeKind.Interface)
         {
-            containingSymbol = method.ContainingSymbol.ToString() + ".";
+            containingSymbol = method.ContainingSymbol + ".";
             accessibilityString = "";
         }
 
         builder.Add($$$"""
-                       
+
                        #region Method : {{{methodReturnType}}} {{{methodName}}}({{{parameterList}}})
                        {{{accessibilityString}}} {{{overrideString}}}{{{methodReturnType}}} {{{containingSymbol}}}{{{methodName}}}({{{parameterList}}})
                        {
@@ -186,7 +193,7 @@ internal static class MethodBuilder
                                return this;
                            }
                        }
-                       
+
                        #endregion
                        """);
 
@@ -199,27 +206,34 @@ internal static class MethodBuilder
             if (method.HasParameters())
             {
                 var typeList2 = method.ToString(p => $"{p.Type}");
-                addHelper($"System.Action<{typeList2}> call",$$"""this._{{methodName}}_{{methodCount}}(({{parameterList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""");
-                addHelper("",$$"""this._{{methodName}}_{{methodCount}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""");
+                addHelper($"System.Action<{typeList2}> call",
+                    $$"""this._{{methodName}}_{{methodCount}}(({{parameterList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""");
+                addHelper("",
+                    $$"""this._{{methodName}}_{{methodCount}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""");
             }
             else
             {
-                addHelper("System.Action call", $$"""this._{{methodName}}_{{methodCount}}(({{nameList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""");
-                addHelper("", $$"""this._{{methodName}}_{{methodCount}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""");
+                addHelper("System.Action call",
+                    $$"""this._{{methodName}}_{{methodCount}}(({{nameList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""");
+                addHelper("",
+                    $$"""this._{{methodName}}_{{methodCount}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""");
             }
         }
 
         if (methodReturnType.IsGenericTask())
         {
             var genericType = ((INamedTypeSymbol)method.ReturnType).TypeArguments.First();
-            addHelper($"{genericType} returns",$"this._{methodName}_{methodCount}(({lambdaList}) => System.Threading.Tasks.Task.FromResult(returns));");
-            addHelper($"System.Func<{typeList}{genericType}> call",$"this._{methodName}_{methodCount}(({nameList}) => System.Threading.Tasks.Task.FromResult(call({nameList})));");
+            addHelper($"{genericType} returns",
+                $"this._{methodName}_{methodCount}(({lambdaList}) => System.Threading.Tasks.Task.FromResult(returns));");
+            addHelper($"System.Func<{typeList}{genericType}> call",
+                $"this._{methodName}_{methodCount}(({nameList}) => System.Threading.Tasks.Task.FromResult(call({nameList})));");
         }
 
         return true;
     }
 
-    private static bool TryBuildVoidMethodsWithoutParameters(CodeBuilder builder, IMethodSymbol method, Action<string, string> addHelper)
+    private static bool TryBuildVoidMethodsWithoutParameters(CodeBuilder builder, IMethodSymbol method,
+        Action<string, string> addHelper)
     {
         if (!(method.ReturnsVoid && !method.HasParameters()))
         {
@@ -240,12 +254,12 @@ internal static class MethodBuilder
         var accessibilityString = method.AccessibilityString();
         if (method.ContainingType.TypeKind == TypeKind.Interface)
         {
-            containingSymbol = method.ContainingSymbol.ToString() + ".";
+            containingSymbol = method.ContainingSymbol + ".";
             accessibilityString = "";
         }
 
         builder.Add($$"""
-                      
+
                       #region Method : void {{methodName}}({{parameterList}})
                       {{accessibilityString}} {{overrideString}} void {{containingSymbol}}{{methodName}}({{parameterList}})
                       {
@@ -262,14 +276,16 @@ internal static class MethodBuilder
                       #endregion
                       """);
 
-        addHelper($"System.Action call", $"this._{methodName}_{methodCount}(call);");
-        addHelper("System.Exception throws", $$"""this._{{methodName}}_{{methodCount}}(({{lambdaList}}) => throw throws);""");
+        addHelper("System.Action call", $"this._{methodName}_{methodCount}(call);");
+        addHelper("System.Exception throws",
+            $$"""this._{{methodName}}_{{methodCount}}(({{lambdaList}}) => throw throws);""");
         addHelper("", $$"""this._{{methodName}}_{{methodCount}}(({{lambdaList}}) => {});""");
 
         return true;
     }
 
-    private static bool TryBuildVoidMethodsHavingParameters(CodeBuilder builder, IMethodSymbol method, Action<string, string> addHelper)
+    private static bool TryBuildVoidMethodsHavingParameters(CodeBuilder builder, IMethodSymbol method,
+        Action<string, string> addHelper)
     {
         if (!(method.ReturnsVoid && method.HasParameters()))
         {
@@ -289,12 +305,12 @@ internal static class MethodBuilder
         var accessibilityString = method.AccessibilityString();
         if (method.ContainingType.TypeKind == TypeKind.Interface)
         {
-            containingSymbol = method.ContainingSymbol.ToString() + ".";
+            containingSymbol = method.ContainingSymbol + ".";
             accessibilityString = "";
         }
 
         builder.Add($$"""
-                      
+
                       #region Method : void {{methodName}}({{parameterList}})
                       {{accessibilityString}} {{overrideString}} void {{containingSymbol}}{{methodName}}({{parameterList}})
                       {
@@ -311,7 +327,8 @@ internal static class MethodBuilder
                       #endregion
                       """);
         addHelper($"System.Action<{typeList}> call", $"this._{methodName}_{methodCount}(call);");
-        addHelper("System.Exception throws", $$"""this._{{methodName}}_{{methodCount}}(({{parameterList}}) => throw throws);""");
+        addHelper("System.Exception throws",
+            $$"""this._{{methodName}}_{{methodCount}}(({{parameterList}}) => throw throws);""");
         addHelper("", $$"""this._{{methodName}}_{{methodCount}}(({{parameterList}}) => {});""");
 
         return true;
@@ -327,23 +344,27 @@ internal static class MethodBuilder
             _ => ""
         };
 
-    private static bool HasParameters(this IMethodSymbol method) => method.Parameters.Length >0;
+    private static bool HasParameters(this IMethodSymbol method) => method.Parameters.Length > 0;
 
-    private static string BuildNotMockedException(this IMethodSymbol symbol) => $"throw new System.InvalidOperationException(\"The method '{symbol.Name}' in '{symbol.ContainingType.Name}' is not explicitly mocked.\") {{Source = \"{symbol}\"}};";
+    private static string BuildNotMockedException(this IMethodSymbol symbol) =>
+        $"throw new System.InvalidOperationException(\"The method '{symbol.Name}' in '{symbol.ContainingType.Name}' is not explicitly mocked.\") {{Source = \"{symbol}\"}};";
 
-    private static bool IsTask(this INamedTypeSymbol methodReturnType) => methodReturnType.ToString().Equals("System.Threading.Tasks.Task");
+    private static bool IsTask(this INamedTypeSymbol methodReturnType) =>
+        methodReturnType.ToString().Equals("System.Threading.Tasks.Task");
 
-    private static bool IsGenericTask(this INamedTypeSymbol methodReturnType) => methodReturnType.ToString().StartsWith("System.Threading.Tasks.Task<") && methodReturnType.TypeArguments.Length > 0;
+    private static bool IsGenericTask(this INamedTypeSymbol methodReturnType) =>
+        methodReturnType.ToString().StartsWith("System.Threading.Tasks.Task<") &&
+        methodReturnType.TypeArguments.Length > 0;
 }
 
 public class MethodSignature
 {
-    public string Signature { get; }
-    public string Code { get; }
-
     public MethodSignature(string signature, string code)
     {
         this.Signature = signature;
         this.Code = code;
     }
+
+    public string Signature { get; }
+    public string Code { get; }
 }

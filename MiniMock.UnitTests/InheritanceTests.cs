@@ -1,25 +1,23 @@
 namespace MiniMock.UnitTests;
 
-using MiniMock.UnitTests.Util;
-
 public class InheritanceTests(ITestOutputHelper testOutputHelper)
 {
     public interface IInheritance
     {
-        bool method1();
-        void method2();
-        bool method3(string name);
-        bool method4(out string name);
-        void method5(string name);
+        bool Method1();
+        void Method2();
+        bool Method3(string name);
+        bool Method4(out string name);
+        void Method5(string name);
     }
 
     public interface IInheritance2 : IInheritance
     {
-        bool method1();
-        void method2();
-        bool method3(string name);
-        bool method4(out string name);
-        void method5(string name);
+        new bool Method1();
+        new void Method2();
+        new bool Method3(string name);
+        new bool Method4(out string name);
+        new void Method5(string name);
     }
 
     [Fact]
@@ -43,9 +41,9 @@ public class InheritanceTests(ITestOutputHelper testOutputHelper)
 
     public interface IDerived : IBase
     {
-        string Name { get; set; }
-        string Name2 { set; }
-        string Name3 { get; }
+        new string Name1 { get; set; }
+        new string Name2 { set; }
+        new string Name3 { get; }
     }
 
     [Fact]
@@ -90,7 +88,7 @@ public class InheritanceTests(ITestOutputHelper testOutputHelper)
 
     public interface IDerivedWithEvent : IBaseWithEvent
     {
-        event EventHandler MyEvent;
+        new event EventHandler MyEvent;
     }
 
     [Fact]
@@ -115,9 +113,9 @@ public class InheritanceTests(ITestOutputHelper testOutputHelper)
 
     public interface IDerivedWithIndexer : IBaseWithIndexer
     {
-        int this[uint index] { set; }
-        int this[int index] { get; }
-        int this[string index] { get; set; }
+        new int this[uint index] { set; }
+        new int this[int index] { get; }
+        new int this[string index] { get; set; }
     }
 
     [Fact]
@@ -130,9 +128,5 @@ public class InheritanceTests(ITestOutputHelper testOutputHelper)
         testOutputHelper.DumpResult(generate);
 
         Assert.Empty(generate.GetWarnings());
-
     }
-
 }
-
-

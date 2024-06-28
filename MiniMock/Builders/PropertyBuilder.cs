@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis;
 
 internal static class PropertyBuilder
 {
-    private static int propertyCount = 0;
+    private static int propertyCount;
 
     public static void BuildProperties(CodeBuilder builder, IEnumerable<IPropertySymbol> propertySymbols)
     {
@@ -15,9 +15,12 @@ internal static class PropertyBuilder
         var name = enumerable.First().Name;
         var helpers = new List<MethodSignature>();
 
-        void AddHelper(string signature, string code) => helpers.Add(new(signature, code));
+        void AddHelper(string signature, string code)
+        {
+            helpers.Add(new(signature, code));
+        }
 
-        foreach (var symbol in propertySymbols)
+        foreach (var symbol in enumerable)
         {
             BuildProperty(builder, symbol, AddHelper);
         }
@@ -50,7 +53,7 @@ internal static class PropertyBuilder
         var accessibilityString = property.AccessibilityString();
         if (property.ContainingType.TypeKind == TypeKind.Interface)
         {
-            containingSymbol = property.ContainingSymbol.ToString() + ".";
+            containingSymbol = property.ContainingSymbol + ".";
             accessibilityString = "";
         }
 
@@ -81,7 +84,7 @@ internal static class PropertyBuilder
 
         builder.Add("""}""");
 
-        
+
         builder.Add($$"""
                       internal {{type.TrimEnd('?')}}? internal_{{propertyName}}_{{propertyCount}};
                       internal System.Func<{{type}}> Get_{{propertyName}}_{{propertyCount}} { get; set; } = () => {{BuildNotMockedException(property)}}
@@ -91,10 +94,14 @@ internal static class PropertyBuilder
                       """);
 
         addHelper($"{type.Replace("?", "")} value", $"target.internal_{propertyName}_{propertyCount} = value;");
-        addHelper($"{type.Replace("?", "")} value", $"target.Get_{propertyName}_{propertyCount} = () => target.internal_{propertyName}_{propertyCount};");
-        addHelper($"{type.Replace("?", "")} value", $"target.Set_{propertyName}_{propertyCount} = s => target.internal_{propertyName}_{propertyCount} = s;");
-        addHelper($"System.Func<{type}> get, System.Action<{type}> set", $"target.Get_{propertyName}_{propertyCount} = get;");
-        addHelper($"System.Func<{type}> get, System.Action<{type}> set", $"target.Set_{propertyName}_{propertyCount} = set;");
+        addHelper($"{type.Replace("?", "")} value",
+            $"target.Get_{propertyName}_{propertyCount} = () => target.internal_{propertyName}_{propertyCount};");
+        addHelper($"{type.Replace("?", "")} value",
+            $"target.Set_{propertyName}_{propertyCount} = s => target.internal_{propertyName}_{propertyCount} = s;");
+        addHelper($"System.Func<{type}> get, System.Action<{type}> set",
+            $"target.Get_{propertyName}_{propertyCount} = get;");
+        addHelper($"System.Func<{type}> get, System.Action<{type}> set",
+            $"target.Set_{propertyName}_{propertyCount} = set;");
     }
 
     private static void BuildHelpers(CodeBuilder builder, List<MethodSignature> helpers, string name)
@@ -124,5 +131,6 @@ internal static class PropertyBuilder
         builder.Unindent().Add("}");
     }
 
-    private static string BuildNotMockedException(this IPropertySymbol symbol) => $"throw new System.InvalidOperationException(\"The property '{symbol.Name}' in '{symbol.ContainingType.Name}' is not explicitly mocked.\") {{Source = \"{symbol}\"}};";
+    private static string BuildNotMockedException(this IPropertySymbol symbol) =>
+        $"throw new System.InvalidOperationException(\"The property '{symbol.Name}' in '{symbol.ContainingType.Name}' is not explicitly mocked.\") {{Source = \"{symbol}\"}};";
 }

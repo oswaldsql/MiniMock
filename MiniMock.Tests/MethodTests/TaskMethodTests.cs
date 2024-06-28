@@ -1,7 +1,6 @@
 namespace MiniMock.Tests.MethodTests;
 using System;
 using System.Threading.Tasks;
-using Xunit;
 
 [Mock<IAsyncTaskMethods>]
 public class TaskMethodTests

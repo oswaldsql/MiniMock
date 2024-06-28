@@ -1,6 +1,5 @@
 namespace MiniMock.UnitTests;
 
-using MiniMock.UnitTests.Util;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxTokenParser;
 
 /*Missing

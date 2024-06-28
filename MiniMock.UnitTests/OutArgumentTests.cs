@@ -1,7 +1,5 @@
 namespace MiniMock.UnitTests;
 
-using MiniMock.UnitTests.Util;
-
 public class OutArgumentTests(ITestOutputHelper testOutputHelper)
 {
     [Fact]

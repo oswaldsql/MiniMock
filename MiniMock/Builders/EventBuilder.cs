@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis;
 
 internal static class EventBuilder
 {
-    private static int eventCount = 0;
+    private static int eventCount;
 
     public static void BuildEvents(CodeBuilder builder, IEnumerable<IEventSymbol> eventSymbols)
     {
@@ -15,15 +15,17 @@ internal static class EventBuilder
         var name = enumerable.First().Name;
         var helpers = new List<MethodSignature>();
 
-        void AddHelper(string signature, string code) => helpers.Add(new(signature, code));
+        void AddHelper(string signature, string code)
+        {
+            helpers.Add(new(signature, code));
+        }
 
-        foreach (var symbol in eventSymbols)
+        foreach (var symbol in enumerable)
         {
             BuildEvent(builder, symbol, AddHelper);
         }
 
         BuildHelpers(builder, helpers, name);
-
     }
 
     internal static void BuildEvent(CodeBuilder builder, IEventSymbol evnt, Action<string, string> addHelper)
@@ -39,7 +41,7 @@ internal static class EventBuilder
         var accessibilityString = evnt.AccessibilityString();
         if (evnt.ContainingType.TypeKind == TypeKind.Interface)
         {
-            containingSymbol = evnt.ContainingSymbol.ToString() + ".";
+            containingSymbol = evnt.ContainingSymbol + ".";
             accessibilityString = "";
         }
 

@@ -2,8 +2,6 @@ namespace MiniMock.Tests;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Xunit;
-
 
 public interface IRepository
 {

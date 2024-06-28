@@ -1,7 +1,5 @@
 namespace MiniMock.Tests.MethodTests;
 
-using Xunit;
-
 [Mock<IGeneric<string>>]
 [Mock<IGeneric<int>>]
 public class GenericInterfaceTests

@@ -1,7 +1,6 @@
 namespace MiniMock.Tests.MethodTests;
 
 using System;
-using Xunit;
 
 [Mock<IBasicMethods>]
 public class BasicMethodTests

@@ -2,7 +2,6 @@ namespace MiniMock.Tests.MethodTests;
 
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Xunit;
 using Xunit.Abstractions;
 using static MiniMock.Tests.MethodTests.InheritanceTests;
 

@@ -1,7 +1,6 @@
 namespace MiniMock.Tests;
 using System;
 using System.Threading.Tasks;
-using Xunit;
 using Xunit.Abstractions;
 
 public interface ICustomerRepository

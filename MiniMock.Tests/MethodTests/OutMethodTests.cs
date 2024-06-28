@@ -1,7 +1,5 @@
 namespace MiniMock.Tests.MethodTests;
 
-using Xunit;
-
 public class OutMethodTests
 {
     public interface IMethodWithOutArgument
