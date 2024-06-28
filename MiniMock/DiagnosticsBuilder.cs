@@ -6,13 +6,13 @@ using Microsoft.CodeAnalysis;
 
 internal static class DiagnosticsBuilder
 {
-    private static readonly DiagnosticDescriptor MM0001 = new("MM0001", "Creating mock",
+    private static readonly DiagnosticDescriptor Mm0001 = new("MM0001", "Creating mock",
         "Creating mock for '{0}'", "MiniMock", DiagnosticSeverity.Info,
         true);
 
     public static void AddCreatingMockFor(this SourceProductionContext context, IEnumerable<Location> locations,
         ITypeSymbol sourceType) =>
-        context.ReportDiagnostic(Diagnostic.Create(MM0001, locations.FirstOrDefault(), sourceType));
+        context.ReportDiagnostic(Diagnostic.Create(Mm0001, locations.FirstOrDefault(), sourceType));
 
     //private static readonly DiagnosticDescriptor Em0001 = new("EM0001", "Converter not found",
     //    "Unable to find converter for mapping '{0}' ({1}) to '{2}' ({3})", "EasyMapper", DiagnosticSeverity.Error,

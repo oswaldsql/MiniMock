@@ -71,6 +71,7 @@ public class Demo2(ITestOutputHelper testOutputHelper)
                 .Indexer(get: s => new Version(2,0,0,0), set: (s, version) => {}) // Overwrites the indexer getter and setter
                 .Indexer(values: versions) // Provides a dictionary to retrieve and store versions
 
+                .NewVersionAdded(null, new Version(2,0,0,0))
                 .NewVersionAdded(trigger: out triggerNewVersionAdded) // Provides a trigger for when a new version is added
             );
 

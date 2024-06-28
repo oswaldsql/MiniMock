@@ -16,7 +16,10 @@ public static class MockClassBuilder
                      namespace MiniMock {
                      ->
                      
-                     public class Mock {
+                     /// <summary>
+                     /// Factory for creating mock objects.
+                     /// </summary>
+                     internal static class Mock {
                      ->
                      """);
 
@@ -31,10 +34,29 @@ public static class MockClassBuilder
                 var types = string.Join("_", typeArguments.Select(t => t.Name));
                 var name = $"{symbolName}Mock_{types}";
                 var methodName = symbolName + "_" + types;
+
+                builder.Add(
+                    $"""
+                      
+                      /// <summary>
+                      /// Creates a mock object for <see cref="{symbol}"/>.
+                      /// </summary>
+                      /// <param name="mock">Optional configuration for the mock object.</param>
+                      /// <returns>The mock object for <see cref="{symbol}"/>.</returns>
+                      """);
                 builder.Add($"internal static {symbol} {methodName}(System.Action<{containingNamespace}.{name}.Config>? mock = null) => {containingNamespace}.{name}.Create(mock);");
             }
             else
             {
+                builder.Add(
+                    $"""
+                      
+                      /// <summary>
+                      /// Creates a mock object for <see cref="{symbol}"/>.
+                      /// </summary>
+                      /// <param name="mock">Optional configuration for the mock object.</param>
+                      /// <returns>The mock object for <see cref="{symbol}"/>.</returns>
+                      """);
                 var name = symbolName + "Mock";
                 var methodName = symbolName;
                 builder.Add($"internal static {symbol} {methodName}(System.Action<{containingNamespace}.{name}.Config>? mock = null) => {containingNamespace}.{name}.Create(mock);");

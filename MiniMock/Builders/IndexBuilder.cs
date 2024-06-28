@@ -13,9 +13,9 @@ internal static class IndexBuilder
     {
         var helpers = new List<MethodSignature>();
 
-        void AddHelper(string signature, string code)
+        void AddHelper(string signature, string code, string documentation)
         {
-            helpers.Add(new(signature, code));
+            helpers.Add(new(signature, code, documentation));
         }
 
         foreach (var symbol in indexerSymbols)
@@ -26,7 +26,7 @@ internal static class IndexBuilder
         BuildHelpers(builder, helpers, "Indexer");
     }
 
-    internal static void BuildIndex(CodeBuilder builder, IPropertySymbol indx, Action<string, string> addHelper)
+    internal static void BuildIndex(CodeBuilder builder, IPropertySymbol indx, Action<string, string, string> addHelper)
     {
         indexerCount++;
 
@@ -61,14 +61,10 @@ internal static class IndexBuilder
                       #endregion
                       """);
 
-        addHelper($"System.Collections.Generic.Dictionary<{indexType}, {returnType}> values",
-            $"target.On_IndexGet_{indexerCount} = s => values[s];");
-        addHelper($"System.Collections.Generic.Dictionary<{indexType}, {returnType}> values",
-            $"target.On_IndexSet_{indexerCount} = (s, v) => values[s] = v;");
-        addHelper($"System.Func<{indexType}, {returnType}> get, System.Action<{indexType}, {returnType}> set",
-            $"target.On_IndexGet_{indexerCount} = get;");
-        addHelper($"System.Func<{indexType}, {returnType}> get, System.Action<{indexType}, {returnType}> set",
-            $"target.On_IndexSet_{indexerCount} = set;");
+        addHelper($"System.Collections.Generic.Dictionary<{indexType}, {returnType}> values", $"target.On_IndexGet_{indexerCount} = s => values[s];", "Gets and sets values in the dictionary when the indexer is called.");
+        addHelper($"System.Collections.Generic.Dictionary<{indexType}, {returnType}> values", $"target.On_IndexSet_{indexerCount} = (s, v) => values[s] = v;","");
+        addHelper($"System.Func<{indexType}, {returnType}> get, System.Action<{indexType}, {returnType}> set", $"target.On_IndexGet_{indexerCount} = get;", $"Specifies a getter and setter method to call when the indexer for <see cref=\"{indexType}\"/> is called.");
+        addHelper($"System.Func<{indexType}, {returnType}> get, System.Action<{indexType}, {returnType}> set", $"target.On_IndexSet_{indexerCount} = set;","");
     }
 
     private static string BuildNotMockedException(this IPropertySymbol symbol) =>
@@ -87,6 +83,16 @@ internal static class IndexBuilder
 
         foreach (var grouping in signatures)
         {
+            builder.Add($"""
+
+                         /// <summary>
+                         """);
+            grouping.Select(t => t.Documentation).Where(t => !string.IsNullOrWhiteSpace(t)).Distinct().ToList().ForEach(t => builder.Add("///     " + t));
+            builder.Add($"""
+                         /// </summary>
+                         /// <returns>The updated configuration.</returns>
+                         """);
+
             builder.Add($"public Config {name}({grouping.Key}) {{").Indent();
             foreach (var code in grouping.Select(t => t.Code).Distinct())
             {

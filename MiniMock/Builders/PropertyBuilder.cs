@@ -15,9 +15,9 @@ internal static class PropertyBuilder
         var name = enumerable.First().Name;
         var helpers = new List<MethodSignature>();
 
-        void AddHelper(string signature, string code)
+        void AddHelper(string signature, string code, string documentation)
         {
-            helpers.Add(new(signature, code));
+            helpers.Add(new(signature, code, documentation));
         }
 
         foreach (var symbol in enumerable)
@@ -28,7 +28,7 @@ internal static class PropertyBuilder
         BuildHelpers(builder, helpers, name);
     }
 
-    internal static void BuildProperty(CodeBuilder builder, IPropertySymbol property, Action<string, string> addHelper)
+    internal static void BuildProperty(CodeBuilder builder, IPropertySymbol property, Action<string, string, string> addHelper)
     {
         propertyCount++;
 
@@ -93,15 +93,11 @@ internal static class PropertyBuilder
                       #endregion
                       """);
 
-        addHelper($"{type.Replace("?", "")} value", $"target.internal_{propertyName}_{propertyCount} = value;");
-        addHelper($"{type.Replace("?", "")} value",
-            $"target.Get_{propertyName}_{propertyCount} = () => target.internal_{propertyName}_{propertyCount};");
-        addHelper($"{type.Replace("?", "")} value",
-            $"target.Set_{propertyName}_{propertyCount} = s => target.internal_{propertyName}_{propertyCount} = s;");
-        addHelper($"System.Func<{type}> get, System.Action<{type}> set",
-            $"target.Get_{propertyName}_{propertyCount} = get;");
-        addHelper($"System.Func<{type}> get, System.Action<{type}> set",
-            $"target.Set_{propertyName}_{propertyCount} = set;");
+        addHelper($"{type.Replace("?", "")} value", $"target.internal_{propertyName}_{propertyCount} = value;", $"Sets a initial value for {propertyName}.");
+        addHelper($"{type.Replace("?", "")} value", $"target.Get_{propertyName}_{propertyCount} = () => target.internal_{propertyName}_{propertyCount};","");
+        addHelper($"{type.Replace("?", "")} value", $"target.Set_{propertyName}_{propertyCount} = s => target.internal_{propertyName}_{propertyCount} = s;","");
+        addHelper($"System.Func<{type}> get, System.Action<{type}> set", $"target.Get_{propertyName}_{propertyCount} = get;", $"Specifies a getter and setter method to call when the property {propertyName} is called.");
+        addHelper($"System.Func<{type}> get, System.Action<{type}> set", $"target.Set_{propertyName}_{propertyCount} = set;","");
     }
 
     private static void BuildHelpers(CodeBuilder builder, List<MethodSignature> helpers, string name)
@@ -117,6 +113,16 @@ internal static class PropertyBuilder
 
         foreach (var grouping in signatures)
         {
+            builder.Add($"""
+
+                         /// <summary>
+                         """);
+            grouping.Select(t => t.Documentation).Where(t => !string.IsNullOrWhiteSpace(t)).Distinct().ToList().ForEach(t => builder.Add("///     " + t));
+            builder.Add($"""
+                         /// </summary>
+                         /// <returns>The updated configuration.</returns>
+                         """);
+
             builder.Add($"public Config {name}({grouping.Key}) {{").Indent();
             foreach (var mse in grouping)
             {

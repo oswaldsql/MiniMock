@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Strategy = System.Func<CodeBuilder, Microsoft.CodeAnalysis.IMethodSymbol, System.Action<string, string>, bool>;
+using Strategy = System.Func<CodeBuilder, Microsoft.CodeAnalysis.IMethodSymbol, System.Action<string, string, string>, bool>;
 
 internal static class MethodBuilder
 {
@@ -26,9 +26,9 @@ internal static class MethodBuilder
 
         var helpers = new List<MethodSignature>();
 
-        void AddHelper(string signature, string code)
+        void AddHelper(string signature, string code, string documentation)
         {
-            helpers.Add(new(signature, code));
+            helpers.Add(new(signature, code, documentation));
         }
 
         foreach (var symbol in enumerable)
@@ -52,6 +52,16 @@ internal static class MethodBuilder
 
         foreach (var grouping in signatures)
         {
+            builder.Add($"""
+                         
+                         /// <summary>
+                         """);
+            grouping.Select(t => t.Documentation).Where(t => !string.IsNullOrWhiteSpace(t)).Distinct().ToList().ForEach(t => builder.Add("///     " + t));
+            builder.Add($"""
+                         /// </summary>
+                         /// <returns>The updated configuration.</returns>
+                         """);
+
             builder.Add($"public Config {name}({grouping.Key}) {{").Indent();
             foreach (var mse in grouping)
             {
@@ -66,7 +76,7 @@ internal static class MethodBuilder
         builder.Unindent().Add("}");
     }
 
-    private static bool Build(CodeBuilder builder, IMethodSymbol method, Action<string, string> addHelper)
+    private static bool Build(CodeBuilder builder, IMethodSymbol method, Action<string, string, string> addHelper)
     {
         foreach (var strategy in Strategies)
         {
@@ -77,7 +87,7 @@ internal static class MethodBuilder
     }
 
     private static bool IgnoreIrrelevantMethods(CodeBuilder builder, IMethodSymbol method,
-        Action<string, string> addHelper)
+        Action<string, string, string> addHelper)
     {
         if (method.IsAbstract || method.IsVirtual)
         {
@@ -90,7 +100,7 @@ internal static class MethodBuilder
     }
 
     private static bool TryBuildMethodHavingOutParameters(CodeBuilder builder, IMethodSymbol method,
-        Action<string, string> addHelper)
+        Action<string, string, string> addHelper)
     {
         if (!(method.HasParameters() &&
               method.Parameters.Any(p => p.RefKind == RefKind.Out || p.RefKind == RefKind.Ref)))
@@ -140,14 +150,14 @@ internal static class MethodBuilder
 
                       """);
 
-        addHelper($"{methodName}_{methodCount}_Delegate call", $"this._{methodName}_{methodCount}(call);");
-        addHelper("System.Exception throws", $"this._{method.Name}_{methodCount}(({parameterList}) => throw throws);");
+        addHelper($"{methodName}_{methodCount}_Delegate call", $"this._{methodName}_{methodCount}(call);", "Configures the mock to execute the specified action when the method matching the signature is called.");
+        addHelper("System.Exception throws", $"this._{method.Name}_{methodCount}(({parameterList}) => throw throws);", "Configures the mock to throw the specified exception when the method is called.");
 
         return true;
     }
 
     private static bool TryBuildNoneVoidMethods(CodeBuilder builder, IMethodSymbol method,
-        Action<string, string> addHelper)
+        Action<string, string, string> addHelper)
     {
         if (method.ReturnsVoid)
         {
@@ -197,43 +207,37 @@ internal static class MethodBuilder
                        #endregion
                        """);
 
-        addHelper($"System.Func<{typeList}{methodReturnType}> call", $"this._{methodName}_{methodCount}(call);");
-        addHelper("System.Exception throws", $"this._{methodName}_{methodCount}(({lambdaList}) => throw throws);");
-        addHelper(methodReturnType + " returns", $"this._{methodName}_{methodCount}(({lambdaList}) => returns);");
+        addHelper($"System.Func<{typeList}{methodReturnType}> call", $"this._{methodName}_{methodCount}(call);", "Configures the mock to call the specified function and return the value when the method matching the signature is called.");
+        addHelper("System.Exception throws", $"this._{methodName}_{methodCount}(({lambdaList}) => throw throws);", "Configures the mock to throw the specified exception when the method is called.");
+        addHelper(methodReturnType + " returns", $"this._{methodName}_{methodCount}(({lambdaList}) => returns);", $"Configures the mock to return the specific value when returning <see cref=\"{EscapeToHtml(methodReturnType.ToString())}\"/>");
 
         if (methodReturnType.IsTask())
         {
             if (method.HasParameters())
             {
                 var typeList2 = method.ToString(p => $"{p.Type}");
-                addHelper($"System.Action<{typeList2}> call",
-                    $$"""this._{{methodName}}_{{methodCount}}(({{parameterList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""");
-                addHelper("",
-                    $$"""this._{{methodName}}_{{methodCount}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""");
+                addHelper($"System.Action<{typeList2}> call", $$"""this._{{methodName}}_{{methodCount}}(({{parameterList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""", "Configures the mock to execute the specified action when the method matching the signature is called.");
             }
             else
             {
-                addHelper("System.Action call",
-                    $$"""this._{{methodName}}_{{methodCount}}(({{nameList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""");
-                addHelper("",
-                    $$"""this._{{methodName}}_{{methodCount}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""");
+                addHelper("System.Action call", $$"""this._{{methodName}}_{{methodCount}}(({{nameList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""", "Configures the mock to execute the specified action when the method matching the signature is called.");
             }
+
+            addHelper("", $$"""this._{{methodName}}_{{methodCount}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""", "Configures the mock to ignore but accept any call to the method.");
         }
 
         if (methodReturnType.IsGenericTask())
         {
             var genericType = ((INamedTypeSymbol)method.ReturnType).TypeArguments.First();
-            addHelper($"{genericType} returns",
-                $"this._{methodName}_{methodCount}(({lambdaList}) => System.Threading.Tasks.Task.FromResult(returns));");
-            addHelper($"System.Func<{typeList}{genericType}> call",
-                $"this._{methodName}_{methodCount}(({nameList}) => System.Threading.Tasks.Task.FromResult(call({nameList})));");
+            addHelper($"{genericType} returns", $"this._{methodName}_{methodCount}(({lambdaList}) => System.Threading.Tasks.Task.FromResult(returns));", $"Configures the mock to return the specific value when returning a generic task containing <see cref=\"{EscapeToHtml(methodReturnType.ToString())}\"/>");
+            addHelper($"System.Func<{typeList}{genericType}> call", $"this._{methodName}_{methodCount}(({nameList}) => System.Threading.Tasks.Task.FromResult(call({nameList})));", "Configures the mock to call the specified function and return the value wrapped in a task object when the method matching the signature is called.");
         }
 
         return true;
     }
 
     private static bool TryBuildVoidMethodsWithoutParameters(CodeBuilder builder, IMethodSymbol method,
-        Action<string, string> addHelper)
+        Action<string, string, string> addHelper)
     {
         if (!(method.ReturnsVoid && !method.HasParameters()))
         {
@@ -276,16 +280,15 @@ internal static class MethodBuilder
                       #endregion
                       """);
 
-        addHelper("System.Action call", $"this._{methodName}_{methodCount}(call);");
-        addHelper("System.Exception throws",
-            $$"""this._{{methodName}}_{{methodCount}}(({{lambdaList}}) => throw throws);""");
-        addHelper("", $$"""this._{{methodName}}_{{methodCount}}(({{lambdaList}}) => {});""");
+        addHelper("System.Action call", $"this._{methodName}_{methodCount}(call);", "Configures the mock to execute the specified action when the method matching the signature is called.");
+        addHelper("System.Exception throws", $$"""this._{{methodName}}_{{methodCount}}(({{lambdaList}}) => throw throws);""", "Configures the mock to throw the specified exception when the method is called.");
+        addHelper("", $$"""this._{{methodName}}_{{methodCount}}(({{lambdaList}}) => {});""", "Configures the mock to ignore but accept any call to the method.");
 
         return true;
     }
 
     private static bool TryBuildVoidMethodsHavingParameters(CodeBuilder builder, IMethodSymbol method,
-        Action<string, string> addHelper)
+        Action<string, string, string> addHelper)
     {
         if (!(method.ReturnsVoid && method.HasParameters()))
         {
@@ -326,10 +329,9 @@ internal static class MethodBuilder
                       }
                       #endregion
                       """);
-        addHelper($"System.Action<{typeList}> call", $"this._{methodName}_{methodCount}(call);");
-        addHelper("System.Exception throws",
-            $$"""this._{{methodName}}_{{methodCount}}(({{parameterList}}) => throw throws);""");
-        addHelper("", $$"""this._{{methodName}}_{{methodCount}}(({{parameterList}}) => {});""");
+        addHelper($"System.Action<{typeList}> call", $"this._{methodName}_{methodCount}(call);", "Configures the mock to execute the specified action when the method matching the signature is called.");
+        addHelper("System.Exception throws", $$"""this._{{methodName}}_{{methodCount}}(({{parameterList}}) => throw throws);""", "Configures the mock to throw the specified exception when the method is called.");
+        addHelper("", $$"""this._{{methodName}}_{{methodCount}}(({{parameterList}}) => {});""", "Configures the mock to ignore but accept any call to the method.");
 
         return true;
     }
@@ -355,16 +357,20 @@ internal static class MethodBuilder
     private static bool IsGenericTask(this INamedTypeSymbol methodReturnType) =>
         methodReturnType.ToString().StartsWith("System.Threading.Tasks.Task<") &&
         methodReturnType.TypeArguments.Length > 0;
+
+    private static string EscapeToHtml(string text) => text.Replace("<", "&lt;").Replace(">", "&gt;");
 }
 
 public class MethodSignature
 {
-    public MethodSignature(string signature, string code)
+    public MethodSignature(string signature, string code, string documentation)
     {
         this.Signature = signature;
         this.Code = code;
+        this.Documentation = documentation;
     }
 
     public string Signature { get; }
     public string Code { get; }
+    public string Documentation { get; }
 }

@@ -15,9 +15,9 @@ internal static class EventBuilder
         var name = enumerable.First().Name;
         var helpers = new List<MethodSignature>();
 
-        void AddHelper(string signature, string code)
+        void AddHelper(string signature, string code, string documentation)
         {
-            helpers.Add(new(signature, code));
+            helpers.Add(new(signature, code, documentation));
         }
 
         foreach (var symbol in enumerable)
@@ -28,7 +28,7 @@ internal static class EventBuilder
         BuildHelpers(builder, helpers, name);
     }
 
-    internal static void BuildEvent(CodeBuilder builder, IEventSymbol evnt, Action<string, string> addHelper)
+    internal static void BuildEvent(CodeBuilder builder, IEventSymbol evnt, Action<string, string, string> addHelper)
     {
         eventCount++;
 
@@ -65,8 +65,8 @@ internal static class EventBuilder
                       #endregion
                       """);
 
-        addHelper($"out System.Action<{types}> trigger", $"trigger = args => {eventName}(target, args);");
-        addHelper(pa, $"target.trigger_{eventName}_{eventCount}({na});");
+        addHelper($"out System.Action<{types}> trigger", $"trigger = args => {eventName}(target, args);", $"Returns a action that can be used for triggering {eventName}.");
+        addHelper(pa, $"target.trigger_{eventName}_{eventCount}({na});", $"Trigger {eventName} directly.");
     }
 
     private static void BuildHelpers(CodeBuilder builder, List<MethodSignature> helpers, string name)
@@ -82,6 +82,16 @@ internal static class EventBuilder
 
         foreach (var grouping in signatures)
         {
+            builder.Add($"""
+
+                         /// <summary>
+                         """);
+            grouping.Select(t => t.Documentation).Where(t => !string.IsNullOrWhiteSpace(t)).Distinct().ToList().ForEach(t => builder.Add("///     " + t));
+            builder.Add($"""
+                         /// </summary>
+                         /// <returns>The updated configuration.</returns>
+                         """);
+
             builder.Add($"public Config {name}({grouping.Key}) {{").Indent();
             foreach (var code in grouping.Select(t => t.Code).Distinct())
             {
