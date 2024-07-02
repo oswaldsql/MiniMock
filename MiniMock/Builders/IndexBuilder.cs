@@ -1,6 +1,5 @@
 namespace MiniMock.Builders;
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -17,7 +16,7 @@ internal static class IndexBuilder
 
         builder.Add($"#region Indexer : this[{indexType}]");
 
-        int indexerCount = 0;
+        var indexerCount = 0;
         foreach (var symbol in symbols)
         {
             indexerCount++;
@@ -36,7 +35,7 @@ internal static class IndexBuilder
         var indexType = symbol.Parameters[0].Type.ToString();
         var exception = BuildNotMockedException(symbol);
 
-        var (containingSymbol, accessibilityString, overrideString) = symbol.Overwrites();
+        var (containingSymbol, accessibilityString, _) = symbol.Overwrites();
 
         var hasGet = symbol.GetMethod != null;
         var hasSet = symbol.SetMethod != null;

@@ -4,9 +4,19 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
+internal static class Documentation
+{
+    internal const string callBackDocumentation = "Configures the mock to execute the specified action when the method matching the signature is called.";
+    internal const string acceptAnyDocumentation = "Configures the mock to accept any call to the method.";
+    internal const string throwDocumentation = "Configures the mock to throw the specified exception when the method is called.";
+    internal const string specificValueDocumentation = "Configures the mock to return the specific value.";
+    internal const string genericTaskObjectDocumentation = "Configures the mock to return the specific value in a task object.";
+    internal const string genericTaskFunctionDocumentation = "Configures the mock to call the specified function and return the value wrapped in a task object when the method matching the signature is called.";
+
+}
+
 internal static class MethodBuilder
 {
-//    private static int methodCount;
 
     public static void BuildMethods(CodeBuilder builder, IEnumerable<IMethodSymbol> methodSymbols)
     {
@@ -17,7 +27,7 @@ internal static class MethodBuilder
 
         builder.Add($"#region Method : {name}");
 
-        int methodCount = 0;
+        var methodCount = 0;
         foreach (var symbol in enumerable)
         {
             methodCount++;
@@ -55,7 +65,7 @@ internal static class MethodBuilder
                       private {{functionPointer}}_Delegate {{functionPointer}} {get;set;} = ({{parameterList}}) => {{symbol.BuildNotMockedException()}}
 
                       public partial class Config{
-                          private Config _{{functionPointer}}({{functionPointer}}_Delegate call){
+                          private Config {{functionPointer}}({{functionPointer}}_Delegate call){
                               target.{{functionPointer}} = call;
                               return this;
                           }
@@ -63,58 +73,59 @@ internal static class MethodBuilder
 
                       """);
 
-        helpers.Add(new($"{functionPointer}_Delegate call",
-            $"this._{functionPointer}(call);",
-            "Configures the mock to execute the specified action when the method matching the signature is called."));
+        helpers.Add(new("System.Exception throws", $"this.{functionPointer}(({parameterList}) => throw throws);", Documentation.throwDocumentation));
 
-        helpers.Add(new("System.Exception throws",
-            $"this._{functionPointer}(({parameterList}) => throw throws);",
-            "Configures the mock to throw the specified exception when the method is called."));
+        switch (symbol.ReturnsVoid)
+        {
+            case true when symbol.Parameters.Length == 0:
+                helpers.Add(new("System.Action call", $"this.{functionPointer}(() => call());", Documentation.callBackDocumentation));
+                helpers.Add(new("", $"this.{functionPointer}(() => {{}});", Documentation.acceptAnyDocumentation));
+                break;
+            case true when !HasOutOrRef(symbol):
+                helpers.Add(new($"System.Action<{typeList}> call", $"this.{functionPointer}(({parameterList}) => call({nameList}));", Documentation.callBackDocumentation));
+                helpers.Add(new("", $"this.{functionPointer}(({parameterList}) => {{}});", Documentation.acceptAnyDocumentation));
+                break;
+            case false when !HasOutOrRef(symbol) && symbol.Parameters.Length == 0:
+                helpers.Add(new($"System.Func<{methodReturnType}> call", $"this.{functionPointer}(() => call());", Documentation.callBackDocumentation));
+                break;
+            case false when !HasOutOrRef(symbol) && symbol.Parameters.Length > 0:
+                helpers.Add(new($"System.Func<{typeList},{methodReturnType}> call", $"this.{functionPointer}(({parameterList}) => call({nameList}));", Documentation.callBackDocumentation));
+                break;
+            default:
+                helpers.Add(new($"{functionPointer}_Delegate call", $"this.{functionPointer}(call);", Documentation.callBackDocumentation));
+                break;
+        }
 
         if (!HasOutOrRef(symbol) && !symbol.ReturnsVoid)
         {
-            helpers.Add(new($"{methodReturnType} returns",
-                $"this._{functionPointer}(({parameterList}) => returns);",
-                $"Configures the mock to return the specific value when returning <see cref=\"{Helpers.EscapeToHtml(methodReturnType)}\"/>"));
+            helpers.Add(new($"{methodReturnType} returns", $"this.{functionPointer}(({parameterList}) => returns);", Documentation.specificValueDocumentation));
         }
 
         if (symbol.IsReturningTask())
         {
             if (symbol.HasParameters())
             {
-                helpers.Add(new($"System.Action<{typeList}> call",
-                    $$"""this._{{functionPointer}}(({{parameterList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""",
-                    "Configures the mock to execute the specified action when the method matching the signature is called."));
+                helpers.Add(new($"System.Action<{typeList}> call", $$"""this.{{functionPointer}}(({{parameterList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""", Documentation.callBackDocumentation));
             }
             else
             {
-                helpers.Add(new("System.Action call",
-                    $$"""this._{{functionPointer}}(({{nameList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""",
-                    "Configures the mock to execute the specified action when the method matching the signature is called."));
+                helpers.Add(new("System.Action call", $$"""this.{{functionPointer}}(({{nameList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""", Documentation.callBackDocumentation));
             }
 
-            helpers.Add(new("",
-                $$"""this._{{functionPointer}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""",
-                "Configures the mock to accept any call to the method."));
+            helpers.Add(new("", $$"""this.{{functionPointer}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""", Documentation.acceptAnyDocumentation));
         }
 
         if (symbol.IsReturningGenericTask())
         {
             var genericType = ((INamedTypeSymbol)symbol.ReturnType).TypeArguments.First();
-            helpers.Add(new($"{genericType} returns",
-                $"this._{functionPointer}(({parameterList}) => System.Threading.Tasks.Task.FromResult(returns));",
-                $"Configures the mock to return the specific value when returning a generic task containing <see cref=\"{Helpers.EscapeToHtml(methodReturnType)}\"/>"));
+            helpers.Add(new($"{genericType} returns", $"this.{functionPointer}(({parameterList}) => System.Threading.Tasks.Task.FromResult(returns));", Documentation.genericTaskObjectDocumentation));
             if (symbol.HasParameters())
             {
-                helpers.Add(new($"System.Func<{typeList},{genericType}> call",
-                    $"this._{functionPointer}(({nameList}) => System.Threading.Tasks.Task.FromResult(call({nameList})));",
-                    "Configures the mock to call the specified function and return the value wrapped in a task object when the method matching the signature is called."));
+                helpers.Add(new($"System.Func<{typeList},{genericType}> call", $"this.{functionPointer}(({nameList}) => System.Threading.Tasks.Task.FromResult(call({nameList})));", Documentation.genericTaskFunctionDocumentation));
             }
             else
             {
-                helpers.Add(new($"System.Func<{genericType}> call",
-                    $"this._{functionPointer}(({nameList}) => System.Threading.Tasks.Task.FromResult(call({nameList})));",
-                    "Configures the mock to call the specified function and return the value wrapped in a task object when the method matching the signature is called."));
+                helpers.Add(new($"System.Func<{genericType}> call", $"this.{functionPointer}(({nameList}) => System.Threading.Tasks.Task.FromResult(call({nameList})));", Documentation.genericTaskFunctionDocumentation));
             }
         }
     }

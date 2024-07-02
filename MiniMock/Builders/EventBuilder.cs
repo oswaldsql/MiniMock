@@ -1,6 +1,5 @@
 namespace MiniMock.Builders;
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -15,7 +14,7 @@ internal static class EventBuilder
 
         builder.Add($"#region event : {name}");
 
-        int eventCount = 0;
+        var eventCount = 0;
         foreach (var symbol in enumerable)
         {
             eventCount++;
@@ -24,7 +23,7 @@ internal static class EventBuilder
 
         helpers.BuildHelpers(builder, name);
 
-        builder.Add($"#endregion");
+        builder.Add("#endregion");
     }
 
     private static void BuildEvent(CodeBuilder builder, IEventSymbol symbol, List<MethodSignature> helpers, int eventCount)
@@ -38,7 +37,7 @@ internal static class EventBuilder
 
         var (containingSymbol, accessibilityString, _) = symbol.Overwrites();
 
-        var (parameterList, typeList, nameList) = invokeMethod.ParameterStrings();
+        var (parameterList, _, nameList) = invokeMethod.ParameterStrings();
 
         builder.Add($$"""
 
@@ -57,7 +56,7 @@ internal static class EventBuilder
 
         if (types == "System.EventArgs")
         {
-            helpers.Add(new($"out System.Action trigger",
+            helpers.Add(new("out System.Action trigger",
                 $"trigger = () => this.{eventName}();",
                 $"Returns an action that can be used for triggering {eventName}."));
 

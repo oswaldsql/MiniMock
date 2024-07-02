@@ -1,7 +1,5 @@
 namespace MiniMock.UnitTests;
 
-using static Microsoft.CodeAnalysis.CSharp.SyntaxTokenParser;
-
 /*Missing
  * Inherited interfaces
  * logging

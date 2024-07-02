@@ -81,7 +81,7 @@ public class TestClass{
     [Fact]
     public void InterfaceWithOverloadsTests()
     {
-        var source = Build.TestClass<WithOverloads>();
+        var source = Build.TestClass<IWithOverloads>();
 
         var generate = new MiniMockGenerator().Generate(source);
 
@@ -111,7 +111,7 @@ public class TestClass{
         public virtual void VirtualMethod() { }
     }
 
-    public interface WithOverloads
+    public interface IWithOverloads
     {
         public void Method();
         public void Method(int i);

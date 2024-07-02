@@ -1,8 +1,5 @@
 namespace MiniMock.Tests;
 
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-
 public interface IRepository
 {
     event EventHandler<string> OnCustomerCreated;

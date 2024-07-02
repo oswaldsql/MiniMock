@@ -1,7 +1,6 @@
 namespace MiniMock.UnitTests;
 
 using System.ComponentModel;
-using System.Numerics;
 
 public class AsyncMethodTests(ITestOutputHelper testOutputHelper)
 {

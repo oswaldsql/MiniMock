@@ -7,14 +7,14 @@ using Microsoft.CodeAnalysis;
 
 internal class ClassBuilder(ISymbol target, SourceProductionContext context)
 {
-    private string fullName = target.ToString();
-    private INamespaceSymbol interfaceNamespace = target.ContainingNamespace;
+    private readonly string fullName = target.ToString();
+    private readonly INamespaceSymbol interfaceNamespace = target.ContainingNamespace;
     private string name = target.Name + "Mock";
 
     public static string Build(ISymbol symbol, SourceProductionContext context) =>
         new ClassBuilder(symbol, context).BuildClass();
 
-    internal string BuildClass()
+    private string BuildClass()
     {
         var builder = new CodeBuilder();
 

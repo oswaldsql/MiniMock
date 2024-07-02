@@ -134,4 +134,3 @@ public class InheritanceTests(ITestOutputHelper testOutputHelper)
         Assert.Empty(generate.GetWarnings());
     }
 }
-

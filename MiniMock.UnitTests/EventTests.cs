@@ -1,7 +1,5 @@
 namespace MiniMock.UnitTests;
 
-using Microsoft.CodeAnalysis;
-
 public class EventTests(ITestOutputHelper testOutputHelper)
 {
     public interface IEventRepository
