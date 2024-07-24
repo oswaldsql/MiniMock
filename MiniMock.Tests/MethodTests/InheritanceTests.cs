@@ -1,86 +1,50 @@
 namespace MiniMock.Tests.MethodTests;
 
-using Xunit.Abstractions;
-
-public class InheritanceTests(ITestOutputHelper testOutputHelper)
+public class InheritanceTests
 {
-    public interface IBaseWithMethods
+    public interface IBase
     {
-        bool method1();
-        void method2();
-        bool method3(string name);
-        bool method4(out string name);
-        void method5(string name);
+        bool Method1();
+        void Method2();
+        bool Method3(string name);
+        bool Method4(out string name);
+        void Method5(string name);
+        string Method6() => "base";
+        bool Method7(ref string name);
     }
 
-    public interface IDerivedWithMethods : IBaseWithMethods
+    public interface IDerived : IBase
     {
-        bool method1();
-        void method2();
-        bool method3(string name);
-        bool method4(out string name);
-        void method5(string name);
+        new bool Method1();
+        new void Method2();
+        new bool Method3(string name);
+        new bool Method4(out string name);
+        new void Method5(string name);
+        new string Method6() => "Derived ";
+        new bool Method7(ref string name);
     }
 
     [Fact]
-    [Mock<IDerivedWithMethods>]
-    public void MethodInheritanceTests()
+    [Mock<IDerived>]
+    public void FactMethodName()
     {
+        var sut = Mock.IDerived(config => config.Method1(true));
 
+        Assert.True((bool)sut.Method1());
+        Assert.True((bool)sut.Method1());
+        Assert.True(((IBase)sut).Method1());
+
+        Assert.Throws<InvalidOperationException>(() => ((IBase)sut).Method6());
     }
-
-    public interface IBaseWithProperties
-    {
-        string Name1 { get; set; }
-        string Name2 { set; }
-        string Name3 { get; }
-    }
-
-    public interface IDerivedWithProperties : IBaseWithProperties
-    {
-        string Name1 { get; set; }
-        string Name2 { set; }
-        string Name3 { get; }
-    }
-
 
     [Fact]
-    [Mock<IDerivedWithProperties>]
-    public void PropertyInheritanceTests()
+    [Mock<IDerived>]
+    public void FactMethodName2()
     {
+        var sut = Mock.IDerived(config => config.Method6("Mocked"));
 
-    }
-
-
-    public interface IBaseWithEvent
-    {
-        event EventHandler<string> Event1;
-    }
-
-    public interface IDerivedWithEvent : IBaseWithEvent
-    {
-        event EventHandler<string> Event1;
-    }
-
-
-    [Fact]
-    [Mock<IDerivedWithEvent>]
-    public void EventInheritanceTests()
-    {
-        // Arrange
-        var eventTriggered = false;
-        var baseEventTriggered = false;
-        Action<string> trigger = null;
-        var sut = Mock.IDerivedWithEvent(config => config.Event1(out trigger));
-
-        sut.Event1 += (_, _) => { eventTriggered = true; };
-        ((IBaseWithEvent)sut).Event1 += (_, _) => baseEventTriggered = true;
-
-        // Act
-        trigger("EventArgs.Empty");
-
-        // Assert
-        Assert.True(eventTriggered);
-        Assert.True(baseEventTriggered);
+        Assert.Equal((string?)"Mocked", (string?)sut.Method6());
+        Assert.Equal((string?)"Mocked", (string?)sut.Method6());
+        Assert.Equal("Mocked", ((IBase)sut).Method6());
     }
 }

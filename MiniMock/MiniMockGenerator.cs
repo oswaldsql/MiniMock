@@ -27,22 +27,36 @@ public sealed class MiniMockGenerator : IIncrementalGenerator
 
     private void Build(SourceProductionContext arg1, ImmutableArray<AttributeData> arg2)
     {
-        var typeSymbols = arg2
-            .Select(FirstGenericType)
-            .Where(t => t != null)
-            .Distinct(SymbolEqualityComparer.Default)
-            .ToArray();
+        var implemented = new List<ISymbol>();
+        var l = arg2.ToLookup(FirstGenericType, a => a, SymbolEqualityComparer.Default).Where(t => t.Key != null);
 
-        foreach (var symbol in typeSymbols.Where(t => t != null))
+        foreach (var l2 in l)
         {
-            var source = ClassBuilder.Build(symbol, arg1);
+            var symbol = l2.Key;
+            try
+            {
+                var source = ClassBuilder.Build(symbol, arg1);
 
-            var fileName = symbol.ToString().Replace("<", "_").Replace(">", "");
+                var fileName = symbol.ToString().Replace("<", "_").Replace(">", "");
 
-            arg1.AddSource(fileName + ".g.cs", source);
+                arg1.AddSource(fileName + ".g.cs", source);
+                implemented.Add(symbol);
+            }
+            catch (RefPropertyNotSupportedException e)
+            {
+                var t = l2.Select(t => t.ApplicationSyntaxReference?.GetSyntax().GetLocation()).Where(t => t != null);
+
+                arg1.AddRefPropertyNotSupported(t, e.Message);
+            }
+            catch (RefReturnTypeNotSupportedException e)
+            {
+                var t = l2.Select(t => t.ApplicationSyntaxReference?.GetSyntax().GetLocation()).Where(t => t != null);
+
+                arg1.AddRefPropertyNotSupported(t, e.Message);
+            }
         }
 
-        var mockClassSource = MockClassBuilder.Build(typeSymbols, arg1);
+        var mockClassSource = MockClassBuilder.Build(implemented, arg1);
         arg1.AddSource("Mock.g.cs", mockClassSource);
     }
 
@@ -55,3 +69,5 @@ public sealed class MiniMockGenerator : IIncrementalGenerator
 internal class UnsupportedAccessibilityException(Accessibility accessibility)
     : Exception($"Unsupported accessibility type '{accessibility}'");
 
+internal class RefPropertyNotSupportedException(IPropertySymbol propertySymbol, ITypeSymbol typeSymbol) : Exception($"Ref property not supported for '{propertySymbol.Name}' in '{typeSymbol.Name}'" );
+internal class RefReturnTypeNotSupportedException(IMethodSymbol methodSymbol, ITypeSymbol typeSymbol) : Exception($"Ref return type not supported for '{methodSymbol.Name}' in '{typeSymbol.Name}'" );

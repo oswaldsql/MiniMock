@@ -1,20 +1,10 @@
 namespace MiniMock.Tests.MethodTests;
 
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using Xunit.Abstractions;
 
 [Mock<IOverloadedMethods>]
 public class OverloadedMethodTests(ITestOutputHelper output)
 {
-    public interface IOverloadedMethods
-    {
-        int OverloadedMethod();
-        string OverloadedMethod(string name);
-        string OverloadedMethod(string name, int value);
-        string OverloadedMethod(int value, string name);
-    }
-
     [Fact]
     public void OverloadedMethod_WhenNotInitialized_AllOverloadsShouldThrowException()
     {
@@ -90,5 +80,13 @@ public class OverloadedMethodTests(ITestOutputHelper output)
 
         // Assert
         Assert.Equal("Whats in a name 10", actual);
+    }
+
+    public interface IOverloadedMethods
+    {
+        int OverloadedMethod();
+        string OverloadedMethod(string name);
+        string OverloadedMethod(string name, int value);
+        string OverloadedMethod(int value, string name);
     }
 }

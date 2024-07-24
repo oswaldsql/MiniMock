@@ -1,12 +1,13 @@
 namespace MiniMock.Builders;
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
 public static class MockClassBuilder
 {
-    public static string Build(ISymbol?[] typeSymbols, SourceProductionContext context)
+    public static string Build(IEnumerable<ISymbol> typeSymbols, SourceProductionContext context)
     {
         var builder = new CodeBuilder();
 
@@ -15,7 +16,7 @@ public static class MockClassBuilder
                      #nullable enable
                      namespace MiniMock {
                      ->
-                     
+
                      /// <summary>
                      /// Factory for creating mock objects.
                      /// </summary>
@@ -37,7 +38,7 @@ public static class MockClassBuilder
 
                 builder.Add(
                     $"""
-                      
+
                       /// <summary>
                       /// Creates a mock object for <see cref="{symbol}"/>.
                       /// </summary>
@@ -50,7 +51,7 @@ public static class MockClassBuilder
             {
                 builder.Add(
                     $"""
-                      
+
                       /// <summary>
                       /// Creates a mock object for <see cref="{symbol}"/>.
                       /// </summary>

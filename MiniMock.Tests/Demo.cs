@@ -35,7 +35,7 @@ public class Demo(ITestOutputHelper testOutputHelper)
         var mail = Mock.IMailService(config => config
             .SendMail(Task.CompletedTask));
 
-        repo.Create("test", CancellationToken.None);
+        var actualId = await repo.Create("test", CancellationToken.None);
 
         var actual =
             await Assert.ThrowsAsync<InvalidOperationException>(() => repo.Delete(newGuid, CancellationToken.None));
@@ -52,7 +52,7 @@ public class Demo2(ITestOutputHelper testOutputHelper)
     {
         var versions = new Dictionary<string, Version>() {{"current", new Version(2,0,0,0)}};
 
-        Action<Version>? triggerNewVersionAdded = default;
+        Action<Version> triggerNewVersionAdded = _ => { };
         var lovable = Mock.ILoveThisLibrary(config =>
             config
                 .DownloadExists(returns: true) // Returns true for all versions

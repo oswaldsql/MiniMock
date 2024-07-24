@@ -6,8 +6,6 @@ using Microsoft.CodeAnalysis;
 
 internal static class IndexBuilder
 {
-//    private static int indexerCount;
-
     public static void BuildIndexes(CodeBuilder builder, IEnumerable<IPropertySymbol> indexerSymbols)
     {
         var helpers = new List<MethodSignature>();
@@ -27,7 +25,6 @@ internal static class IndexBuilder
 
         builder.Add("#endregion");
     }
-
 
     internal static void BuildIndex(CodeBuilder builder, IPropertySymbol symbol, List<MethodSignature> helpers, int indexerCount)
     {

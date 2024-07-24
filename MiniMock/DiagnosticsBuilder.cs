@@ -14,9 +14,16 @@ internal static class DiagnosticsBuilder
         ITypeSymbol sourceType) =>
         context.ReportDiagnostic(Diagnostic.Create(Mm0001, locations.FirstOrDefault(), sourceType));
 
-    //private static readonly DiagnosticDescriptor Em0001 = new("EM0001", "Converter not found",
-    //    "Unable to find converter for mapping '{0}' ({1}) to '{2}' ({3})", "EasyMapper", DiagnosticSeverity.Error,
-    //    true);
+    private static readonly DiagnosticDescriptor Mm0002 = new("MM0002", "Unsupported feature",
+        "{0}", "MiniMock", DiagnosticSeverity.Error,
+        true);
+
+    public static void AddRefPropertyNotSupported(this SourceProductionContext context, IEnumerable<Location> locations, string message)
+    {
+        var l = locations.ToArray();
+        var diagnostic = Diagnostic.Create(Mm0002, l.FirstOrDefault(), locations.Skip(1), message);
+        context.ReportDiagnostic(diagnostic);
+    }
 
     //private static readonly DiagnosticDescriptor Em0002 = new("EM0002", "No matching property or parameter found",
     //    "No parameter or property was found that matched '{0}'", "EasyMapper", DiagnosticSeverity.Error, true);

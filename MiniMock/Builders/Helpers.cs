@@ -45,7 +45,6 @@ public static class Helpers
         foreach (var grouping in signatures)
         {
             builder.Add($"""
-
                          /// <summary>
                          """);
             grouping.Select(t => t.Documentation).Where(t => !string.IsNullOrWhiteSpace(t)).Distinct().ToList().ForEach(t => builder.Add("///     " + t));

@@ -1,5 +1,6 @@
 namespace MiniMock.Builders;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -28,6 +29,11 @@ internal static class PropertyBuilder
 
     internal static void BuildProperty(CodeBuilder builder, IPropertySymbol symbol, List<MethodSignature> helpers, int index)
     {
+        if (symbol.ReturnsByRef || symbol.ReturnsByRefReadonly)
+        {
+            throw new RefPropertyNotSupportedException(symbol, symbol.ContainingType);
+        }
+
         var propertyName = symbol.Name;
         var internalName = index == 1 ? propertyName : $"{propertyName}_{index}";
         var type = symbol.Type.ToString();
@@ -62,7 +68,7 @@ internal static class PropertyBuilder
         helpers.Add(new($"{type.Replace("?", "")} value", initialValue, $"Sets a initial value for {propertyName}."));
 
         var getSet = $"""
-                      target._{internalName}_get = get; 
+                      target._{internalName}_get = get;
                       target._{internalName}_set = set;
                       """;
         helpers.Add(new($"System.Func<{type}> get, System.Action<{type}> set", getSet, $"Specifies a getter and setter method to call when the property {propertyName} is called."));
