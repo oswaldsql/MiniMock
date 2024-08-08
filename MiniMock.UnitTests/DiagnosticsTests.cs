@@ -32,7 +32,7 @@ public class DiagnosticsTests(ITestOutputHelper testOutputHelper)
     }
 
     [Fact]
-    public void IRefMethodTests()
+    public void MethodWithRefReturnTypeShouldRaiseError()
     {
         var source = Build.TestClass<IRefMethod>();
 
@@ -44,7 +44,7 @@ public class DiagnosticsTests(ITestOutputHelper testOutputHelper)
 
         var actual = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, actual.Severity);
-        Assert.Equal("MM0002", actual.Id);
+        Assert.Equal("MM0003", actual.Id);
         Assert.Equal("Ref return type not supported for 'GetName' in 'IRefMethod'", actual.GetMessage());
 
         Assert.Equal("Mock<MiniMock.UnitTests.DiagnosticsTests.IRefMethod>", actual.Location.GetCode());

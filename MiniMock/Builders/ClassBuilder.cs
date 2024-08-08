@@ -5,10 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
-internal class ClassBuilder(ISymbol target, SourceProductionContext context)
+internal class ClassBuilder(ISymbol target)
 {
-    public static string Build(ISymbol symbol, SourceProductionContext context) =>
-        new ClassBuilder(symbol, context).BuildClass();
+    public static string Build(ISymbol symbol) =>
+        new ClassBuilder(symbol).BuildClass();
 
     private string BuildClass()
     {
@@ -53,7 +53,7 @@ internal class ClassBuilder(ISymbol target, SourceProductionContext context)
                       public partial class Config
                       {
                           private readonly {{name}} target;
-                      
+
                           public Config({{name}} target)
                           {
                               this.target = target;

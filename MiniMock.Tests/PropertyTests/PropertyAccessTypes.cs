@@ -1,6 +1,6 @@
 ﻿namespace MiniMock.Tests.PropertyTests;
 
-public class PropertyAccessTypes()
+public class PropertyAccessTypes
 {
     public interface IPropertyAccessTypes
     {

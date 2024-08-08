@@ -17,7 +17,7 @@ public sealed class MiniMockGenerator : IIncrementalGenerator
             "MiniMockAttribute.g.cs", Constants.MockAttributeCode));
 
         var enums = context.SyntaxProvider.ForAttributeWithMetadataName("MiniMock.Mock`1",
-                (syntaxNode, _) => syntaxNode is SyntaxNode, this.GetAttributes)
+                (syntaxNode, _) => syntaxNode != null, this.GetAttributes)
             .Where(static enumData => enumData is not null)
             .SelectMany((enumerable, _) => enumerable)
             .Collect();
@@ -25,40 +25,40 @@ public sealed class MiniMockGenerator : IIncrementalGenerator
         context.RegisterSourceOutput(enums, this.Build);
     }
 
-    private void Build(SourceProductionContext arg1, ImmutableArray<AttributeData> arg2)
+    private void Build(SourceProductionContext context, ImmutableArray<AttributeData> attributes)
     {
         var implemented = new List<ISymbol>();
-        var l = arg2.ToLookup(FirstGenericType, a => a, SymbolEqualityComparer.Default).Where(t => t.Key != null);
+        var sources = attributes.ToLookup(FirstGenericType, a => a, SymbolEqualityComparer.Default).Where(t => t.Key != null);
 
-        foreach (var l2 in l)
+        foreach (var source in sources)
         {
-            var symbol = l2.Key;
-            try
+            if(source.Key != null)
             {
-                var source = ClassBuilder.Build(symbol, arg1);
+                try
+                {
+                    var code = ClassBuilder.Build(source.Key);
 
-                var fileName = symbol.ToString().Replace("<", "_").Replace(">", "");
+                    var fileName = source.Key.ToString().Replace("<", "_").Replace(">", "");
 
-                arg1.AddSource(fileName + ".g.cs", source);
-                implemented.Add(symbol);
-            }
-            catch (RefPropertyNotSupportedException e)
-            {
-                var t = l2.Select(t => t.ApplicationSyntaxReference?.GetSyntax().GetLocation()).Where(t => t != null);
-
-                arg1.AddRefPropertyNotSupported(t, e.Message);
-            }
-            catch (RefReturnTypeNotSupportedException e)
-            {
-                var t = l2.Select(t => t.ApplicationSyntaxReference?.GetSyntax().GetLocation()).Where(t => t != null);
-
-                arg1.AddRefPropertyNotSupported(t, e.Message);
+                    context.AddSource(fileName + ".g.cs", code);
+                    implemented.Add(source.Key);
+                }
+                catch (RefPropertyNotSupportedException e)
+                {
+                    context.AddRefPropertyNotSupported(GetSourceLocations(source), e.Message);
+                }
+                catch (RefReturnTypeNotSupportedException e)
+                {
+                    context.AddRefReturnTypeNotSupported(GetSourceLocations(source), e.Message);
+                }
             }
         }
 
-        var mockClassSource = MockClassBuilder.Build(implemented, arg1);
-        arg1.AddSource("Mock.g.cs", mockClassSource);
+        var mockClassSource = MockClassBuilder.Build(implemented, context);
+        context.AddSource("Mock.g.cs", mockClassSource);
     }
+
+    private static IEnumerable<Location> GetSourceLocations(IGrouping<ISymbol?, AttributeData> source) => source.Select(t => t.ApplicationSyntaxReference?.GetSyntax().GetLocation()!).Where(t => t != null);
 
     private static ITypeSymbol? FirstGenericType(AttributeData t) => t.AttributeClass?.TypeArguments.FirstOrDefault();
 

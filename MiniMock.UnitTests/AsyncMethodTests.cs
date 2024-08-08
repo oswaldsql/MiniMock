@@ -22,7 +22,7 @@ public class AsyncMethodTests(ITestOutputHelper testOutputHelper)
         Assert.Empty(generate.GetErrors());
     }
 
-    public interface IGenericTaskMethods 
+    public interface IGenericTaskMethods
     {
         Task<string> WithParameter(string name);
         Task<int> WithoutParameter();
@@ -31,7 +31,7 @@ public class AsyncMethodTests(ITestOutputHelper testOutputHelper)
     [Fact]
     public void GenericTaskMethodsTests()
     {
-        var source = Build.TestClass<IGenericTaskMethods>(); 
+        var source = Build.TestClass<IGenericTaskMethods>();
 
         var generate = new MiniMockGenerator().Generate(source);
 
@@ -41,7 +41,7 @@ public class AsyncMethodTests(ITestOutputHelper testOutputHelper)
     }
 
     [Fact]
-    public void INotifyPropertyChangedTests()
+    public void CanCreateMockForINotifyPropertyChanged()
     {
         var source = Build.TestClass<INotifyPropertyChanged>();
 

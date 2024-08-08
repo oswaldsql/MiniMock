@@ -1,8 +1,6 @@
 namespace MiniMock.Tests.PropertyTests;
 
-using Xunit.Abstractions;
-
-public class InheritanceTests()
+public class InheritanceTests
 {
     public interface IBaseWithProperties
     {
@@ -11,7 +9,7 @@ public class InheritanceTests()
         string Name3 { get; }
     }
 
-    public interface IDerivedWithProperties2 : IBaseWithProperties
+    public interface IDerivedWithProperties : IBaseWithProperties
     {
         new string Name1 { get; set; }
         new string Name2 { set; }
@@ -19,15 +17,29 @@ public class InheritanceTests()
     }
 
     [Fact]
-    [Mock<IDerivedWithProperties2>]
-    public void PropertyInheritanceTests()
+    [Mock<IDerivedWithProperties>]
+    public void CallsToBaseInterfaceShouldThrowException()
     {
         var dummy = "";
-        var sut = Mock.IDerivedWithProperties2(config => {}) as IBaseWithProperties;
+        var sut = Mock.IDerivedWithProperties() as IBaseWithProperties;
 
         Assert.Throws<InvalidOperationException>(() => sut.Name1 = "test");
         Assert.Throws<InvalidOperationException>(() => dummy = sut.Name1);
         Assert.Throws<InvalidOperationException>(() => sut.Name2 = "test");
         Assert.Throws<InvalidOperationException>(() => dummy = sut.Name3);
     }
+
+    [Fact]
+    [Mock<IDerivedWithProperties>]
+    public void CallsToDerivedInterfaceShouldThrowException()
+    {
+        var dummy = "";
+        var sut = Mock.IDerivedWithProperties();
+
+        Assert.Throws<InvalidOperationException>(() => sut.Name1 = "test");
+        Assert.Throws<InvalidOperationException>(() => dummy = sut.Name1);
+        Assert.Throws<InvalidOperationException>(() => sut.Name2 = "test");
+        Assert.Throws<InvalidOperationException>(() => dummy = sut.Name3);
+    }
+
 }

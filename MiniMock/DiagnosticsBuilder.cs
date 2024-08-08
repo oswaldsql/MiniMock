@@ -21,7 +21,19 @@ internal static class DiagnosticsBuilder
     public static void AddRefPropertyNotSupported(this SourceProductionContext context, IEnumerable<Location> locations, string message)
     {
         var l = locations.ToArray();
-        var diagnostic = Diagnostic.Create(Mm0002, l.FirstOrDefault(), locations.Skip(1), message);
+        var diagnostic = Diagnostic.Create(Mm0002, l.FirstOrDefault(), l.Skip(1), message);
+        context.ReportDiagnostic(diagnostic);
+    }
+
+
+    private static readonly DiagnosticDescriptor Mm0003 = new("MM0003", "Unsupported feature",
+        "{0}", "MiniMock", DiagnosticSeverity.Error,
+        true);
+
+    public static void AddRefReturnTypeNotSupported(this SourceProductionContext context, IEnumerable<Location> locations, string message)
+    {
+        var l = locations.ToArray();
+        var diagnostic = Diagnostic.Create(Mm0003, l.FirstOrDefault(), l.Skip(1), message);
         context.ReportDiagnostic(diagnostic);
     }
 

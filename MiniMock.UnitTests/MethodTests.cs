@@ -106,7 +106,7 @@ public class TestClass{
     public abstract class AbstractClass
     {
         public abstract string AbstractProperty { get; set; }
-        public virtual string VirtualProperty { get; set; }
+        public virtual string VirtualProperty { get; set; } = "test";
         public abstract void AbstractMethod();
         public virtual void VirtualMethod() { }
     }

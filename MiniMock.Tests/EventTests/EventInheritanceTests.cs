@@ -1,4 +1,4 @@
-﻿namespace MiniMock.Tests.MethodTests;
+﻿namespace MiniMock.Tests.EventTests;
 
 public class EventInheritanceTests
 {

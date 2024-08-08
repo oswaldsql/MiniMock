@@ -30,8 +30,7 @@ public class InheritanceTests
     {
         var sut = Mock.IDerived(config => config.Method1(true));
 
-        Assert.True((bool)sut.Method1());
-        Assert.True((bool)sut.Method1());
+        Assert.True(sut.Method1());
         Assert.True(((IBase)sut).Method1());
 
         Assert.Throws<InvalidOperationException>(() => ((IBase)sut).Method6());

@@ -10,7 +10,7 @@ public class TriggerEventFromConfiguration
     {
         // arrange
         var actual = "";
-        var sut = Mock.INotifyDTO(config => config.Value(() => "test", s =>
+        var sut = Mock.INotifyDTO(config => config.Value(() => "test", _ =>
         {
             config.PropertyChanged(new PropertyChangedEventArgs("Value"));
         }));

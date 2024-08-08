@@ -6,19 +6,55 @@ public class OutMethodTests
     {
         bool OutWithReturn(string s, out int value);
         void OutWithVoid(string s, out int value);
-        int OutWithRef(string s, ref int value);
+        bool OutWithRef(string s, ref int value);
     }
 
     [Fact]
     [Mock<IMethodWithOutArgument>]
-    public void FactMethodName()
+    public void OutParameterWithReturnValueShouldWork()
+    {
+        var sut = Mock.IMethodWithOutArgument(config =>
+            config.OutWithReturn((string s, out int i) => int.TryParse(s, out i))
+        );
+
+        var result = sut.OutWithReturn("10", out var actual);
+
+        Assert.Equal(10, actual);
+        Assert.True(result);
+    }
+
+
+    [Fact]
+    [Mock<IMethodWithOutArgument>]
+    public void OutParameterWithoutReturnValueShouldWork()
     {
         var sut = Mock.IMethodWithOutArgument(config =>
             config
-                .OutWithReturn((string s, out int i) => int.TryParse(s, out i))
-                .OutWithVoid((string s, out int i) => i = 10));
+                .OutWithVoid((string s, out int i) => i = int.Parse(s))
+        );
 
-        sut.OutWithReturn("name", out var value);
-        sut.OutWithVoid("10", out var value2);
+        sut.OutWithVoid("10", out var actual);
+
+        Assert.Equal(10, actual);
+    }
+
+    [Fact]
+    [Mock<IMethodWithOutArgument>]
+    public void RefParameterWithReturnValueShouldWork()
+    {
+        var sut = Mock.IMethodWithOutArgument(config =>
+            config
+                .OutWithRef((string s, ref int value) =>
+                {
+                    value += int.Parse(s);
+                    return true;
+                })
+        );
+
+        var actual = 1;
+        var result = sut.OutWithRef("10", ref actual);
+
+        Assert.True(result);
+        Assert.Equal(11, actual);
     }
 }
