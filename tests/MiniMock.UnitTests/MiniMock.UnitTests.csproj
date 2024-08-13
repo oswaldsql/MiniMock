@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MiniMock\MiniMock.csproj"/>
+    <ProjectReference Include="..\..\src\MiniMock\MiniMock.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
