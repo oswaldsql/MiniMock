@@ -24,6 +24,26 @@ public class TriggerEventFromConfiguration
         Assert.Equal("Value", actual);
     }
 
+    [Fact]
+    [Mock<INotifyDTO>]
+    public void ItShouldBePossibleToTriggerEventsFromAExposedConfiguration()
+    {
+        // Arrange
+        Version? actual = null;
+        IVersionLibraryMock.Config? exposedConfig = null;
+
+        var versionLibrary = Mock.IVersionLibrary(config => exposedConfig = config);
+
+        versionLibrary.NewVersionAdded += (_, version) => actual = version;
+
+        // ACT
+        exposedConfig?.NewVersionAdded(new Version(2, 0, 0, 0));
+
+        // Assert
+        Assert.NotNull(actual);
+        Assert.Equal(new Version(2, 0, 0, 0), actual);
+    }
+
     public interface INotifyDTO : INotifyPropertyChanged
     {
         public string Value { get; set; }

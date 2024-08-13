@@ -35,13 +35,49 @@ Unmocked features will throw an exception if used.
     }
 ```
 
+## Installation & Initialization
+
+Reference nuget package in your test project
+
+```csharp
+dotnet add package MiniMock
+```
+
+Specify which interface to mock by using the [Mock] attribute before your test
+
+```csharp
+[Fact]
+[Mock<IMyRepository>]
+public void MyTest {
+}
+```
+
+Create a mock by using the mock factory 
+
+```csharp
+var mockRepository = Mock.IMyRepository();
+```
+
+Configure your mock to your needs
+
+```csharp
+var mockRepo = Mock.IMyRepository(config => config.CreateCustormerAsync(return: Guid.NewGuid());
+```
+
+Use the mocked object
+
+```csharp
+var sut = new CustomerMaitinance(mockRepo);
+sut.Create(customerDTO, cancelationToken);
+```
+
 ## Quality of life features
 
 ### Fluent interface with full intellisence and documentation.
 
 All mockable members are available through a _fluent interface_ with _intellisence_, _type safety_ and _documentation_.
 
-Since the mock code is generated at development time allowing you to _inspect_, _stepped into_ and _debug_. 
+Since the mock code is generated at development time allowing you to _inspect_, _stepped into_ and _debug_.
 
 All code required to run MiniMock is generated and has _no runtime dependencies_.
 

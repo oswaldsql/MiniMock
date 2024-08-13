@@ -1,4 +1,6 @@
-﻿namespace MiniMock.Tests;
+﻿// ReSharper disable UnusedParameter.Local
+// ReSharper disable UnusedVariable
+namespace MiniMock.Tests;
 
 using Xunit.Abstractions;
 
@@ -27,8 +29,8 @@ public class Demo(ITestOutputHelper testOutputHelper)
                 config
                     .DownloadExists(returns: true) // Returns true for all versions
                     .DownloadExists(throws: new IndexOutOfRangeException()) // Throws IndexOutOfRangeException for all versions
-                    .DownloadExists(call: (string s) => s.StartsWith("2.0.0")) // Returns true for version 2.0.0.x base on a string parameter
-                    .DownloadExists(call: (Version v) => v is { Major: 2, Minor: 0, Revision: 0 })// Returns true for version 2.0.0.x based on a version parameter
+                    .DownloadExists(call: s => s.StartsWith("2.0.0")) // Returns true for version 2.0.0.x base on a string parameter
+                    .DownloadExists(call: v => v is { Major: 2, Minor: 0, Revision: 0 })// Returns true for version 2.0.0.x based on a version parameter
 
                     .DownloadLinkAsync(returns: Task.FromResult(new Uri("http://downloads/2.0.0"))) // Returns a task containing a download link for all versions
                     .DownloadLinkAsync(call: s => Task.FromResult(s.StartsWith("2.0.0") ? new Uri("http://downloads/2.0.0") : new Uri("http://downloads/UnknownVersion"))) // Returns a task containing a download link for version 2.0.0.x otherwise a error link
@@ -39,7 +41,7 @@ public class Demo(ITestOutputHelper testOutputHelper)
                     .CurrentVersion(get: () => new Version(2, 0, 0, 0), set: version => throw new IndexOutOfRangeException()) // Overwrites the property getter and setter
                     .CurrentVersion(value: new Version(2, 0, 0, 0)) // Sets the initial version to 2.0.0.0
 
-                    .Indexer(get: s => new Version(2,0,0,0), set: (s, version) => {}) // Overwrites the indexer getter and setter
+                    .Indexer(get: key => new Version(2,0,0,0), set: (key, value) => {}) // Overwrites the indexer getter and setter
                     .Indexer(values: versions) // Provides a dictionary to retrieve and store versions
 
                     .NewVersionAdded(eventArgs: new Version(2,0,0,0)) // Raises the event right away
@@ -106,7 +108,7 @@ public class Demo(ITestOutputHelper testOutputHelper)
 
         var versionLibrary = Mock.IVersionLibrary(config =>
                 config
-                    .DownloadExists(call: (string s) => s.StartsWith("2.0.0") ? true : false ) // Returns true for version 2.0.0.x base on a string parameter
+                    .DownloadExists(call: (string s) => s.StartsWith("2.0.0") ) // Returns true for version 2.0.0.x base on a string parameter
                     .DownloadExists(call: (Version v) => v is { Major: 2, Minor: 0, Revision: 0 })// Returns true for version 2.0.0.x based on a version parameter
                     //or
                     .DownloadExists(call: LocalIntercept) // calls a local function

@@ -4,7 +4,7 @@ public class EventInheritanceTests
 {
     [Fact]
     [Mock<IDerivedWithEvent>]
-    public void BothDerivedAndBaseEventIsTriggered()
+    public void BothDerivedAndBaseEventsAreTriggered()
     {
         // Arrange
         var eventTriggered = false;

@@ -14,9 +14,9 @@ public sealed class MiniMockGenerator : IIncrementalGenerator
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         context.RegisterPostInitializationOutput(static ctx => ctx.AddSource(
-            "MiniMockAttribute.g.cs", Constants.MockAttributeCode));
+            "MiniMock.MockAttribute.g.cs", Constants.MockAttributeCode));
 
-        var enums = context.SyntaxProvider.ForAttributeWithMetadataName("MiniMock.Mock`1",
+        var enums = context.SyntaxProvider.ForAttributeWithMetadataName("MiniMock.MockAttribute`1",
                 (syntaxNode, _) => syntaxNode != null, this.GetAttributes)
             .Where(static enumData => enumData is not null)
             .SelectMany((enumerable, _) => enumerable)
