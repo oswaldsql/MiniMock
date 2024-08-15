@@ -43,12 +43,13 @@ internal class ClassBuilder(ISymbol target)
                           var result = new Config(this);
                           config = config ?? new System.Action<Config>(t => { });
                           config.Invoke(result);
-                          _MockConfig = result;
+                          _config = result;
                       }
 
                       public static {{fullName}} Create(System.Action<Config>? config = null) => new {{name}}(config);
 
-                      internal Config _MockConfig { get; set; }
+                      private Config _config { get; }
+                      internal void GetConfig(out Config config) => config = _config;
 
                       public partial class Config
                       {

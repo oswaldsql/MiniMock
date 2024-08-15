@@ -18,8 +18,4 @@
 		<ProjectReference Include="..\..\src\MiniMock\MiniMock.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="GeneralTests\" />
-    </ItemGroup>
-
 </Project>

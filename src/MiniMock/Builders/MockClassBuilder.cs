@@ -45,7 +45,7 @@ public static class MockClassBuilder
                       /// <param name="mock">Optional configuration for the mock object.</param>
                       /// <returns>The mock object for <see cref="{symbol}"/>.</returns>
                       """);
-                builder.Add($"internal static {symbol} {methodName}(System.Action<{containingNamespace}.{name}.Config>? mock = null) => {containingNamespace}.{name}.Create(mock);");
+                builder.Add($"internal static {symbol} {methodName}(System.Action<{containingNamespace}.{name}.Config>? config = null) => {containingNamespace}.{name}.Create(config);");
             }
             else
             {
@@ -60,7 +60,7 @@ public static class MockClassBuilder
                       """);
                 var name = symbolName + "Mock";
                 var methodName = symbolName;
-                builder.Add($"internal static {symbol} {methodName}(System.Action<{containingNamespace}.{name}.Config>? mock = null) => {containingNamespace}.{name}.Create(mock);");
+                builder.Add($"internal static {symbol} {methodName}(System.Action<{containingNamespace}.{name}.Config>? config = null) => {containingNamespace}.{name}.Create(config);");
             }
         }
 
