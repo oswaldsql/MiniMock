@@ -40,6 +40,11 @@ internal static class MethodBuilder
             throw new RefReturnTypeNotSupportedException(symbol, symbol.ContainingType);
         }
 
+        if(symbol.IsGenericMethod)
+        {
+            throw new GenericMethodNotSupportedException(symbol, symbol.ContainingType);
+        }
+
         var (parameterList, typeList, nameList) = symbol.ParameterStrings();
 
         var (methodName, methodReturnType, returnString) = MethodName(symbol);
@@ -130,7 +135,7 @@ internal static class MethodBuilder
         IMethodSymbol method)
     {
         var methodName = method.Name;
-        var methodReturnType = ((INamedTypeSymbol)method.ReturnType).ToString();
+        var methodReturnType = method.ReturnType.ToString();
         var returnString = method.ReturnsVoid ? "" : "return ";
         return (methodName, methodReturnType, returnString);
     }

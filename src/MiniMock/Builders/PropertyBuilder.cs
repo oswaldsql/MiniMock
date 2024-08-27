@@ -66,7 +66,7 @@ internal static class PropertyBuilder
                             target._{internalName}_set = s => target._{internalName} = s;
                             """;
         helpers.Add(new MethodSignature($"{type.Replace("?", "")} value", initialValue,
-            $"Sets a initial value for {propertyName}."));
+            $"Sets an initial value for {propertyName}."));
 
         var getSet = $"""
                       target._{internalName}_get = get;

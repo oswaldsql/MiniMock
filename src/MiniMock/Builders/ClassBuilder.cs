@@ -18,11 +18,14 @@ internal class ClassBuilder(ISymbol target)
         var interfaceNamespace = target.ContainingNamespace;
         var name = target.Name + "Mock";
 
+        var constraints = "";
+
         var typeArguments = ((INamedTypeSymbol)target).TypeArguments;
         if (typeArguments.Length > 0)
         {
-            var types = string.Join("_", typeArguments.Select(t => t.Name));
-            name = $"{target.Name}Mock_{types}";
+            constraints = typeArguments.ToConstraints();
+            var types = string.Join(", ", typeArguments.Select(t => t.Name));
+            name = $"{target.Name}Mock<{types}>";
         }
 
         var documentationName = fullName.Replace("<", "{").Replace(">", "}");
@@ -36,10 +39,10 @@ internal class ClassBuilder(ISymbol target)
                       /// <summary>
                       /// Mock implementation of <see cref="{{documentationName}}"/>. Should only be used for testing purposes.
                       /// </summary>
-                      internal class {{name}} : {{fullName}}
+                      internal class {{name}} : {{fullName}} {{constraints}}
                       {
                       ->
-                      private {{name}}(System.Action<Config>? config = null) {
+                      private {{target.Name}}Mock(System.Action<Config>? config = null) {
                           var result = new Config(this);
                           config = config ?? new System.Action<Config>(t => { });
                           config.Invoke(result);
@@ -73,6 +76,45 @@ internal class ClassBuilder(ISymbol target)
 
         return builder.ToString();
     }
+
+//    private static string Constraints(ImmutableArray<ITypeSymbol> typeArguments)
+//    {
+//        var result = new StringBuilder();
+//
+//        foreach (var s in typeArguments.Select(type => BuildConstraintsString((ITypeParameterSymbol)type)))
+//        {
+//            result.Append(s);
+//        }
+//
+//        return result.ToString().Trim();
+//    }
+//
+//    private static string BuildConstraintsString(ITypeParameterSymbol symbol)
+//    {
+//        var result = new List<string>();
+//
+//        foreach (var t in symbol.ConstraintTypes)
+//        {
+//            result.Add(t.ToString());
+//        }
+//
+//        if (symbol.HasUnmanagedTypeConstraint)
+//        {
+//            result.Add("unmanaged");
+//        }
+//        else
+//        {
+//            if (symbol.HasConstructorConstraint) result.Add("new()");
+//            if(symbol.HasValueTypeConstraint) result.Add("struct");
+//        }
+//
+//        if(symbol.HasReferenceTypeConstraint) result.Add("class");
+//        if(symbol.HasNotNullConstraint) result.Add("notnull");
+//
+//        if (result.Count == 0) { return "";}
+//
+//        return " where " + symbol.Name + " : " + string.Join(", ", result);
+//    }
 
     private void BuildMembers(CodeBuilder builder)
     {

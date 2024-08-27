@@ -1,23 +1,48 @@
 namespace MiniMock.Tests.MethodTests;
 
-[Mock<IGeneric<string>>]
-[Mock<IGeneric<int>>]
+[Mock<IGeneric<int, int>>]
 public class GenericInterfaceTests
 {
+    public interface IGeneric<TKey, TValue> where TKey : new() where TValue : new()
+    {
+        public TKey ReturnGenericType();
+        public void GenericParameter(TKey source);
+
+        public TKey Name { get; set; }
+    }
+
+
+
     public interface IGeneric<T>
     {
-        public T ReturnGenericType();
-        public void GenericParameter(T source);
+        T ReturnGenericType();
+        void GenericParameter(T source);
+
+        bool TryParse(string value, out T result);
+
+        string this[T key] { get; set; }
+
+        event EventHandler<T> EventWithArgs;
     }
 
     [Fact]
+    [Mock<IGeneric<string>>]
     public void GenericStringClass_ShouldReturnGenericType()
     {
         // Arrange
-        var sut = Mock.IGeneric_String(mock => mock.ReturnGenericType("Result"));
+        var sut = Mock.IGeneric<string>(mock => mock
+            .Indexer([])
+            .ReturnGenericType("Result")
+            .TryParse((string value, out string result) => { result = value.ToString(); return true; })
+        );
 
         // Act
+        sut.EventWithArgs += (sender, e) => { };
         var actual = sut.ReturnGenericType();
+        var t = sut.TryParse("test", out var result2);
+
+        sut["key"] = "value";
+
 
         // Assert
         Assert.Equal("Result", actual);
@@ -27,7 +52,7 @@ public class GenericInterfaceTests
     public void GenericIntClass_ShouldReturnGenericType()
     {
         // Arrange
-        var sut = Mock.IGeneric_Int32(mock => mock.ReturnGenericType(10));
+        var sut = Mock.IGeneric<int>(mock => mock.ReturnGenericType(10));
 
         // Act
         var actual = sut.ReturnGenericType();
@@ -41,7 +66,7 @@ public class GenericInterfaceTests
     {
         // Arrange
         var actual = "";
-        var sut = Mock.IGeneric_String(mock => mock.GenericParameter(value => actual = value));
+        var sut = Mock.IGeneric<string>(mock => mock.GenericParameter(value => actual = value));
 
         // Act
         sut.GenericParameter("New value");
@@ -55,7 +80,7 @@ public class GenericInterfaceTests
     {
         // Arrange
         var actual = 0;
-        var sut = Mock.IGeneric_Int32(mock => mock.GenericParameter(value => actual = value));
+        var sut = Mock.IGeneric<int>(mock => mock.GenericParameter(value => actual = value));
 
         // Act
         sut.GenericParameter(10);
