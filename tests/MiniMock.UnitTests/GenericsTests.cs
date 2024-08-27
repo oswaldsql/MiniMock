@@ -90,8 +90,8 @@ public class TestClass{{
 
         var error = Assert.Single(generate.GetErrors());
 
-        Assert.Equal(error.GetMessage(), "Generic methods in non generic interfaces or classes is not currently supported for 'parse' in 'IGenericMethod'");
-        Assert.Equal(error.Id, "MM0004");
+        Assert.Equal("Generic methods in non generic interfaces or classes is not currently supported for 'parse' in 'IGenericMethod'", error.GetMessage());
+        Assert.Equal("MM0004", error.Id);
     }
 
     public interface IGeneric<out TKey, in TValue> where TKey : IComparable<TKey>? //, IEnumerable<string>?
