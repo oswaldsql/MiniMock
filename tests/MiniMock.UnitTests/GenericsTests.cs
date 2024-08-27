@@ -43,7 +43,7 @@ public class TestClass{{
 //    [InlineData("where T : allows ref struct")]
     public void GenericInterfaceTests(string constraint, string mockAttribute)
     {
-        testOutputHelper.WriteLine(constraint + " - " + mockAttribute);
+        Console.WriteLine(constraint + " - " + mockAttribute);
 
         var source = $@"
 #nullable enable
@@ -76,7 +76,7 @@ public class TestClass{{
 
     public interface IGenericMethod
     {
-        T Parse<T>(string value) where T : struct;
+        T parse<T>(string value) where T : struct;
     }
 
     [Fact]
@@ -93,4 +93,14 @@ public class TestClass{{
         Assert.Equal(error.GetMessage(), "Generic methods in non generic interfaces or classes is not currently supported for 'parse' in 'IGenericMethod'");
         Assert.Equal(error.Id, "MM0004");
     }
+
+    public interface IGeneric<out TKey, in TValue> where TKey : IComparable<TKey>? //, IEnumerable<string>?
+    {
+        TKey Method1(TValue value);
+//        void Method2(T value);
+//        T Method3();
+//        T Method4(out T value);
+//        T Method5(ref T value);
+    }
+
 }
