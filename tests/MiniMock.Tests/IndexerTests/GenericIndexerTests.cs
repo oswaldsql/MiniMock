@@ -43,7 +43,6 @@ public class StaticInterfaceTests
             StaticEvent?.Invoke(null, EventArgs.Empty);
         }
 
-        //static abstract string Foo { get; }    // without implementation
         static virtual string Bar => "value";  // with implementation
     }
 
@@ -59,16 +58,15 @@ public class StaticInterfaceTests
     }
 
     [Fact]
-    //[Mock<IStaticAbstractInterfaceMembers>]
+    [Mock<ISupportedStaticInterfaceMembers>]
     public void StaticInterfaceCanBeMocked()
     {
         // Arrange
-        //var sut = Mock.IStaticInterface();
+        var sut = Mock.ISupportedStaticInterfaceMembers();
 
-        //IStaticInterface.StaticMethod();
         // ACT
 
         // Assert
-        //Assert.NotNull(sut);
+        Assert.NotNull(sut);
     }
 }
