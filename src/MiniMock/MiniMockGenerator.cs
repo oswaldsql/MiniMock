@@ -55,6 +55,10 @@ public sealed class MiniMockGenerator : IIncrementalGenerator
                 {
                     context.AddGenericMethodNotSupported(GetSourceLocations(source), e.Message);
                 }
+                catch (StaticAbstractMembersNotSupportedException e)
+                {
+                    context.AddStaticAbstractMembersNotSupported(GetSourceLocations(source), e.Message);
+                }
 
             }
         }
@@ -79,3 +83,4 @@ internal class UnsupportedAccessibilityException(Accessibility accessibility) : 
 internal class RefPropertyNotSupportedException(IPropertySymbol propertySymbol, ITypeSymbol typeSymbol) : Exception($"Ref property not supported for '{propertySymbol.Name}' in '{typeSymbol.Name}'" );
 internal class RefReturnTypeNotSupportedException(IMethodSymbol methodSymbol, ITypeSymbol typeSymbol) : Exception($"Ref return type not supported for '{methodSymbol.Name}' in '{typeSymbol.Name}'" );
 internal class GenericMethodNotSupportedException(IMethodSymbol methodSymbol, ITypeSymbol typeSymbol) : Exception($"Generic methods in non generic interfaces or classes is not currently supported for '{methodSymbol.Name}' in '{typeSymbol.Name}'" );
+internal class StaticAbstractMembersNotSupportedException(string name, ITypeSymbol typeSymbol) : Exception($"Static abstract members in interfaces or classes is not supported for '{name}' in '{typeSymbol.Name}'" );

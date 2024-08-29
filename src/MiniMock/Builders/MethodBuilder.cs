@@ -45,6 +45,16 @@ internal static class MethodBuilder
             throw new GenericMethodNotSupportedException(symbol, symbol.ContainingType);
         }
 
+        if (symbol.IsStatic)
+        {
+            if (symbol.IsAbstract)
+            {
+                throw new StaticAbstractMembersNotSupportedException(symbol.Name, symbol.ContainingType);
+            }
+            builder.Add($"// Ignoring Static method {symbol}.");
+            return;
+        }
+
         var (parameterList, typeList, nameList) = symbol.ParameterStrings();
 
         var (methodName, methodReturnType, returnString) = MethodName(symbol);

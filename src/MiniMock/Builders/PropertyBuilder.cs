@@ -17,8 +17,19 @@ internal static class PropertyBuilder
         var index = 0;
         foreach (var symbol in enumerable)
         {
-            index++;
-            BuildProperty(builder, symbol, helpers, index);
+            if (symbol.IsStatic)
+            {
+                if (symbol.IsAbstract)
+                {
+                    throw new StaticAbstractMembersNotSupportedException(name, symbol.ContainingType);
+                }
+                builder.Add($"// Ignoring Static property {symbol}.");
+            }
+            else
+            {
+                index++;
+                BuildProperty(builder, symbol, helpers, index);
+            }
         }
 
         helpers.BuildHelpers(builder, name);
