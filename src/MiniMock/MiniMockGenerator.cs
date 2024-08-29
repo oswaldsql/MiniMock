@@ -51,6 +51,15 @@ public sealed class MiniMockGenerator : IIncrementalGenerator
                 {
                     context.AddRefReturnTypeNotSupported(GetSourceLocations(source), e.Message);
                 }
+                catch (GenericMethodNotSupportedException e)
+                {
+                    context.AddGenericMethodNotSupported(GetSourceLocations(source), e.Message);
+                }
+                catch (StaticAbstractMembersNotSupportedException e)
+                {
+                    context.AddStaticAbstractMembersNotSupported(GetSourceLocations(source), e.Message);
+                }
+
             }
         }
 
@@ -60,14 +69,18 @@ public sealed class MiniMockGenerator : IIncrementalGenerator
 
     private static IEnumerable<Location> GetSourceLocations(IGrouping<ISymbol?, AttributeData> source) => source.Select(t => t.ApplicationSyntaxReference?.GetSyntax().GetLocation()!).Where(t => t != null);
 
-    private static ITypeSymbol? FirstGenericType(AttributeData t) => t.AttributeClass?.TypeArguments.FirstOrDefault();
+    private static ITypeSymbol? FirstGenericType(AttributeData t)
+    {
+        var firstGenericType = t.AttributeClass?.TypeArguments.OfType<INamedTypeSymbol>().FirstOrDefault();
+        return firstGenericType?.IsGenericType == true ? firstGenericType.OriginalDefinition : firstGenericType;
+    }
 
     private IEnumerable<AttributeData> GetAttributes(GeneratorAttributeSyntaxContext arg1, CancellationToken arg2) =>
         arg1.Attributes;
 }
 
-internal class UnsupportedAccessibilityException(Accessibility accessibility)
-    : Exception($"Unsupported accessibility type '{accessibility}'");
-
+internal class UnsupportedAccessibilityException(Accessibility accessibility) : Exception($"Unsupported accessibility type '{accessibility}'");
 internal class RefPropertyNotSupportedException(IPropertySymbol propertySymbol, ITypeSymbol typeSymbol) : Exception($"Ref property not supported for '{propertySymbol.Name}' in '{typeSymbol.Name}'" );
 internal class RefReturnTypeNotSupportedException(IMethodSymbol methodSymbol, ITypeSymbol typeSymbol) : Exception($"Ref return type not supported for '{methodSymbol.Name}' in '{typeSymbol.Name}'" );
+internal class GenericMethodNotSupportedException(IMethodSymbol methodSymbol, ITypeSymbol typeSymbol) : Exception($"Generic methods in non generic interfaces or classes is not currently supported for '{methodSymbol.Name}' in '{typeSymbol.Name}'" );
+internal class StaticAbstractMembersNotSupportedException(string name, ITypeSymbol typeSymbol) : Exception($"Static abstract members in interfaces or classes is not supported for '{name}' in '{typeSymbol.Name}'" );

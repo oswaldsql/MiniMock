@@ -17,6 +17,14 @@ internal static class EventBuilder
         var eventCount = 0;
         foreach (var symbol in enumerable)
         {
+            if(symbol.IsStatic) {
+                if (symbol.IsAbstract)
+                {
+                    throw new StaticAbstractMembersNotSupportedException(name, symbol.ContainingType);
+                }
+                builder.Add($"// Ignoring Static event {symbol}.");
+                continue;
+            }
             eventCount++;
             BuildEvent(builder, symbol, helpers, eventCount);
         }

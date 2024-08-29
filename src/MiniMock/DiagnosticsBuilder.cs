@@ -37,6 +37,30 @@ internal static class DiagnosticsBuilder
         context.ReportDiagnostic(diagnostic);
     }
 
+
+    private static readonly DiagnosticDescriptor Mm0004 = new("MM0004", "Unsupported feature",
+        "{0}", "MiniMock", DiagnosticSeverity.Error,
+        true);
+
+    public static void AddGenericMethodNotSupported(this SourceProductionContext context, IEnumerable<Location> locations, string message)
+    {
+        var l = locations.ToArray();
+        var diagnostic = Diagnostic.Create(Mm0004, l.FirstOrDefault(), l.Skip(1), message);
+        context.ReportDiagnostic(diagnostic);
+    }
+
+    private static readonly DiagnosticDescriptor Mm0005 = new("MM0005", "Unsupported feature",
+        "{0}", "MiniMock", DiagnosticSeverity.Error,
+        true);
+
+    public static void AddStaticAbstractMembersNotSupported(this SourceProductionContext context, IEnumerable<Location> locations, string message)
+    {
+        var l = locations.ToArray();
+        var diagnostic = Diagnostic.Create(Mm0005, l.FirstOrDefault(), l.Skip(1), message);
+        context.ReportDiagnostic(diagnostic);
+    }
+
+
     //private static readonly DiagnosticDescriptor Em0002 = new("EM0002", "No matching property or parameter found",
     //    "No parameter or property was found that matched '{0}'", "EasyMapper", DiagnosticSeverity.Error, true);
 

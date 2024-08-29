@@ -110,5 +110,4 @@ public static class Helpers
         var nameList = method.ToString(p => $"{p.OutString()}{p.Name}");
         return (parameterList, typeList, nameList);
     }
-
 }

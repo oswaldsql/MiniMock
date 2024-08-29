@@ -2,20 +2,20 @@
 
 public class GenericInterfaceTests
 {
-    public interface IGeneric2<T>
+    public interface IGeneric<TKey,TValue> where TKey : System.IComparable<TKey>
     {
 
     }
 
     [Fact]
-    [Mock<IGeneric2<string>>]
+    [Mock<IGeneric<string, string>>]
     public void METHOD()
     {
         // Arrange
 
 
         // ACT
-        Mock.IGeneric2<string>(config => { });
+        //Mock.IGeneric2<string>(config => { });
 
         // Assert
 

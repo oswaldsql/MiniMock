@@ -32,20 +32,22 @@ public static class MockClassBuilder
 
             if (typeArguments.Length > 0)
             {
-                var types = string.Join("_", typeArguments.Select(t => t.Name));
-                var name = $"{symbolName}Mock_{types}";
-                var methodName = symbolName + "_" + types;
+                var types = string.Join(", ", typeArguments.Select(t => t.Name));
+                var name = $"{symbolName}Mock<{types}>";
+                var methodName = symbolName;
+                var constraints = typeArguments.ToConstraints();
 
+                var cref = symbol.ToString().Replace('<','{').Replace('>','}');
                 builder.Add(
                     $"""
 
                       /// <summary>
-                      /// Creates a mock object for <see cref="{symbol}"/>.
+                      /// Creates a mock object for <see cref="{cref}"/>.
                       /// </summary>
-                      /// <param name="mock">Optional configuration for the mock object.</param>
-                      /// <returns>The mock object for <see cref="{symbol}"/>.</returns>
+                      /// <param name="config">Optional configuration for the mock object.</param>
+                      /// <returns>The mock object for <see cref="{cref}"/>.</returns>
                       """);
-                builder.Add($"internal static {symbol} {methodName}(System.Action<{containingNamespace}.{name}.Config>? config = null) => {containingNamespace}.{name}.Create(config);");
+                builder.Add($"internal static {symbol} {methodName}<{types}>(System.Action<{containingNamespace}.{name}.Config>? config = null) {constraints} => {containingNamespace}.{name}.Create(config);");
             }
             else
             {
@@ -55,7 +57,7 @@ public static class MockClassBuilder
                       /// <summary>
                       /// Creates a mock object for <see cref="{symbol}"/>.
                       /// </summary>
-                      /// <param name="mock">Optional configuration for the mock object.</param>
+                      /// <param name="config">Optional configuration for the mock object.</param>
                       /// <returns>The mock object for <see cref="{symbol}"/>.</returns>
                       """);
                 var name = symbolName + "Mock";
@@ -73,4 +75,43 @@ public static class MockClassBuilder
 
         return builder.ToString();
     }
+
+    //private static string Constraints(ImmutableArray<ITypeSymbol> typeArguments)
+    //{
+    //    var result = new StringBuilder();
+    //
+    //    foreach (var s in typeArguments.Select(type => BuildConstraintsString((ITypeParameterSymbol)type)))
+    //    {
+    //        result.Append(s);
+    //    }
+    //
+    //    return result.ToString().Trim();
+    //}
+    //
+    //private static string BuildConstraintsString(ITypeParameterSymbol symbol)
+    //{
+    //    var result = new List<string>();
+    //
+    //    foreach (var t in symbol.ConstraintTypes)
+    //    {
+    //        result.Add(t.ToString());
+    //    }
+    //
+    //    if (symbol.HasUnmanagedTypeConstraint)
+    //    {
+    //        result.Add("unmanaged");
+    //    }
+    //    else
+    //    {
+    //        if (symbol.HasConstructorConstraint) result.Add("new()");
+    //        if(symbol.HasValueTypeConstraint) result.Add("struct");
+    //    }
+    //
+    //    if(symbol.HasReferenceTypeConstraint) result.Add("class");
+    //    if(symbol.HasNotNullConstraint) result.Add("notnull");
+    //
+    //    if (result.Count == 0) { return "";}
+    //
+    //    return " where " + symbol.Name + " : " + string.Join(", ", result);
+    //}
 }
