@@ -38,7 +38,7 @@ public sealed class MiniMockGenerator : IIncrementalGenerator
                 {
                     var code = ClassBuilder.Build(source.Key);
 
-                    var fileName = source.Key.ToString().Replace("<", "_").Replace(">", "");
+                    var fileName = source.Key.ToString().Replace("<", "_").Replace(">", "").Replace(", ","_");
 
                     context.AddSource(fileName + ".g.cs", code);
                     implemented.Add(source.Key);
