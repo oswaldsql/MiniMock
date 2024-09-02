@@ -9,7 +9,10 @@
 
     <ItemGroup>
       <ProjectReference Include="..\MiniMock.Demo.BusinessLogic\MiniMock.Demo.BusinessLogic.csproj" />
-      <ProjectReference Include="..\..\src\MiniMock\MiniMock.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MiniMock" Version="0.9.1" />
     </ItemGroup>
 
 </Project>

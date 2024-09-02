@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.9.0</Version>
+    <Version>0.9.1</Version>
     <Title>Mini mock</Title>
     <Authors>Lasse Sjørup</Authors>
     <Description>A minimalistic source generator for creating mocks for testing is a tool that automatically generates mock implementations of interfaces or classes. This helps in unit testing by providing a way to simulate the behavior of complex dependencies.</Description>
@@ -18,8 +18,22 @@
     <PackageTags>mocking, unit-testing, TDD, mock-objects</PackageTags>
     <PackageIcon>Icon.jpg</PackageIcon>
     <PackageReleaseNotes>Initial version of MiniMock supporting Interfaces and a subset of class mocking.</PackageReleaseNotes>
-    <AssemblyVersion>0.9.0</AssemblyVersion>
+    <AssemblyVersion>0.9.1</AssemblyVersion>
+
+    <IncludeBuiltOutput>false</IncludeBuiltOutput>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="bin\**" />
+    <EmbeddedResource Remove="bin\**" />
+    <None Remove="bin\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="bin\Debug\netstandard2.0\\MockableStaticGenerator.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" />
