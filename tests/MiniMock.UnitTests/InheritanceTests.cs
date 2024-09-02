@@ -1,5 +1,7 @@
 namespace MiniMock.UnitTests;
 
+using System.Collections;
+
 public class InheritanceTests(ITestOutputHelper testOutputHelper)
 {
     public interface IBaseM
@@ -126,6 +128,47 @@ public class InheritanceTests(ITestOutputHelper testOutputHelper)
     public void IndexerInheritanceTests()
     {
         var source = Build.TestClass<IDerivedWithIndexer>();
+
+        var generate = new MiniMockGenerator().Generate(source);
+
+        testOutputHelper.DumpResult(generate);
+
+        Assert.Empty(generate.GetWarnings());
+    }
+}
+
+public class DoubleInheritanceTest(ITestOutputHelper testOutputHelper)
+{
+    public interface IDoubleInheritance : System.Collections.Generic.ICollection<string>, System.Collections.Generic.IList<string>
+    {
+
+    }
+
+    [Fact]
+    public void MethodsInheritedFromMultipleSourcesShouldOnlyBeWrittenOnce()
+    {
+        var source = Build.TestClass<IDoubleInheritance>();
+
+        var generate = new MiniMockGenerator().Generate(source);
+
+        testOutputHelper.DumpResult(generate);
+
+        Assert.Empty(generate.GetWarnings());
+    }
+}
+
+public class NullValueTypeTests(ITestOutputHelper testOutputHelper)
+{
+    public interface INullIntTest
+    {
+        int IntValue { get; set; }
+    }
+
+    [Fact]
+
+    public void NoneNullableValueTypesShouldBePermitted()
+    {
+        var source = Build.TestClass<INullIntTest>();
 
         var generate = new MiniMockGenerator().Generate(source);
 

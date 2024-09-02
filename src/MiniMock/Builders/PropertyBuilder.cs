@@ -71,13 +71,28 @@ internal static class PropertyBuilder
 
                       """);
 
-        var initialValue = $"""
-                            target._{internalName} = value;
-                            target._{internalName}_get = () => target._{internalName};
-                            target._{internalName}_set = s => target._{internalName} = s;
-                            """;
-        helpers.Add(new MethodSignature($"{type.Replace("?", "")} value", initialValue,
-            $"Sets an initial value for {propertyName}."));
+        if (symbol.NullableAnnotation == NullableAnnotation.Annotated)
+        {
+            helpers.Add(new MethodSignature(
+                $"{type.Replace("?", "")} value"
+                , $"""
+                   target._{internalName} = value;
+                   target._{internalName}_get = () => target._{internalName};
+                   target._{internalName}_set = s => target._{internalName} = s;
+                   """,
+                $"Sets an initial value for {propertyName}."));
+        }
+        else
+        {
+            helpers.Add(new MethodSignature(
+                $"{type.Replace("?", "")} value"
+                , $"""
+                   target._{internalName} = value;
+                   target._{internalName}_get = () => target._{internalName} ?? {symbol.BuildNotMockedException()};
+                   target._{internalName}_set = s => target._{internalName} = s;
+                   """,
+                $"Sets an initial value for {propertyName}."));
+        }
 
         var getSet = $"""
                       target._{internalName}_get = get;

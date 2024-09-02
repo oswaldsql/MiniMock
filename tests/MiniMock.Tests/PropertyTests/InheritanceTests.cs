@@ -41,5 +41,25 @@ public class InheritanceTests
         Assert.Throws<InvalidOperationException>(() => sut.Name2 = "test");
         Assert.Throws<InvalidOperationException>(() => dummy = sut.Name3);
     }
+}
 
+public class NullableBase
+{
+    public interface INullIntTest
+    {
+        int IntValue { get; set; }
+    }
+
+    [Fact]
+    [Mock<INullIntTest>]
+    public void METHOD()
+    {
+        // Arrange
+        var sut = Mock.INullIntTest();
+
+        // ACT
+
+        // Assert
+
+    }
 }
