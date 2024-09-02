@@ -4,22 +4,15 @@ Mini mock offers a _minimalistic_ approach to mocking in .Net. It is designed to
 It is not as feature rich as other mocking frameworks, but aims to solve __95%__ of the use cases.
 It is designed to be used in simple scenarios where you just need to mock a few methods or properties.
 
-Mini mock is extremely strict requiring you to specify all features you want to mock. This is by design to make sure you are aware of what you are mocking.
+Mini mock is __extremely strict__ requiring you to specify all features you want to mock. This is by design to make sure you are aware of what you are mocking.
 Unmocked features will throw an exception if used.
+
+## Simple example
 
 ```csharp
     public interface IVersionLibrary
     {
-        Version CurrentVersion { get; set; }
-
         bool DownloadExists(string version);
-        bool DownloadExists(Version version);
-
-        Task<Uri> DownloadLinkAsync(string version);
-
-        Version this[string key] { get; set; }
-
-        event EventHandler<Version> NewVersionAdded;
     }
 
     [Fact]
@@ -35,6 +28,26 @@ Unmocked features will throw an exception if used.
     }
 ```
 
+## Key feature summery
+
+- Minimalistic api with fluent method chaining, documentation and full intellisence
+- Mocking of interfaces, abstract classes and virtual methods (with limitations)
+- Mocking of methods, properties, indexers and events
+- Simple factory methods to initialize mocks
+- Mocking of Async methods, overloads and generic methods
+- Ref and out parameters in methods supported
+- Generic interfaces supported
+
+## Limitations
+
+- No validation of calls
+- Only support C# (workrounds exist for VB.Net and F#)
+- No support for Generic methods ([issue #8](https://github.com/oswaldsql/MiniMock/issues/8))
+- Ref return values as ref properties are not supported  ([issue #5](https://github.com/oswaldsql/MiniMock/issues/5))
+- Partially mocking of classes
+    - Base classes with constructors with parameters are not currently supported ([Issue #4](https://github.com/oswaldsql/MiniMock/issues/4))
+- No support for static classes or methods
+
 ## Installation & Initialization
 
 Reference nuget package in your test project
@@ -43,7 +56,7 @@ Reference nuget package in your test project
 dotnet add package MiniMock
 ```
 
-Specify which interface to mock by using the [Mock] attribute before your test
+Specify which interface to mock by using the [Mock] attribute before your test or test class.
 
 ```csharp
 [Fact]
@@ -86,12 +99,12 @@ All code required to run MiniMock is generated and has _no runtime dependencies_
 Simply specify what you expect returned from methods or properties. All parameters are ignored.
 
 ```csharp
-        var mockLibrary = Mock.IVersionLibrary(config => config
-                    .DownloadExists(returns: true) // Returns true for all versions
-                    .DownloadLinkAsync(returns: new Uri("http://downloads/2.0.0")) // Returns a task with a download link
-                    .CurrentVersion(value: new Version(2, 0, 0, 0)) // Sets the initial version to 2.0.0.0
-                    .Indexer(values: versions) // Provides a dictionary to retrieve and store versions
-        );
+    var mockLibrary = Mock.IVersionLibrary(config => config
+                .DownloadExists(returns: true) // Returns true for any parameter
+                .DownloadLinkAsync(returns: new Uri("http://downloads/2.0.0")) // Returns a task with a download link
+                .CurrentVersion(value: new Version(2, 0, 0, 0)) // Sets the initial version to 2.0.0.0
+                .Indexer(values: versions) // Provides a dictionary to retrieve and store versions
+    );
 ```
 
 ### Intercept method calls
@@ -133,13 +146,13 @@ Simply specify what you expect returned from methods or properties. All paramete
 Simply return what you expect from async methods either as a Task object or a simple value.
 
 ```csharp
-        var versionLibrary = Mock.IVersionLibrary(config => config
-                    .DownloadLinkAsync(returns: Task.FromResult(new Uri("http://downloads/2.0.0"))) // Returns a task containing a download link for all versions
-                    .DownloadLinkAsync(call: s => Task.FromResult(new Uri($"http://downloads/{s}"))) // Returns a task containing a download link for version 2.0.0.x otherwise a error link
-                // or
-                    .DownloadLinkAsync(returns: new Uri("http://downloads/2.0.0")) // Returns a task containing a download link for all versions
-                    .DownloadLinkAsync(call: s => new Uri($"http://downloads/{s}")) // Returns a task containing a download link for version 2.0.0.x otherwise a error link
-            );
+    var versionLibrary = Mock.IVersionLibrary(config => config
+                .DownloadLinkAsync(returns: Task.FromResult(new Uri("http://downloads/2.0.0"))) // Returns a task containing a download link for all versions
+                .DownloadLinkAsync(call: s => Task.FromResult(new Uri($"http://downloads/{s}"))) // Returns a task containing a download link for version 2.0.0.x otherwise a error link
+            // or
+                .DownloadLinkAsync(returns: new Uri("http://downloads/2.0.0")) // Returns a task containing a download link for all versions
+                .DownloadLinkAsync(call: s => new Uri($"http://downloads/{s}")) // Returns a task containing a download link for version 2.0.0.x otherwise a error link
+        );
 ```
 
 ### Strict mocking
@@ -170,18 +183,17 @@ Mocking indexers is supported either by overloading the get and set methods or b
     public void Indexers()
     {
         var versions = new Dictionary<string, Version>() {{"current", new Version(2,0,0,0)}};
-
+    
         var versionLibrary = Mock.IVersionLibrary(config => config
                 .Indexer(get: s => new Version(2,0,0,0), set: (s, version) => {}) // Overwrites the indexer getter and setter
                 .Indexer(values: versions) // Provides a dictionary to retrieve and store versions
         );
-
+    
         var preCurrent = versionLibrary["current"];
         versionLibrary["current"] = new Version(3, 0, 0, 0);
         var postCurrent = versionLibrary["current"];
         Assert.NotEqual(preCurrent, postCurrent);
     }
-
 ```
 
 ### Raising events 
@@ -189,29 +201,38 @@ Mocking indexers is supported either by overloading the get and set methods or b
 Raise events using a event trigger.
 
 ```csharp
-        Action<Version>? triggerNewVersionAdded = null;
-
-        var versionLibrary = Mock.IVersionLibrary(config => config
-                .NewVersionAdded(trigger: out triggerNewVersionAdded) // Provides a trigger for when a new version is added
-            );
-
-        triggerNewVersionAdded?.Invoke(new Version(2, 0, 0, 0));
+    Action<Version>? triggerNewVersionAdded = null;
+    
+    var versionLibrary = Mock.IVersionLibrary(config => config
+            .NewVersionAdded(trigger: out triggerNewVersionAdded) // Provides a trigger for when a new version is added
+        );
+    
+    triggerNewVersionAdded?.Invoke(new Version(2, 0, 0, 0));
 ```
 
-## Feature summery
+### Argument matching
 
-- Mocking of methods, properties, indexers and events
-- Mocking of interfaces, abstract classes and virtual methods
-- Simple factory methods to initialize mocks
-- Mocking of Async methods, overloads and generic methods
-- Ref and out parameters in methods supported
-- Inherited interfaces are supported
-- Limited generic interfaces support
+MiniMock does not support argument matching using matchers like other mocking frameworks. 
+Instead you can use the call parameter to match arguments using predicates or internal functions.
 
-## Current limitations
+```csharp
+    var versionLibrary = Mock.IVersionLibrary(config => config
+            .DownloadExists(call: version => version is { Major: 2, Minor: 0 }) // Returns true for version 2.0.x based on a version parameter
+        );
+```
+        
+__using internal functions__
 
-- Generic interfaces are not fully supported
-- No validation of calls
-- Ref return values are not currently supported
-- Base classes with constructors with parameters are not currently supported
-- Limited support of mocking of classes
+```csharp
+    var versionLibrary = Mock.IVersionLibrary(config =>
+    {
+       bool downloadExists(Version version) => version switch {
+               { Major: 1, Minor: 0 } => true, // Returns true for version 1.0.x based on a version parameter
+               { Major: 2, Minor: 0, Revision: 0 } => true, // Returns true for version 2.0.0.0 based on a version parameter
+               { Major: 3, } => false, // Returns false for version 3.x based on a version parameter
+               _ => throw new ArgumentException() // Throws an exception for all other versions
+           };
+    
+       config.DownloadExists(downloadExists);
+    });
+```

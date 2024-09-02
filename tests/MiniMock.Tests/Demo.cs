@@ -164,6 +164,29 @@ public class Demo(ITestOutputHelper testOutputHelper)
         Assert.Equal(new Version(2,0,0,0), actual);
     }
 
+    [Fact]
+    public void ArgumentMatching()
+    {
+        // Arrange
+        var sut = Mock.IVersionLibrary(config =>
+        {
+            bool downloadExists(Version version) => version switch {
+                    { Major: 1, Minor: 0 } => true,
+                    { Major: 2, Minor: 0, Revision: 0 } => true,
+                    { Major: 3, } => false,
+                    _ => throw new ArgumentException()
+                };
+
+            config.DownloadExists(downloadExists);
+        });
+
+        // ACT
+        var actual = sut.DownloadExists(new Version(2, 0, 0, 0));
+
+        // Assert
+        Assert.True(actual);
+    }
+
     public interface IVersionLibrary
     {
         Version CurrentVersion { get; set; }

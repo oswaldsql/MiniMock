@@ -18,6 +18,7 @@
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <ProjectReference Include="..\..\src\MiniMock\MiniMock.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\MiniMock.Demo.BusinessLogic\MiniMock.Demo.BusinessLogic.csproj" />
     </ItemGroup>
 
     <ItemGroup>
