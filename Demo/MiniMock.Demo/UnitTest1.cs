@@ -4,10 +4,10 @@ using BusinessLogic;
 
 [Mock<ICustomerRepository>]
 [Mock<IEMailService>]
-public class DemoUnitTests
+public class CustomerServiceTests
 {
     [Fact]
-    public async Task Test1()
+    public async Task CustomersCanBeCreated()
     {
         var customerRepository = Mock.ICustomerRepository(config => config
             .CreateCustomer(1)
@@ -24,13 +24,13 @@ public class DemoUnitTests
     }
 
     [Fact]
-    public async Task Test2()
+    public async Task CustomersCanBeRead()
     {
-        var sut = CreateCustomerServiceFactory(config => config.CreateCustomer(1), config => config.SendMail());
+        var sut = CreateCustomerServiceFactory(config => config.GetCustomerById(returns:new Customer(1,"Name","Email")), config => config.SendMail());
 
-        var actual = await sut.CreateCustomer("tom", "toms@diner.co.uk", CancellationToken.None);
+        var actual = await sut.GetCustomerById(1, CancellationToken.None);
 
-        Assert.Equal(1, actual);
+        Assert.NotNull(actual);
     }
 
     private static CustomerService CreateCustomerServiceFactory(Action<ICustomerRepositoryMock.Config>? repoConfig = null, Action<IEMailServiceMock.Config>? emailConfig = null) =>

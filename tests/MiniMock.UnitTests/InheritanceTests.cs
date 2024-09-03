@@ -1,7 +1,5 @@
 namespace MiniMock.UnitTests;
 
-using System.Collections;
-
 public class InheritanceTests(ITestOutputHelper testOutputHelper)
 {
     public interface IBaseM

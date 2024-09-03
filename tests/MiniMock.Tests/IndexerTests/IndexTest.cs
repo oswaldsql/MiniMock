@@ -40,7 +40,7 @@ public class IndexTest
 
         var source = new Dictionary<uint, int>();
         var sut = Mock.IIndexRepository(config => config.Indexer(source));
-        var sut2 = Mock.IIndexRepository(config => config.Indexer(set : (uint key, int value) => { actualKey = key;  actualValue = value; }));
+        var sut2 = Mock.IIndexRepository(config => config.Indexer(set : (key, value) => { actualKey = key;  actualValue = value; }));
 
         // ACT
         sut[(uint)10] = 10;
@@ -79,7 +79,7 @@ public class IndexTest
 
         var source = new Dictionary<string, int>() {{"ti",10}};
         var sut = Mock.IIndexRepository(config => config.Indexer(source));
-        var sut2 = Mock.IIndexRepository(config => config.Indexer(get : (string s) => 10, set:(string key, int value) => { actualKey = key;  actualValue = value; }));
+        var sut2 = Mock.IIndexRepository(config => config.Indexer(get : _ => 10, set:(key, value) => { actualKey = key;  actualValue = value; }));
 
         // Act
         sut["to"] = 2;

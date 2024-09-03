@@ -43,8 +43,6 @@ public class TestClass{{
 //    [InlineData("where T : allows ref struct")]
     public void GenericInterfaceTests(string constraint, string mockAttribute)
     {
-        Console.WriteLine(constraint + " - " + mockAttribute);
-
         var source = $@"
 #nullable enable
 namespace Demo;
@@ -76,7 +74,7 @@ public class TestClass{{
 
     public interface IGenericMethod
     {
-        T parse<T>(string value) where T : struct;
+        T Parse<T>(string value) where T : struct;
     }
 
     [Fact]
@@ -102,5 +100,4 @@ public class TestClass{{
 //        T Method4(out T value);
 //        T Method5(ref T value);
     }
-
 }

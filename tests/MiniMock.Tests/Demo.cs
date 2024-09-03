@@ -102,7 +102,7 @@ public class Demo(ITestOutputHelper testOutputHelper)
 
     [Fact]
     [Mock<IVersionLibrary>]
-    public async Task InterceptMethodCalls()
+    public void InterceptMethodCalls()
     {
         var currentVersionMock = new Version(2, 0, 0);
 
@@ -170,14 +170,14 @@ public class Demo(ITestOutputHelper testOutputHelper)
         // Arrange
         var sut = Mock.IVersionLibrary(config =>
         {
-            bool downloadExists(Version version) => version switch {
+            bool DownloadExists(Version version) => version switch {
                     { Major: 1, Minor: 0 } => true,
                     { Major: 2, Minor: 0, Revision: 0 } => true,
                     { Major: 3, } => false,
                     _ => throw new ArgumentException()
                 };
 
-            config.DownloadExists(downloadExists);
+            config.DownloadExists(DownloadExists);
         });
 
         // ACT

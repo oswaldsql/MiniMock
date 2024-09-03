@@ -1,7 +1,5 @@
 namespace MiniMock.UnitTests;
 
-using Microsoft.CodeAnalysis;
-
 public interface IMethodRepository
 {
     Task<Guid> AddG(string name);
@@ -63,7 +61,7 @@ public class TestClass{
 
         testOutputHelper.DumpResult(generate);
 
-        Assert.Empty(generate.diagnostics.Where(t => t.Severity == DiagnosticSeverity.Error));
+        Assert.Empty(generate.GetErrors());
     }
 
     [Fact]
