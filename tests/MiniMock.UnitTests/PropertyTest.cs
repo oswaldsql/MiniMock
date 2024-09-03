@@ -11,6 +11,21 @@ public class PropertyTest(ITestOutputHelper testOutputHelper)
         string SetOnly { set; }
     }
 
+    public abstract class AbstractClassWithDifferentProperties
+    {
+        public string NotAbstract { get; set; }
+        public abstract string Abstract { get; set; }
+        public virtual string Virtual { get; set; }
+
+        public string NotAbstractGetOnly { get;  }
+        public abstract string AbstractGetOnly { get;  }
+        public virtual string VirtualGetOnly { get;  }
+
+        public string NotAbstractSetOnly { set { } }
+        public abstract string AbstractSetOnly { set; }
+        public virtual string VirtualSetOnly { set{} }
+    }
+
     [Fact]
     public void PropertyRepositoryTests()
     {
@@ -22,4 +37,15 @@ public class PropertyTest(ITestOutputHelper testOutputHelper)
 
         Assert.Empty(generate.GetErrors());
     }
-}
+
+    [Fact]
+    public void AbstractClassWithDifferentPropertyTypes()
+    {
+        var source = Build.TestClass<AbstractClassWithDifferentProperties>();
+
+        var generate = new MiniMockGenerator().Generate(source);
+
+        testOutputHelper.DumpResult(generate);
+
+        Assert.Empty(generate.GetErrors());
+    }}

@@ -23,9 +23,12 @@ internal static class PropertyBuilder
                 {
                     throw new StaticAbstractMembersNotSupportedException(name, symbol.ContainingType);
                 }
+
                 builder.Add($"// Ignoring Static property {symbol}.");
-            }
-            else
+            }else if (!symbol.IsAbstract && !symbol.IsVirtual)
+            {
+                builder.Add($"// Ignoring property {symbol}.");
+            }else
             {
                 index++;
                 BuildProperty(builder, symbol, helpers, index);
@@ -94,11 +97,31 @@ internal static class PropertyBuilder
                 $"Sets an initial value for {propertyName}."));
         }
 
-        var getSet = $"""
-                      target._{internalName}_get = get;
-                      target._{internalName}_set = set;
-                      """;
-        helpers.Add(new MethodSignature($"System.Func<{type}> get, System.Action<{type}> set", getSet,
-            $"Specifies a getter and setter method to call when the property {propertyName} is called."));
+        if (hasSet || !hasGet)
+        {
+            helpers.Add(new MethodSignature(
+                $"System.Action<{type}> set",
+                $"target._{internalName}_set = set;",
+                $"Specifies a setter method to call when the property {propertyName} is set."));
+        }
+
+        if (!hasSet || hasGet)
+        {
+            helpers.Add(new MethodSignature(
+                $"System.Func<{type}> get",
+                $"target._{internalName}_get = get;",
+                $"Specifies a getter method to call when the property {propertyName} is called."));
+        }
+
+        if (hasGet && hasSet)
+        {
+            helpers.Add(new MethodSignature(
+                $"System.Func<{type}> get, System.Action<{type}> set",
+                $"""
+                 target._{internalName}_get = get;
+                 target._{internalName}_set = set;
+                 """,
+                $"Specifies a getter and setter method to call when the property {propertyName} is called."));
+        }
     }
 }
