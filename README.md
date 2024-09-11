@@ -1,8 +1,7 @@
 # MiniMock
 
 Mini mock offers a _minimalistic_ approach to mocking in .Net. It is designed to be simple to use and easy to understand. 
-It is not as feature rich as other mocking frameworks, but aims to solve __95%__ of the use cases.
-It is designed to be used in simple scenarios where you just need to mock a few methods or properties.
+It is not as feature rich as other mocking frameworks, but aims to solve __95%__ of the use cases. For the remaining __5%__ you should consider creating a custom mock.
 
 Mini mock is __extremely strict__ requiring you to specify all features you want to mock. This is by design to make sure you are aware of what you are mocking.
 Unmocked features will throw an exception if used.
@@ -41,7 +40,7 @@ Unmocked features will throw an exception if used.
 ## Limitations
 
 - No validation of calls
-- Only support C# (workrounds exist for VB.Net and F#)
+- Only support C# (workarounds exist for VB.Net and F#)
 - No support for Generic methods ([issue #8](https://github.com/oswaldsql/MiniMock/issues/8))
 - Ref return values as ref properties are not supported  ([issue #5](https://github.com/oswaldsql/MiniMock/issues/5))
 - Partially mocking of classes
@@ -90,7 +89,7 @@ sut.Create(customerDTO, cancelationToken);
 
 All mockable members are available through a _fluent interface_ with _intellisence_, _type safety_ and _documentation_.
 
-Since the mock code is generated at development time allowing you to _inspect_, _stepped into_ and _debug_.
+Since the mock code is generated at development time you can _inspect_, _stepped into_ and _debug_ the code. This also allows for _security_ and _vulnerability scanning_ of the code.
 
 All code required to run MiniMock is generated and has _no runtime dependencies_.
 
@@ -104,6 +103,18 @@ Simply specify what you expect returned from methods or properties. All paramete
                 .DownloadLinkAsync(returns: new Uri("http://downloads/2.0.0")) // Returns a task with a download link
                 .CurrentVersion(value: new Version(2, 0, 0, 0)) // Sets the initial version to 2.0.0.0
                 .Indexer(values: versions) // Provides a dictionary to retrieve and store versions
+    );
+```
+
+### Multiple return values
+
+Specify multiple return values for a method or property. The first value is returned for the first call, the second for the second call and so on.
+
+```csharp
+    var mockLibrary = Mock.IVersionLibrary(config => config
+                .DownloadExists(returns: true, false, true) // Returns true, false, true for the first, second and third call
+                .DownloadLinkAsync(returns: [Task.FromResult(new Uri("http://downloads/2.0.0")), Task.FromResult(new Uri("http://downloads/2.0.1"))]) // Returns a task with a download link for the first and second call
+                .DownloadLinkAsync(returns: new Uri("http://downloads/2.0.0"), new Uri("http://downloads/2.0.1")) // Returns a task with a download link for the first and second call
     );
 ```
 
@@ -198,7 +209,7 @@ Mocking indexers is supported either by overloading the get and set methods or b
 
 ### Raising events 
 
-Raise events using a event trigger.
+Raise events using an event trigger.
 
 ```csharp
     Action<Version>? triggerNewVersionAdded = null;
@@ -213,7 +224,7 @@ Raise events using a event trigger.
 ### Argument matching
 
 MiniMock does not support argument matching using matchers like other mocking frameworks. 
-Instead you can use the call parameter to match arguments using predicates or internal functions.
+Instead, you can use the call parameter to match arguments using predicates or internal functions.
 
 ```csharp
     var versionLibrary = Mock.IVersionLibrary(config => config

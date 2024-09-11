@@ -53,7 +53,7 @@ public class MultipleReturnValuesTests
     public void ItShouldBePossibleToSpecifyMultipleReturnValuesForMethodsWithParameters()
     {
         // Arrange
-        var sut = Mock.IMultipleReturnValues(config => config.Method(new[] { "1", "2", "3" }));
+        var sut = Mock.IMultipleReturnValues(config => config.Method(["1", "2", "3"]));
 
         // Act
         var callToMethodWithParameter = sut.Method("test");
@@ -66,7 +66,7 @@ public class MultipleReturnValuesTests
     public void EmptyValuesAreAllowedAndDefaultsToThrowException()
     {
         // Arrange
-        var sut = Mock.IMultipleReturnValues(config => config.Method(new string[]  { }));
+        var sut = Mock.IMultipleReturnValues(config => config.Method([]));
 
         // Act
         var shouldFail = Assert.Throws<InvalidOperationException>(() => sut.Method());
