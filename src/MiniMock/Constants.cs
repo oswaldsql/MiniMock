@@ -5,7 +5,7 @@ public static class Constants
     public const string MockAttributeCode = """
                                             namespace MiniMock {
                                                 [System.AttributeUsage(System.AttributeTargets.All, AllowMultiple = true)]
-                                                public class MockAttribute<T> : System.Attribute{}
+                                                internal class MockAttribute<T> : System.Attribute{}
                                             }
                                             """;
 

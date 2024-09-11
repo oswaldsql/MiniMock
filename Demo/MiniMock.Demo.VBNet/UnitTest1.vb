@@ -1,8 +1,6 @@
-Imports System
 Imports System.Threading
 Imports MiniMock.Demo.BusinessLogic
 Imports Xunit
-imports MiniMock
 
 Namespace MiniMock.Demo.VBNet
     Public Class UnitTest1
