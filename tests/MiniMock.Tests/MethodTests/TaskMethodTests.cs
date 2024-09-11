@@ -160,24 +160,3 @@ public class TaskMethodTests
         Assert.Equal("Return", actual);
     }
 }
-
-/// <summary>
-/// Configures <see cref="MultipleReturnValuesTests.IMultipleReturnValues.Method(string)"/>, <see cref="MultipleReturnValuesTests.IMultipleReturnValues.Method()"/>
-/// </summary>
-public static class MyClass
-{
-    internal static IMultipleReturnValuesMock.Config MethodOld(this IMultipleReturnValuesMock.Config c, IEnumerable<string> values)
-    {
-        var v = values.GetEnumerator();
-        c.Method(() =>
-        {
-            if (v.MoveNext())
-            {
-                return v.Current;
-            }
-
-            throw new Exception("test");
-        });
-        return c;
-    }
-}
