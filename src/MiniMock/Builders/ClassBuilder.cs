@@ -12,6 +12,11 @@ internal class ClassBuilder(ISymbol target)
 
     private string BuildClass()
     {
+        if (target.IsSealed)
+        {
+            throw new CanNotMockASealedClassException(target as INamedTypeSymbol);
+        }
+
         var builder = new CodeBuilder();
 
         var fullName = target.ToString();
@@ -42,7 +47,7 @@ internal class ClassBuilder(ISymbol target)
                       internal class {{name}} : {{fullName}} {{constraints}}
                       {
                       ->
-                      private {{target.Name}}Mock(System.Action<Config>? config = null) {
+                      internal protected {{target.Name}}Mock(System.Action<Config>? config = null) {
                           var result = new Config(this);
                           config = config ?? new System.Action<Config>(t => { });
                           config.Invoke(result);
@@ -54,7 +59,7 @@ internal class ClassBuilder(ISymbol target)
                       private Config _config { get; }
                       internal void GetConfig(out Config config) => config = _config;
 
-                      public partial class Config
+                      internal partial class Config
                       {
                           private readonly {{name}} target;
 

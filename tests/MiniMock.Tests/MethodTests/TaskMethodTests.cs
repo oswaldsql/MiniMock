@@ -1,6 +1,5 @@
 namespace MiniMock.Tests.MethodTests;
 using System;
-using System.Collections.Frozen;
 using System.Threading.Tasks;
 
 [Mock<IAsyncTaskMethods>]

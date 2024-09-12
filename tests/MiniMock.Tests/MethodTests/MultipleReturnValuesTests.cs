@@ -1,4 +1,4 @@
-﻿namespace MiniMock.Tests.MethodTests;
+namespace MiniMock.Tests.MethodTests;
 
 [Mock<IMultipleReturnValues>]
 public class MultipleReturnValuesTests
@@ -33,7 +33,8 @@ public class MultipleReturnValuesTests
     public async Task ItShouldBePossibleToSpecifyMultipleReturnValuesForAsyncMethods()
     {
         // Arrange
-        var sut = Mock.IMultipleReturnValues(config => config.MethodAsync([Task.FromResult("1"), Task.FromResult("2"), Task.FromResult("3")]));
+        var sut = Mock.IMultipleReturnValues(config =>
+            config.MethodAsync([Task.FromResult("1"), Task.FromResult("2"), Task.FromResult("3")]));
 
         // Act
         var token = CancellationToken.None;
@@ -66,7 +67,11 @@ public class MultipleReturnValuesTests
     public void EmptyValuesAreAllowedAndDefaultsToThrowException()
     {
         // Arrange
-        var sut = Mock.IMultipleReturnValues(config => config.Method([]));
+        var enumerable = new string [] {};
+        var sut = Mock.IMultipleReturnValues(config =>
+        {
+            config.Method(enumerable);
+        });
 
         // Act
         var shouldFail = Assert.Throws<InvalidOperationException>(() => sut.Method());
@@ -79,7 +84,7 @@ public class MultipleReturnValuesTests
     public void MultipleValuesAreSetIndividuallyOnEachMethod()
     {
         // Arrange
-        var sut = Mock.IMultipleReturnValues(config => config.Method(["1","2","3"]));
+        var sut = Mock.IMultipleReturnValues(config => config.Method(["1", "2", "3"]));
 
         // ACT
         var first = sut.Method();
@@ -87,14 +92,14 @@ public class MultipleReturnValuesTests
 
         // Assert
         Assert.Equal("1", first);
-        Assert.Equal("1",CallToMethodWithParameter);
+        Assert.Equal("1", CallToMethodWithParameter);
     }
 
     [Fact]
     public void ItShouldBePossibleToSpecifyMultipleReturnValue()
     {
         // Arrange
-        var sut = Mock.IMultipleReturnValues(config => config.Method(["1","2","3"]).MethodAsync(["1","2","3"]));
+        var sut = Mock.IMultipleReturnValues(config => config.Method(["1", "2", "3"]).MethodAsync(["1", "2", "3"]));
 
         // ACT
         var first = sut.Method();
@@ -110,6 +115,6 @@ public class MultipleReturnValuesTests
         Assert.Equal("3", third);
         Assert.NotNull(shouldFail);
 
-        Assert.Equal("1",CallToMethodWithParameter);
+        Assert.Equal("1", CallToMethodWithParameter);
     }
 }

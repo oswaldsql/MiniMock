@@ -75,43 +75,4 @@ public static class MockClassBuilder
 
         return builder.ToString();
     }
-
-    //private static string Constraints(ImmutableArray<ITypeSymbol> typeArguments)
-    //{
-    //    var result = new StringBuilder();
-    //
-    //    foreach (var s in typeArguments.Select(type => BuildConstraintsString((ITypeParameterSymbol)type)))
-    //    {
-    //        result.Append(s);
-    //    }
-    //
-    //    return result.ToString().Trim();
-    //}
-    //
-    //private static string BuildConstraintsString(ITypeParameterSymbol symbol)
-    //{
-    //    var result = new List<string>();
-    //
-    //    foreach (var t in symbol.ConstraintTypes)
-    //    {
-    //        result.Add(t.ToString());
-    //    }
-    //
-    //    if (symbol.HasUnmanagedTypeConstraint)
-    //    {
-    //        result.Add("unmanaged");
-    //    }
-    //    else
-    //    {
-    //        if (symbol.HasConstructorConstraint) result.Add("new()");
-    //        if(symbol.HasValueTypeConstraint) result.Add("struct");
-    //    }
-    //
-    //    if(symbol.HasReferenceTypeConstraint) result.Add("class");
-    //    if(symbol.HasNotNullConstraint) result.Add("notnull");
-    //
-    //    if (result.Count == 0) { return "";}
-    //
-    //    return " where " + symbol.Name + " : " + string.Join(", ", result);
-    //}
 }

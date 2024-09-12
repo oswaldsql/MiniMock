@@ -40,7 +40,7 @@ public static class Helpers
 
         var signatures = helpers.ToLookup(t => t.Signature);
 
-        builder.Add("public partial class Config {").Indent();
+        builder.Add("internal partial class Config {").Indent();
 
         foreach (var grouping in signatures)
         {
