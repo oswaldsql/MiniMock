@@ -49,4 +49,27 @@ public class DiagnosticsTests(ITestOutputHelper testOutputHelper)
 
         Assert.Equal("Mock<MiniMock.UnitTests.DiagnosticsTests.IRefMethod>", actual.Location.GetCode());
     }
+
+    public sealed class SealedClass
+    {
+    }
+
+    [Fact]
+    public void MockingSealedClasesWillRaiseTheMM0006Error()
+    {
+        var source = Build.TestClass<SealedClass>();
+
+        var generate = new MiniMockGenerator().Generate(source);
+
+        testOutputHelper.DumpResult(generate);
+
+        var diagnostics = generate.GetErrors();
+
+        var actual = Assert.Single(diagnostics);
+        Assert.Equal(DiagnosticSeverity.Error, actual.Severity);
+        Assert.Equal("MM0006", actual.Id);
+        Assert.Equal("Cannot mock the sealed class 'SealedClass'", actual.GetMessage());
+
+        Assert.Equal("Mock<MiniMock.UnitTests.DiagnosticsTests.SealedClass>", actual.Location.GetCode());
+    }
 }

@@ -62,7 +62,7 @@ public class ConfigClassTests(ITestOutputHelper testOutputHelper)
         testOutputHelper.DumpResult(generate);
 
         Assert.True(generate.diagnostics.HasErrors());
-        Assert.Contains(generate.GetErrors(), t => t.Id == "CS0509"); // Inheritance of sealed class is not allowed
+        Assert.Contains(generate.GetErrors(), t => t.Id == "MM0006"); // Inheritance of sealed class is not allowed
     }
 
     internal abstract class AbstractClass

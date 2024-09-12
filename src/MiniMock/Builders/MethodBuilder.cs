@@ -72,7 +72,7 @@ internal static class MethodBuilder
                       }
                       private {{functionPointer}}_Delegate {{functionPointer}} {get;set;} = ({{parameterList}}) => {{symbol.BuildNotMockedException()}}
 
-                      public partial class Config{
+                      internal partial class Config{
                           private Config {{functionPointer}}({{functionPointer}}_Delegate call){
                               target.{{functionPointer}} = call;
                               return this;
