@@ -88,7 +88,7 @@ public class TestClass{{
 
         var error = Assert.Single(generate.GetErrors());
 
-        Assert.Equal("Generic methods in non generic interfaces or classes is not currently supported for 'parse' in 'IGenericMethod'", error.GetMessage());
+        Assert.Equal("Generic methods in non generic interfaces or classes is not currently supported for 'Parse' in 'IGenericMethod'", error.GetMessage());
         Assert.Equal("MM0004", error.Id);
     }
 

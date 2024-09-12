@@ -107,6 +107,20 @@ internal static class MethodBuilder
         if (!HasOutOrRef(symbol) && !symbol.ReturnsVoid)
         {
             helpers.Add(new($"{methodReturnType} returns", $"this.{functionPointer}(({parameterList}) => returns);", Documentation.SpecificValue));
+
+            var code = $$"""
+                            var {{functionPointer}}_Values = returns.GetEnumerator();
+                            this.{{functionPointer}}(({{parameterList}}) =>
+                            {
+                                if ({{functionPointer}}_Values.MoveNext())
+                                {
+                                    return {{functionPointer}}_Values.Current;
+                                }
+
+                                {{symbol.BuildNotMockedException()}}
+                                });
+                            """;
+            helpers.Add(new($"System.Collections.Generic.IEnumerable<{methodReturnType}> returns", code, Documentation.SpecificValueList));
         }
 
         if (symbol.IsReturningTask())
@@ -127,6 +141,22 @@ internal static class MethodBuilder
         {
             var genericType = ((INamedTypeSymbol)symbol.ReturnType).TypeArguments.First();
             helpers.Add(new($"{genericType} returns", $"this.{functionPointer}(({parameterList}) => System.Threading.Tasks.Task.FromResult(returns));", Documentation.GenericTaskObject));
+
+            var code = $$"""
+                         var {{functionPointer}}_Values = returns.GetEnumerator();
+                         this.{{functionPointer}}(({{parameterList}}) =>
+                         {
+                             if ({{functionPointer}}_Values.MoveNext())
+                             {
+                                 return System.Threading.Tasks.Task.FromResult({{functionPointer}}_Values.Current);
+                             }
+
+                             {{symbol.BuildNotMockedException()}}
+                             });
+                         """;
+            helpers.Add(new($"System.Collections.Generic.IEnumerable<{genericType}> returns", code, Documentation.SpecificValueList));
+
+
             if (symbol.HasParameters())
             {
                 helpers.Add(new($"System.Func<{typeList},{genericType}> call", $"this.{functionPointer}(({nameList}) => System.Threading.Tasks.Task.FromResult(call({nameList})));", Documentation.GenericTaskFunction));
