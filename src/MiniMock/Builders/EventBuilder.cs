@@ -62,25 +62,26 @@ internal static class EventBuilder
 
                       """);
 
+        var seeCref = symbol.ToString();
         if (types == "System.EventArgs")
         {
             helpers.Add(new("out System.Action trigger",
                 $"trigger = () => this.{eventName}();",
-                $"Returns an action that can be used for triggering {eventName}."));
+                $"Returns an action that can be used for triggering {eventName}.", seeCref));
 
             helpers.Add(new("",
                 $"target.trigger_{eventFunction}(target, System.EventArgs.Empty);",
-                $"Trigger {eventName} directly."));
+                $"Trigger {eventName} directly.", seeCref));
         }
         else
         {
             helpers.Add(new($"out System.Action<{types}> trigger",
                 $"trigger = args => this.{eventName}(args);",
-                $"Returns an action that can be used for triggering {eventName}."));
+                $"Returns an action that can be used for triggering {eventName}.", seeCref));
 
             helpers.Add(new(types + " eventArgs",
                 $"target.trigger_{eventFunction}(target, eventArgs);",
-                $"Trigger {eventName} directly."));
+                $"Trigger {eventName} directly.", seeCref));
         }
     }
 }

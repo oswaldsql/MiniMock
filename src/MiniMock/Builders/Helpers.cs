@@ -47,7 +47,14 @@ public static class Helpers
             builder.Add($"""
                          /// <summary>
                          """);
+
             grouping.Select(t => t.Documentation).Where(t => !string.IsNullOrWhiteSpace(t)).Distinct().ToList().ForEach(t => builder.Add("///     " + t));
+            if (grouping.Any(t => t.SeeCref != ""))
+            {
+                var crefs = grouping.Select(t => t.SeeCref).Where(t => !string.IsNullOrWhiteSpace(t)).Select(t => $"<see cref=\"{t}\" />");
+                builder.Add("///     Configures " + string.Join(", ", crefs));
+            }
+
             builder.Add($"""
                          /// </summary>
                          /// <returns>The updated configuration.</returns>

@@ -55,27 +55,29 @@ internal static class IndexBuilder
                                 target.On_IndexGet_{indexerCount} = s => values[s];
                                 target.On_IndexSet_{indexerCount} = (s, v) => values[s] = v;
                                 """;
+
+        var seeCref = symbol.ToString();
         helpers.Add(new($"System.Collections.Generic.Dictionary<{indexType}, {returnType}> values",
             dictionarySource,
-            "Gets and sets values in the dictionary when the indexer is called."));
+            "Gets and sets values in the dictionary when the indexer is called.", seeCref));
 
         if (hasSet && !hasGet)
         {
             helpers.Add(new($"System.Action<{indexType}, {returnType}> set",
                 $"target.On_IndexSet_{indexerCount} = set;",
-                $"Specifies a setter method to call when the indexer for <see cref=\"{indexType}\"/> is called."));
+                $"Specifies a setter method to call when the indexer for <see cref=\"{indexType}\"/> is called.", seeCref));
         }
         else if(!hasSet && hasGet)
         {
             helpers.Add(new($"System.Func<{indexType}, {returnType}> get",
                 $"target.On_IndexGet_{indexerCount} = get;",
-                $"Specifies a getter method to call when the indexer for <see cref=\"{indexType}\"/> is called."));
+                $"Specifies a getter method to call when the indexer for <see cref=\"{indexType}\"/> is called.", seeCref));
         }
         else
         {
             helpers.Add(new($"System.Func<{indexType}, {returnType}> get, System.Action<{indexType}, {returnType}> set",
                 $"target.On_IndexGet_{indexerCount} = get;target.On_IndexSet_{indexerCount} = set;",
-                $"Specifies a getter and setter method to call when the indexer for <see cref=\"{indexType}\"/> is called."));
+                $"Specifies a getter and setter method to call when the indexer for <see cref=\"{indexType}\"/> is called.", seeCref));
         }
     }
 
