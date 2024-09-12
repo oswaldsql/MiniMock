@@ -74,6 +74,7 @@ internal static class PropertyBuilder
 
                       """);
 
+        var seeCref = symbol.ToString();
         if (symbol.NullableAnnotation == NullableAnnotation.Annotated)
         {
             helpers.Add(new MethodSignature(
@@ -83,7 +84,7 @@ internal static class PropertyBuilder
                    target._{internalName}_get = () => target._{internalName};
                    target._{internalName}_set = s => target._{internalName} = s;
                    """,
-                $"Sets an initial value for {propertyName}."));
+                $"Sets an initial value for {propertyName}.", seeCref));
         }
         else
         {
@@ -94,7 +95,7 @@ internal static class PropertyBuilder
                    target._{internalName}_get = () => target._{internalName} ?? {symbol.BuildNotMockedException()};
                    target._{internalName}_set = s => target._{internalName} = s;
                    """,
-                $"Sets an initial value for {propertyName}."));
+                $"Sets an initial value for {propertyName}.", seeCref));
         }
 
         if (hasSet || !hasGet)
@@ -102,7 +103,7 @@ internal static class PropertyBuilder
             helpers.Add(new MethodSignature(
                 $"System.Action<{type}> set",
                 $"target._{internalName}_set = set;",
-                $"Specifies a setter method to call when the property {propertyName} is set."));
+                $"Specifies a setter method to call when the property {propertyName} is set.", seeCref));
         }
 
         if (!hasSet || hasGet)
@@ -110,7 +111,7 @@ internal static class PropertyBuilder
             helpers.Add(new MethodSignature(
                 $"System.Func<{type}> get",
                 $"target._{internalName}_get = get;",
-                $"Specifies a getter method to call when the property {propertyName} is called."));
+                $"Specifies a getter method to call when the property {propertyName} is called.", seeCref));
         }
 
         if (hasGet && hasSet)
@@ -121,7 +122,7 @@ internal static class PropertyBuilder
                  target._{internalName}_get = get;
                  target._{internalName}_set = set;
                  """,
-                $"Specifies a getter and setter method to call when the property {propertyName} is called."));
+                $"Specifies a getter and setter method to call when the property {propertyName} is called.", seeCref));
         }
     }
 }

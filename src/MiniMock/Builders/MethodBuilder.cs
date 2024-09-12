@@ -81,32 +81,34 @@ internal static class MethodBuilder
 
                       """);
 
-        helpers.Add(new("System.Exception throws", $"this.{functionPointer}(({parameterList}) => throw throws);", Documentation.ThrowsException));
+        var seeCref = symbol.ToString();
+
+        helpers.Add(new("System.Exception throws", $"this.{functionPointer}(({parameterList}) => throw throws);", Documentation.ThrowsException, seeCref));
 
         switch (symbol.ReturnsVoid)
         {
             case true when symbol.Parameters.Length == 0:
-                helpers.Add(new("System.Action call", $"this.{functionPointer}(() => call());", Documentation.CallBack));
-                helpers.Add(new("", $"this.{functionPointer}(() => {{}});", Documentation.AcceptAny));
+                helpers.Add(new("System.Action call", $"this.{functionPointer}(() => call());", Documentation.CallBack, seeCref));
+                helpers.Add(new("", $"this.{functionPointer}(() => {{}});", Documentation.AcceptAny, seeCref));
                 break;
             case true when !HasOutOrRef(symbol):
-                helpers.Add(new($"System.Action<{typeList}> call", $"this.{functionPointer}(({parameterList}) => call({nameList}));", Documentation.CallBack));
-                helpers.Add(new("", $"this.{functionPointer}(({parameterList}) => {{}});", Documentation.AcceptAny));
+                helpers.Add(new($"System.Action<{typeList}> call", $"this.{functionPointer}(({parameterList}) => call({nameList}));", Documentation.CallBack, seeCref));
+                helpers.Add(new("", $"this.{functionPointer}(({parameterList}) => {{}});", Documentation.AcceptAny, seeCref));
                 break;
             case false when !HasOutOrRef(symbol) && symbol.Parameters.Length == 0:
-                helpers.Add(new($"System.Func<{methodReturnType}> call", $"this.{functionPointer}(() => call());", Documentation.CallBack));
+                helpers.Add(new($"System.Func<{methodReturnType}> call", $"this.{functionPointer}(() => call());", Documentation.CallBack, seeCref));
                 break;
             case false when !HasOutOrRef(symbol) && symbol.Parameters.Length > 0:
-                helpers.Add(new($"System.Func<{typeList},{methodReturnType}> call", $"this.{functionPointer}(({parameterList}) => call({nameList}));", Documentation.CallBack));
+                helpers.Add(new($"System.Func<{typeList},{methodReturnType}> call", $"this.{functionPointer}(({parameterList}) => call({nameList}));", Documentation.CallBack, seeCref));
                 break;
             default:
-                helpers.Add(new($"{functionPointer}_Delegate call", $"this.{functionPointer}(call);", Documentation.CallBack));
+                helpers.Add(new($"{functionPointer}_Delegate call", $"this.{functionPointer}(call);", Documentation.CallBack, seeCref));
                 break;
         }
 
         if (!HasOutOrRef(symbol) && !symbol.ReturnsVoid)
         {
-            helpers.Add(new($"{methodReturnType} returns", $"this.{functionPointer}(({parameterList}) => returns);", Documentation.SpecificValue));
+            helpers.Add(new($"{methodReturnType} returns", $"this.{functionPointer}(({parameterList}) => returns);", Documentation.SpecificValue, seeCref));
 
             var code = $$"""
                             var {{functionPointer}}_Values = returns.GetEnumerator();
@@ -120,27 +122,27 @@ internal static class MethodBuilder
                                 {{symbol.BuildNotMockedException()}}
                                 });
                             """;
-            helpers.Add(new($"System.Collections.Generic.IEnumerable<{methodReturnType}> returns", code, Documentation.SpecificValueList));
+            helpers.Add(new($"System.Collections.Generic.IEnumerable<{methodReturnType}> returns", code, Documentation.SpecificValueList, seeCref));
         }
 
         if (symbol.IsReturningTask())
         {
             if (symbol.HasParameters())
             {
-                helpers.Add(new($"System.Action<{typeList}> call", $$"""this.{{functionPointer}}(({{parameterList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""", Documentation.CallBack));
+                helpers.Add(new($"System.Action<{typeList}> call", $$"""this.{{functionPointer}}(({{parameterList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""", Documentation.CallBack, seeCref));
             }
             else
             {
-                helpers.Add(new("System.Action call", $$"""this.{{functionPointer}}(({{nameList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""", Documentation.CallBack));
+                helpers.Add(new("System.Action call", $$"""this.{{functionPointer}}(({{nameList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""", Documentation.CallBack, seeCref));
             }
 
-            helpers.Add(new("", $$"""this.{{functionPointer}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""", Documentation.AcceptAny));
+            helpers.Add(new("", $$"""this.{{functionPointer}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""", Documentation.AcceptAny, seeCref));
         }
 
         if (symbol.IsReturningGenericTask())
         {
             var genericType = ((INamedTypeSymbol)symbol.ReturnType).TypeArguments.First();
-            helpers.Add(new($"{genericType} returns", $"this.{functionPointer}(({parameterList}) => System.Threading.Tasks.Task.FromResult(returns));", Documentation.GenericTaskObject));
+            helpers.Add(new($"{genericType} returns", $"this.{functionPointer}(({parameterList}) => System.Threading.Tasks.Task.FromResult(returns));", Documentation.GenericTaskObject, seeCref));
 
             var code = $$"""
                          var {{functionPointer}}_Values = returns.GetEnumerator();
@@ -154,16 +156,16 @@ internal static class MethodBuilder
                              {{symbol.BuildNotMockedException()}}
                              });
                          """;
-            helpers.Add(new($"System.Collections.Generic.IEnumerable<{genericType}> returns", code, Documentation.SpecificValueList));
+            helpers.Add(new($"System.Collections.Generic.IEnumerable<{genericType}> returns", code, Documentation.SpecificValueList, seeCref));
 
 
             if (symbol.HasParameters())
             {
-                helpers.Add(new($"System.Func<{typeList},{genericType}> call", $"this.{functionPointer}(({nameList}) => System.Threading.Tasks.Task.FromResult(call({nameList})));", Documentation.GenericTaskFunction));
+                helpers.Add(new($"System.Func<{typeList},{genericType}> call", $"this.{functionPointer}(({nameList}) => System.Threading.Tasks.Task.FromResult(call({nameList})));", Documentation.GenericTaskFunction, seeCref));
             }
             else
             {
-                helpers.Add(new($"System.Func<{genericType}> call", $"this.{functionPointer}(({nameList}) => System.Threading.Tasks.Task.FromResult(call({nameList})));", Documentation.GenericTaskFunction));
+                helpers.Add(new($"System.Func<{genericType}> call", $"this.{functionPointer}(({nameList}) => System.Threading.Tasks.Task.FromResult(call({nameList})));", Documentation.GenericTaskFunction, seeCref));
             }
         }
     }
