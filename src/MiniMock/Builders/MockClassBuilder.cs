@@ -33,7 +33,7 @@ public static class MockClassBuilder
             if (typeArguments.Length > 0)
             {
                 var types = string.Join(", ", typeArguments.Select(t => t.Name));
-                var name = $"{symbolName}Mock<{types}>";
+                var name = $"MockOf_{symbolName}<{types}>";
                 var methodName = symbolName;
                 var constraints = typeArguments.ToConstraints();
 
@@ -60,7 +60,7 @@ public static class MockClassBuilder
                       /// <param name="config">Optional configuration for the mock object.</param>
                       /// <returns>The mock object for <see cref="{symbol}"/>.</returns>
                       """);
-                var name = symbolName + "Mock";
+                var name = "MockOf_" + symbolName;
                 var methodName = symbolName;
                 builder.Add($"internal static {symbol} {methodName}(System.Action<{containingNamespace}.{name}.Config>? config = null) => {containingNamespace}.{name}.Create(config);");
             }

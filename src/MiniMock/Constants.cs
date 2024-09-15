@@ -4,6 +4,10 @@ public static class Constants
 {
     public const string MockAttributeCode = """
                                             namespace MiniMock {
+                                                /// <summary>
+                                                /// Indicates the interface or class that should be mocked.
+                                                /// </summary>
+                                                /// <typeparam name="T">Interface or class to be mocked.</typeparam>
                                                 [System.AttributeUsage(System.AttributeTargets.All, AllowMultiple = true)]
                                                 internal class MockAttribute<T> : System.Attribute{}
                                             }
