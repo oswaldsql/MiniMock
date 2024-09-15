@@ -33,6 +33,6 @@ public class CustomerServiceTests
         Assert.NotNull(actual);
     }
 
-    private static CustomerService CreateCustomerServiceFactory(Action<ICustomerRepositoryMock.Config>? repoConfig = null, Action<IEMailServiceMock.Config>? emailConfig = null) =>
+    private static CustomerService CreateCustomerServiceFactory(Action<MockOf_ICustomerRepository.Config>? repoConfig = null, Action<MockOf_IEMailService.Config>? emailConfig = null) =>
         new(Mock.ICustomerRepository(repoConfig), Mock.IEMailService(emailConfig));
 }

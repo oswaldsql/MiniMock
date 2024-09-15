@@ -68,7 +68,7 @@ public sealed class MiniMockGenerator : IIncrementalGenerator
         }
 
         var mockClassSource = MockClassBuilder.Build(implemented, context);
-        context.AddSource("Mock.g.cs", mockClassSource);
+        context.AddSource("MiniMock.Mock.g.cs", mockClassSource);
     }
 
     private static IEnumerable<Location> GetSourceLocations(IGrouping<ISymbol?, AttributeData> source) => source.Select(t => t.ApplicationSyntaxReference?.GetSyntax().GetLocation()!).Where(t => t != null);

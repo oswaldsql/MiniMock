@@ -21,7 +21,7 @@ internal class ClassBuilder(ISymbol target)
 
         var fullName = target.ToString();
         var interfaceNamespace = target.ContainingNamespace;
-        var name = target.Name + "Mock";
+        var name = "MockOf_" + target.Name;
 
         var constraints = "";
 
@@ -30,7 +30,7 @@ internal class ClassBuilder(ISymbol target)
         {
             constraints = typeArguments.ToConstraints();
             var types = string.Join(", ", typeArguments.Select(t => t.Name));
-            name = $"{target.Name}Mock<{types}>";
+            name = $"MockOf_{target.Name}<{types}>";
         }
 
         var documentationName = fullName.Replace("<", "{").Replace(">", "}");
@@ -47,7 +47,7 @@ internal class ClassBuilder(ISymbol target)
                       internal class {{name}} : {{fullName}} {{constraints}}
                       {
                       ->
-                      internal protected {{target.Name}}Mock(System.Action<Config>? config = null) {
+                      internal protected MockOf_{{target.Name}}(System.Action<Config>? config = null) {
                           var result = new Config(this);
                           config = config ?? new System.Action<Config>(t => { });
                           config.Invoke(result);
