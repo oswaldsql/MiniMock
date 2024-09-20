@@ -44,11 +44,11 @@ public class OutMethodTests
     {
         var sut = Mock.IMethodWithOutArgument(config =>
             config
-                .OutWithRef((string s, ref int value) =>
+                .OutWithRef(call :(string s, ref int value) =>
                 {
                     value += int.Parse(s);
                     return true;
-                })
+                }).OutWithRef(assert: (string s, ref int value) => !string.IsNullOrWhiteSpace(s))
         );
 
         var actual = 1;

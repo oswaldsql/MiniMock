@@ -12,7 +12,7 @@ internal static class EventBuilder
         var name = enumerable.First().Name;
         var helpers = new List<MethodSignature>();
 
-        builder.Add($"#region event : {name}");
+        builder.Add($"#region Event : {name}");
 
         var eventCount = 0;
         foreach (var symbol in enumerable)

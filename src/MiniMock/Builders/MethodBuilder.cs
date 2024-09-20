@@ -63,7 +63,7 @@ internal static class MethodBuilder
 
         var functionPointer = methodCount == 1 ? $"_{methodName}" : "_" + methodName + "_" + methodCount;
 
-        if(typeList != "" && !parameterList.Contains("out ")  && !parameterList.Contains("ref "))
+        if(typeList != "" && !parameterList.Contains("out "))//  && !parameterList.Contains("ref "))
         {
             builder.Add($$"""public delegate System.Boolean {{functionPointer}}_Assert({{parameterList}});""");
 

@@ -54,8 +54,7 @@ public class AssertMethodCallTest
         );
 
         // ACT
-        sut.ReleaseDate("2.0", false);
-
+        Assert.Throws<System.ArgumentException>(() =>sut.ReleaseDate("2.0", false));
         // Assert
 
     }
