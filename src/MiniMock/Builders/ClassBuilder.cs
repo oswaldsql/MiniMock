@@ -12,9 +12,9 @@ internal class ClassBuilder(ISymbol target)
 
     private string BuildClass()
     {
-        if (target.IsSealed)
+        if (target.IsSealed && target is INamedTypeSymbol symbol)
         {
-            throw new CanNotMockASealedClassException(target as INamedTypeSymbol);
+            throw new CanNotMockASealedClassException(symbol);
         }
 
         var builder = new CodeBuilder();

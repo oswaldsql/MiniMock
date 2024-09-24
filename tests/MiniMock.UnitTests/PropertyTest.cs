@@ -13,13 +13,13 @@ public class PropertyTest(ITestOutputHelper testOutputHelper)
 
     public abstract class AbstractClassWithDifferentProperties
     {
-        public string NotAbstract { get; set; }
+        public string NotAbstract { get; set; } = "";
         public abstract string Abstract { get; set; }
-        public virtual string Virtual { get; set; }
+        public virtual string Virtual { get; set; } = "";
 
-        public string NotAbstractGetOnly { get;  }
+        public string NotAbstractGetOnly { get;  } = "";
         public abstract string AbstractGetOnly { get;  }
-        public virtual string VirtualGetOnly { get;  }
+        public virtual string VirtualGetOnly { get;  } = "";
 
         public string NotAbstractSetOnly { set { } }
         public abstract string AbstractSetOnly { set; }

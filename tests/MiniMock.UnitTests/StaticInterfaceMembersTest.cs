@@ -9,7 +9,7 @@ public class StaticInterfaceMembersTest(ITestOutputHelper testOutputHelper)
         static int StaticProperty { get; set; }
         static string StaticMethod() => "value";
 
-        static event EventHandler StaticEvent;
+        static event EventHandler? StaticEvent;
         static void DoStaticEvent() => StaticEvent?.Invoke(null, EventArgs.Empty);
 
         static virtual string Bar => "value"; // with implementation    }
@@ -46,9 +46,9 @@ public class StaticInterfaceMembersTest(ITestOutputHelper testOutputHelper)
         var generate = new MiniMockGenerator().Generate(source);
 
         // Assert
-         testOutputHelper.DumpResult(generate);
+        testOutputHelper.DumpResult(generate);
 
-         var actualTypeArgumentError = Assert.Single(generate.diagnostics.Where(t=>t.Id == "CS8920"));
-         var actualAbstractPropertyError = Assert.Single(generate.diagnostics.Where(t=>t.Id == "MM0005"));
+        var actualTypeArgumentError = Assert.Single(generate.diagnostics, t => t.Id == "CS8920");
+        var actualAbstractPropertyError = Assert.Single(generate.diagnostics, t => t.Id == "MM0005");
     }
 }
