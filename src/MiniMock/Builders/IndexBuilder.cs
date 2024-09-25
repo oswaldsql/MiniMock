@@ -37,17 +37,14 @@ internal static class IndexBuilder
         var hasGet = symbol.GetMethod != null;
         var hasSet = symbol.SetMethod != null;
 
-        builder.Add($$"""
-                      {{accessibilityString}} {{returnType}} {{containingSymbol}}this[{{indexType}} index]
-                      {
-                      """).Indent();
+        builder.Add($$"""{{accessibilityString}} {{returnType}} {{containingSymbol}}this[{{indexType}} index] {""").Indent();
         builder.Add(hasGet, () => $"get => this.On_IndexGet_{indexerCount}(index);");
-        builder.Add(hasSet, () => $"set => this.On_IndexSet_{indexerCount}(index, value);");
-        builder.Unindent().Add($$"""
-                          }
+        builder.Add(hasSet, () => $"set => this.On_IndexSet_{indexerCount}(index, value);").Unindent();
+        builder.Add($$"""
+                      }
 
-                          private System.Func<{{indexType}}, {{returnType}}> On_IndexGet_{{indexerCount}} { get; set; } = (_) => {{exception}}
-                          private System.Action<{{indexType}}, {{returnType}}> On_IndexSet_{{indexerCount}} { get; set; } = (_, _) => {{exception}}
+                      private System.Func<{{indexType}}, {{returnType}}> On_IndexGet_{{indexerCount}} { get; set; } = (_) => {{exception}}
+                      private System.Action<{{indexType}}, {{returnType}}> On_IndexSet_{{indexerCount}} { get; set; } = (_, _) => {{exception}}
 
                       """);
 

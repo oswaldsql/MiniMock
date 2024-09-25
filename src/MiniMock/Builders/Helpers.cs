@@ -51,7 +51,7 @@ public static class Helpers
             grouping.Select(t => t.Documentation).Where(t => !string.IsNullOrWhiteSpace(t)).Distinct().ToList().ForEach(t => builder.Add("///     " + t));
             if (grouping.Any(t => t.SeeCref != ""))
             {
-                var crefs = grouping.Select(t => t.SeeCref).Where(t => !string.IsNullOrWhiteSpace(t)).Select(t => $"<see cref=\"{t}\" />");
+                var crefs = grouping.Select(t => t.SeeCref).Where(t => !string.IsNullOrWhiteSpace(t)).Select(t => $"<see cref=\"{t.EscapeToHtml()}\" />");
                 builder.Add("///     Configures " + string.Join(", ", crefs));
             }
 
@@ -97,7 +97,7 @@ public static class Helpers
         method.ReturnType.ToString().StartsWith("System.Threading.Tasks.Task<") &&
         ((INamedTypeSymbol)method.ReturnType).TypeArguments.Length > 0;
 
-    internal static string EscapeToHtml(string text) => text.Replace("<", "&lt;").Replace(">", "&gt;");
+    internal static string EscapeToHtml(this string text) => text.Replace("<", "&lt;").Replace(">", "&gt;");
 
     internal static (string containingSymbol, string accessibilityString, string overrideString) Overwrites(
         this ISymbol method)

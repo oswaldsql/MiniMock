@@ -11,9 +11,7 @@ public class GenericInterfaceTests
         public TKey Name { get; set; }
     }
 
-
-
-    public interface IGeneric<T>
+    public interface IGeneric<T> where T : notnull
     {
         T ReturnGenericType();
         void GenericParameter(T source);

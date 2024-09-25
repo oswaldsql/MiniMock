@@ -8,7 +8,7 @@ public class StaticInterfaceTests
 
         static int StaticProperty { get; set; }
         static string StaticMethod() => "value";
-        static event EventHandler StaticEvent;
+        static event EventHandler? StaticEvent;
 
         static void DoStaticEvent()
         {

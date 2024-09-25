@@ -9,6 +9,13 @@ public static class MockClassBuilder
 {
     public static string Build(IEnumerable<ISymbol> typeSymbols, SourceProductionContext context)
     {
+        var mocks = typeSymbols.OfType<INamedTypeSymbol>().OrderBy(t => t.Name).ToArray();
+
+        if(!mocks.Any())
+        {
+            return "//No mocks found.";
+        }
+
         var builder = new CodeBuilder();
 
         builder.Add($$"""
@@ -24,7 +31,7 @@ public static class MockClassBuilder
                      ->
                      """);
 
-        foreach (var symbol in typeSymbols.OfType<INamedTypeSymbol>())
+        foreach (var symbol in mocks)
         {
             var typeArguments = symbol.TypeArguments;
             var containingNamespace = symbol.ContainingNamespace;
