@@ -1,0 +1,52 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniMock.Demo.BusinessLogic", "MiniMock.Demo.BusinessLogic\MiniMock.Demo.BusinessLogic.csproj", "{4FFB2F78-F2C2-47A7-B173-87D83CB49E8A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniMock.Demo", "MiniMock.Demo\MiniMock.Demo.csproj", "{581A1E13-2BEF-4FEB-89FE-5EFB75D71ADD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniMock.Demo.OtherLanguages", "MiniMock.Demo.OtherLanguages\MiniMock.Demo.OtherLanguages.csproj", "{4C5319CA-0756-4EF4-8A16-E9A9F3D54337}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniMock.Demo.CSharp", "MiniMock.Demo.CSharp\MiniMock.Demo.CSharp.csproj", "{F29050FD-83A6-4A34-BFDC-8907864805FF}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "MiniMock.Demo.FSharp", "MiniMock.Demo.FSharp\MiniMock.Demo.FSharp.fsproj", "{AE918841-6AAF-415A-BD39-D912CB991449}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "MiniMock.Demo.VBNet", "MiniMock.Demo.VBNet\MiniMock.Demo.VBNet.vbproj", "{F247711E-4CF8-47B0-9A0A-10D94BF02CC4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4FFB2F78-F2C2-47A7-B173-87D83CB49E8A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4FFB2F78-F2C2-47A7-B173-87D83CB49E8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FFB2F78-F2C2-47A7-B173-87D83CB49E8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FFB2F78-F2C2-47A7-B173-87D83CB49E8A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{581A1E13-2BEF-4FEB-89FE-5EFB75D71ADD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{581A1E13-2BEF-4FEB-89FE-5EFB75D71ADD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{581A1E13-2BEF-4FEB-89FE-5EFB75D71ADD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{581A1E13-2BEF-4FEB-89FE-5EFB75D71ADD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C5319CA-0756-4EF4-8A16-E9A9F3D54337}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C5319CA-0756-4EF4-8A16-E9A9F3D54337}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C5319CA-0756-4EF4-8A16-E9A9F3D54337}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C5319CA-0756-4EF4-8A16-E9A9F3D54337}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F29050FD-83A6-4A34-BFDC-8907864805FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F29050FD-83A6-4A34-BFDC-8907864805FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F29050FD-83A6-4A34-BFDC-8907864805FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F29050FD-83A6-4A34-BFDC-8907864805FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE918841-6AAF-415A-BD39-D912CB991449}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE918841-6AAF-415A-BD39-D912CB991449}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE918841-6AAF-415A-BD39-D912CB991449}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE918841-6AAF-415A-BD39-D912CB991449}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F247711E-4CF8-47B0-9A0A-10D94BF02CC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F247711E-4CF8-47B0-9A0A-10D94BF02CC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F247711E-4CF8-47B0-9A0A-10D94BF02CC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F247711E-4CF8-47B0-9A0A-10D94BF02CC4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -11,7 +11,7 @@ Namespace MiniMock.Demo.VBNet
             Assert.Equal(10, actual)
         End Sub
 
-        Private Sub Config(config As ICustomerRepositoryMock.Config)
+        Private Sub Config(config As MockOf_ICustomerRepository.Config)
             config.CreateCustomer(10)
         End Sub
     End Class
