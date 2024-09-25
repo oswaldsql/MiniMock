@@ -10,6 +10,12 @@ public static class Constants
                                                 /// <typeparam name="T">Interface or class to be mocked.</typeparam>
                                                 [System.AttributeUsage(System.AttributeTargets.All, AllowMultiple = true)]
                                                 internal class MockAttribute<T> : System.Attribute{}
+
+                                                [System.AttributeUsage(System.AttributeTargets.Assembly, AllowMultiple = false)]
+                                                internal class MockAttribute : System.Attribute
+                                                {
+                                                    public string MockFactoryName { get; set; } = "Mock";
+                                                }
                                             }
                                             """;
 
