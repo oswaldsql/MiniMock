@@ -1,7 +1,6 @@
 namespace MiniMock;
 
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 
 internal static class DiagnosticsBuilder
