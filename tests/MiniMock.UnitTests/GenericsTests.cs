@@ -74,7 +74,11 @@ public class TestClass{{
 
     public interface IGenericMethod
     {
-        T Parse<T>(string value) where T : struct;
+        void ReturnGeneric(string value);
+        T ReturnGeneric<T>(string value) where T : struct;
+        IEnumerable<T> ReturnDerived<T>(string value) where T : struct;
+        void ReturnVoid<T>(string value) where T : struct;
+        T ReturnTwoGenerics<T, U>(string value) where T : struct where U : struct;
     }
 
     [Fact]
@@ -86,10 +90,10 @@ public class TestClass{{
 
         testOutputHelper.DumpResult(generate);
 
-        var error = Assert.Single(generate.GetErrors());
+        Assert.Empty(generate.GetErrors());
 
-        Assert.Equal("Generic methods in non generic interfaces or classes is not currently supported for 'Parse' in 'IGenericMethod'", error.GetMessage());
-        Assert.Equal("MM0004", error.Id);
+//        Assert.Equal("Generic methods in non generic interfaces or classes is not currently supported for 'Parse' in 'IGenericMethod'", error.GetMessage());
+//        Assert.Equal("MM0004", error.Id);
     }
 
     public interface IGeneric<out TKey, in TValue> where TKey : IComparable<TKey>? //, IEnumerable<string>?

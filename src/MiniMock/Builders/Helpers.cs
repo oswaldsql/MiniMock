@@ -2,15 +2,18 @@ namespace MiniMock.Builders;
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Globalization;
 using System.Linq;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 
 public static class Helpers
 {
-    public static string ToString(this IMethodSymbol m, Func<IParameterSymbol, string> selector,
+    internal static string ToString(this IEnumerable<ParameterInfo> m, Func<ParameterInfo, string> selector,
         string separator = ", ")
     {
-        var Parameters = m.Parameters.Select(selector);
+        var Parameters = m.Select(selector);
         var parameterList = string.Join(separator, Parameters);
         return parameterList;
     }
@@ -110,11 +113,29 @@ public static class Helpers
         return ("", method.AccessibilityString(), "override ");
     }
 
-    internal static (string parameterList, string typeList, string nameList) ParameterStrings(this IMethodSymbol method)
+    internal static (string methodParameters, string parameterList, string typeList, string nameList) ParameterStrings(this IMethodSymbol method)
     {
-        var parameterList = method.ToString(p => $"{p.OutString()}{p.Type} {p.Name}");
-        var typeList = method.ToString(p => $"{p.Type}");
-        var nameList = method.ToString(p => $"{p.OutString()}{p.Name}");
-        return (parameterList, typeList, nameList);
+        var parameters = method.Parameters.Select(t => new ParameterInfo(t.Type.ToString(), t.Name, t.OutString(), t.Name)).ToList();
+
+        var methodParameters = parameters.ToString(p => $"{p.OutString}{p.Type} {p.Name}");
+
+        if (method.IsGenericMethod)
+        {
+            parameters.AddRange(method.TypeArguments.Select(typeArgument => new ParameterInfo("System.Type", "typeOf_" + typeArgument.Name, "", "typeof(" + typeArgument.Name + ")")));
+        }
+
+        var parameterList = parameters.ToString(p => $"{p.OutString}{p.Type} {p.Name}");
+        var typeList = parameters.ToString(p => $"{p.Type}");
+        var nameList = parameters.ToString(p => $"{p.OutString}{p.Function}");
+
+        return (methodParameters, parameterList, typeList, nameList);
+    }
+
+    internal class ParameterInfo(string type, string name, string outString, string function)
+    {
+        public string Type { get; } = type;
+        public string Name { get; } = name;
+        public string OutString { get; } = outString;
+        public string Function { get; } = function;
     }
 }
