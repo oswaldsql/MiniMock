@@ -104,10 +104,21 @@ public class GenericMethodTest
     public void METHOD()
     {
         // Arrange
-        var sut = Mock.IGenericMethod(config => config.ReturnGeneric(10).ReturnGeneric(call: (value, t) => value));
+        var sut = Mock.IGenericMethod(config =>
+        {
+            object Call(string value, Type t)
+            {
+                if(t == typeof(int))
+                    return 10;
+                return true;
+            }
+
+            config.ReturnGeneric(10).ReturnGeneric(call: Call);
+        });
 
         // ACT
         sut.ReturnGeneric<int>("test");
+        sut.ReturnGeneric<bool>("test");
 
         // Assert
 

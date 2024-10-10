@@ -1,5 +1,8 @@
 namespace MiniMock.Tests.MethodTests;
 
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+
 public class InheritanceTests
 {
     public interface IBase
@@ -45,5 +48,23 @@ public class InheritanceTests
         Assert.Equal((string?)"Mocked", (string?)sut.Method6());
         Assert.Equal((string?)"Mocked", (string?)sut.Method6());
         Assert.Equal("Mocked", ((IBase)sut).Method6());
+    }
+
+    public class TestNotifyPropertyChanged : INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler? PropertyChanged;
+    }
+
+    [Fact]
+    [Mock<TestNotifyPropertyChanged>]
+    public void METHOD()
+    {
+        // Arrange
+
+
+        // ACT
+
+        // Assert
+
     }
 }
