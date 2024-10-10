@@ -87,3 +87,40 @@ public class GenericInterfaceTests
         Assert.Equal(10, actual);
     }
 }
+
+public class GenericMethodTest
+{
+    public interface IGenericMethod
+    {
+        void ReturnGeneric(string value);
+        T ReturnGeneric<T>(string value) where T : struct;
+        IEnumerable<T> ReturnDerived<T>(string value) where T : struct;
+        void ReturnVoid<T>(string value) where T : struct;
+        T ReturnTwoGenerics<T, U>(string value) where T : struct where U : struct;
+    }
+
+    [Mock<IGenericMethod>]
+    [Fact]
+    public void METHOD()
+    {
+        // Arrange
+        var sut = Mock.IGenericMethod(config =>
+        {
+            object Call(string value, Type t)
+            {
+                if(t == typeof(int))
+                    return 10;
+                return true;
+            }
+
+            config.ReturnGeneric(10).ReturnGeneric(call: Call);
+        });
+
+        // ACT
+        sut.ReturnGeneric<int>("test");
+        sut.ReturnGeneric<bool>("test");
+
+        // Assert
+
+    }
+}

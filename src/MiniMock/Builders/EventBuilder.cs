@@ -25,6 +25,13 @@ internal static class EventBuilder
                 builder.Add($"// Ignoring Static event {symbol}.");
                 continue;
             }
+
+            if (!(symbol.IsAbstract || symbol.IsVirtual))
+            {
+                builder.Add().Add("// Ignoring " + symbol);
+                continue;
+            }
+
             eventCount++;
             BuildEvent(builder, symbol, helpers, eventCount);
         }
@@ -45,7 +52,7 @@ internal static class EventBuilder
 
         var (containingSymbol, accessibilityString, _) = symbol.Overwrites();
 
-        var (parameterList, _, nameList) = invokeMethod.ParameterStrings();
+        var (_, parameterList, _, nameList) = invokeMethod.ParameterStrings();
 
         builder.Add($$"""
 

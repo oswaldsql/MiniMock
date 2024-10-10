@@ -30,15 +30,15 @@ public class Demo(ITestOutputHelper testOutputHelper)
                 .DownloadExists(throws: new IndexOutOfRangeException()) // Throws IndexOutOfRangeException for all versions
                 .DownloadExists(call: s => s.StartsWith("2.0.0")) // Returns true for version 2.0.0.x base on a string parameter
                 .DownloadExists(call: v => v is { Major: 2, Minor: 0, Revision: 0 }) // Returns true for version 2.0.0.x based on a version parameter
-                .DownloadExists(returns: [true, true, false]) // Returns true two times, then false
+                .DownloadExists(returnValues: [true, true, false]) // Returns true two times, then false
 
                 .DownloadLinkAsync(returns: Task.FromResult(new Uri("http://downloads/2.0.0"))) // Returns a task containing a download link for all versions
                 .DownloadLinkAsync(call: s => Task.FromResult(s.StartsWith("2.0.0") ? new Uri("http://downloads/2.0.0") : new Uri("http://downloads/UnknownVersion"))) // Returns a task containing a download link for version 2.0.0.x otherwise a error link
                 .DownloadLinkAsync(throws: new TaskCanceledException()) // Throws IndexOutOfRangeException for all parameters
                 .DownloadLinkAsync(returns: new Uri("http://downloads/2.0.0")) // Returns a task containing a download link for all versions
                 .DownloadLinkAsync(call: s => s.StartsWith("2.0.0") ? new Uri("http://downloads/2.0.0") : new Uri("http://downloads/UnknownVersion")) // Returns a task containing a download link for version 2.0.0.x otherwise a error link
-                .DownloadLinkAsync(returns: [Task.FromResult(new Uri("http://downloads/1.0.0")), Task.FromResult(new Uri("http://downloads/1.1.0")), Task.FromResult(new Uri("http://downloads/2.0.0"))]) // Returns a task with a download link
-                .DownloadLinkAsync(returns: [new Uri("http://downloads/2.0.0"), new Uri("http://downloads/2.0.0"), new Uri("http://downloads/2.0.0")]) // Returns a task with a download link
+                .DownloadLinkAsync(returnValues: [Task.FromResult(new Uri("http://downloads/1.0.0")), Task.FromResult(new Uri("http://downloads/1.1.0")), Task.FromResult(new Uri("http://downloads/2.0.0"))]) // Returns a task with a download link
+                .DownloadLinkAsync(returnValues: [new Uri("http://downloads/2.0.0"), new Uri("http://downloads/2.0.0"), new Uri("http://downloads/2.0.0")]) // Returns a task with a download link
 
                 .CurrentVersion(get: () => new Version(2, 0, 0, 0), set: version => throw new IndexOutOfRangeException()) // Overwrites the property getter and setter
                 .CurrentVersion(value: new Version(2, 0, 0, 0)) // Sets the initial version to 2.0.0.0
@@ -90,9 +90,9 @@ public class Demo(ITestOutputHelper testOutputHelper)
     public void MultipleReturnValue()
     {
         var versionLibrary = Mock.IVersionLibrary(config => config
-                .DownloadExists(returns: [true, true, false]) // Returns true two times, then false
-                .DownloadLinkAsync(returns: [Task.FromResult(new Uri("http://downloads/1.0.0")), Task.FromResult(new Uri("http://downloads/1.1.0")), Task.FromResult(new Uri("http://downloads/2.0.0"))]) // Returns a task with a download link
-                .DownloadLinkAsync(returns: [new Uri("http://downloads/2.0.0"), new Uri("http://downloads/2.0.0"), new Uri("http://downloads/2.0.0")]) // Returns a task with a download link
+                .DownloadExists(returnValues: [true, true, false]) // Returns true two times, then false
+                .DownloadLinkAsync(returnValues: [Task.FromResult(new Uri("http://downloads/1.0.0")), Task.FromResult(new Uri("http://downloads/1.1.0")), Task.FromResult(new Uri("http://downloads/2.0.0"))]) // Returns a task with a download link
+                .DownloadLinkAsync(returnValues: [new Uri("http://downloads/2.0.0"), new Uri("http://downloads/2.0.0"), new Uri("http://downloads/2.0.0")]) // Returns a task with a download link
         );
     }
 

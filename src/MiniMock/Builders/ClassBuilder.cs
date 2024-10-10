@@ -86,7 +86,10 @@ internal class ClassBuilder(ISymbol target)
     {
         var memberCandidates = new List<ISymbol>(((INamedTypeSymbol)target).GetMembers());
 
-        this.AddInheritedInterfaces(memberCandidates, (INamedTypeSymbol)target);
+        if (((INamedTypeSymbol)target).TypeKind == TypeKind.Interface)
+        {
+            this.AddInheritedInterfaces(memberCandidates, (INamedTypeSymbol)target);
+        }
 
         var memberGroups = memberCandidates.Distinct(SymbolEqualityComparer.IncludeNullability).ToLookup(t => t.Name);
 

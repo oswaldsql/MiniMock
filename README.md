@@ -112,9 +112,9 @@ Specify multiple return values for a method or property. The first value is retu
 
 ```csharp
     var mockLibrary = Mock.IVersionLibrary(config => config
-                .DownloadExists(returns: true, false, true) // Returns true, false, true for the first, second and third call
-                .DownloadLinkAsync(returns: [Task.FromResult(new Uri("http://downloads/2.0.0")), Task.FromResult(new Uri("http://downloads/2.0.1"))]) // Returns a task with a download link for the first and second call
-                .DownloadLinkAsync(returns: new Uri("http://downloads/2.0.0"), new Uri("http://downloads/2.0.1")) // Returns a task with a download link for the first and second call
+                .DownloadExists(returnValues: true, false, true) // Returns true, false, true for the first, second and third call
+                .DownloadLinkAsync(returnValues: [Task.FromResult(new Uri("http://downloads/2.0.0")), Task.FromResult(new Uri("http://downloads/2.0.1"))]) // Returns a task with a download link for the first and second call
+                .DownloadLinkAsync(returnValues: new Uri("http://downloads/2.0.0"), new Uri("http://downloads/2.0.1")) // Returns a task with a download link for the first and second call
     );
 ```
 
