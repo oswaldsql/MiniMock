@@ -1,5 +1,7 @@
 ﻿namespace MiniMock.UnitTests;
 
+using Microsoft.Extensions.Logging;
+
 public class GenericsTests(ITestOutputHelper testOutputHelper)
 {
     [Fact]
@@ -76,6 +78,7 @@ public class TestClass{{
     {
         void ReturnGeneric(string value);
         T ReturnGeneric<T>(string value) where T : struct;
+        void Register<T>(T value);
         IEnumerable<T> ReturnDerived<T>(string value) where T : struct;
         void ReturnVoid<T>(string value) where T : struct;
         T ReturnTwoGenerics<T, U>(string value) where T : struct where U : struct;
@@ -85,6 +88,25 @@ public class TestClass{{
     public void GenericMethodsInNoGenericInterfaceIsNotSupported()
     {
         var source = Build.TestClass<IGenericMethod>();
+
+        var generate = new MiniMockGenerator().Generate(source);
+
+        testOutputHelper.DumpResult(generate);
+
+        Assert.Empty(generate.GetErrors());
+
+//        Assert.Equal("Generic methods in non generic interfaces or classes is not currently supported for 'Parse' in 'IGenericMethod'", error.GetMessage());
+//        Assert.Equal("MM0004", error.Id);
+    }
+
+    public interface IMockLogger<out TCategoryName> : ILogger
+    {
+    }
+
+    [Fact]
+    public void GenericMethodsInNoGenericInterfaceIsNotSupported2()
+    {
+        var source = Build.TestClass("MiniMock.UnitTests.GenericsTests.IMockLogger<System.String>");//<IMockLogger<string>>();
 
         var generate = new MiniMockGenerator().Generate(source);
 
