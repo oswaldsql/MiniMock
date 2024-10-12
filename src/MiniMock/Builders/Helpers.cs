@@ -121,6 +121,17 @@ public static class Helpers
 
         if (method.IsGenericMethod)
         {
+            foreach (var argument in method.TypeArguments)
+            {
+                foreach (var parameter in parameters)
+                {
+                    if (parameter.Type.Contains(argument.Name))
+                    {
+                        parameter.Type = "System.Object?";
+                    }
+                }
+            }
+
             parameters.AddRange(method.TypeArguments.Select(typeArgument => new ParameterInfo("System.Type", "typeOf_" + typeArgument.Name, "", "typeof(" + typeArgument.Name + ")")));
         }
 
@@ -133,7 +144,7 @@ public static class Helpers
 
     internal class ParameterInfo(string type, string name, string outString, string function)
     {
-        public string Type { get; } = type;
+        public string Type { get; set; } = type;
         public string Name { get; } = name;
         public string OutString { get; } = outString;
         public string Function { get; } = function;
