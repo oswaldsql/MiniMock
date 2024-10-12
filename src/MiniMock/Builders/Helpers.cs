@@ -2,10 +2,7 @@ namespace MiniMock.Builders;
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Globalization;
 using System.Linq;
-using System.Threading;
 using Microsoft.CodeAnalysis;
 
 public static class Helpers
@@ -54,13 +51,13 @@ public static class Helpers
             grouping.Select(t => t.Documentation).Where(t => !string.IsNullOrWhiteSpace(t)).Distinct().ToList().ForEach(t => builder.Add("///     " + t));
             if (grouping.Any(t => t.SeeCref != ""))
             {
-                var crefs = grouping.Select(t => t.SeeCref).Where(t => !string.IsNullOrWhiteSpace(t)).Select(t => $"<see cref=\"{t.EscapeToHtml()}\" />");
-                builder.Add("///     Configures " + string.Join(", ", crefs));
+                var crefs = grouping.Select(t => t.SeeCref).Where(t => !string.IsNullOrWhiteSpace(t)).Select(t => $" - <see cref=\"{t.EscapeToHtml()}\" />");
+                builder.Add("///<br/>     Applies to <br/>" + string.Join("<br/>", crefs));
             }
 
             builder.Add($"""
                          /// </summary>
-                         /// <returns>The updated configuration.</returns>
+                         /// <returns>The configured for further chaining.</returns>
                          """);
 
             builder.Add($"public Config {name}({grouping.Key}) {{").Indent();
