@@ -1,5 +1,6 @@
 ﻿// ReSharper disable UnusedParameter.Local
 // ReSharper disable UnusedVariable
+// ReSharper disable RedundantLambdaParameterType
 namespace MiniMock.Tests;
 
 using Xunit.Abstractions;
@@ -46,7 +47,7 @@ public class Demo(ITestOutputHelper testOutputHelper)
                 .Indexer(get: key => new Version(2, 0, 0, 0), set: (key, value) => { }) // Overwrites the indexer getter and setter
                 .Indexer(values: versions) // Provides a dictionary to retrieve and store versions
 
-                .NewVersionAdded(eventArgs: new Version(2, 0, 0, 0)) // Raises the event right away
+                .NewVersionAdded(raise: new Version(2, 0, 0, 0)) // Raises the event right away
                 .NewVersionAdded(trigger: out triggerNewVersionAdded) // Provides a trigger for when a new version is added
         );
 

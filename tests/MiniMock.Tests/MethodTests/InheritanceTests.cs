@@ -1,13 +1,10 @@
 namespace MiniMock.Tests.MethodTests;
 
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-
 public class InheritanceTests
 {
     public interface IBase
     {
-        bool Method1();
+        bool ReturnBool();
         void Method2();
         bool Method3(string name);
         bool Method4(out string name);
@@ -18,7 +15,7 @@ public class InheritanceTests
 
     public interface IDerived : IBase
     {
-        new bool Method1();
+        bool ReturnBool();
         new void Method2();
         new bool Method3(string name);
         new bool Method4(out string name);
@@ -31,10 +28,10 @@ public class InheritanceTests
     [Mock<IDerived>]
     public void FactMethodName()
     {
-        var sut = Mock.IDerived(config => config.Method1(true));
+        var sut = Mock.IDerived(config => config.ReturnBool(true));
 
-        Assert.True(sut.Method1());
-        Assert.True(((IBase)sut).Method1());
+        Assert.True(sut.ReturnBool());
+        Assert.True(((IBase)sut).ReturnBool());
 
         Assert.Throws<InvalidOperationException>(() => ((IBase)sut).Method6());
     }
@@ -48,23 +45,5 @@ public class InheritanceTests
         Assert.Equal((string?)"Mocked", (string?)sut.Method6());
         Assert.Equal((string?)"Mocked", (string?)sut.Method6());
         Assert.Equal("Mocked", ((IBase)sut).Method6());
-    }
-
-    public class TestNotifyPropertyChanged : INotifyPropertyChanged
-    {
-        public event PropertyChangedEventHandler? PropertyChanged;
-    }
-
-    [Fact]
-    [Mock<TestNotifyPropertyChanged>]
-    public void METHOD()
-    {
-        // Arrange
-
-
-        // ACT
-
-        // Assert
-
     }
 }

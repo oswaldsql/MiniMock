@@ -137,9 +137,9 @@ public class InheritanceTests(ITestOutputHelper testOutputHelper)
 
 public class DoubleInheritanceTest(ITestOutputHelper testOutputHelper)
 {
-    public interface IDoubleInheritance : System.Collections.Generic.ICollection<string>, System.Collections.Generic.IList<string>
+    // ReSharper disable once RedundantExtendsListEntry (disabled since this is the point of the test)
+    private interface IDoubleInheritance : ICollection<string>, IList<string>
     {
-
     }
 
     [Fact]

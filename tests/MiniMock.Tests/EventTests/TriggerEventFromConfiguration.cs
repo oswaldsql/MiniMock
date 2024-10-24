@@ -5,12 +5,12 @@ using System.ComponentModel;
 public class TriggerEventFromConfiguration
 {
     [Fact]
-    [Mock<INotifyDTO>]
+    [Mock<INotifyDto>]
     public void ItShouldBePossibleToTriggerEventsFromConfiguration()
     {
         // arrange
         var actual = "";
-        var sut = Mock.INotifyDTO(config => config.Value(() => "test", _ =>
+        var sut = Mock.INotifyDto(config => config.Value(() => "test", _ =>
         {
             config.PropertyChanged(new PropertyChangedEventArgs("Value"));
         }));
@@ -25,7 +25,7 @@ public class TriggerEventFromConfiguration
     }
 
     [Fact]
-    [Mock<INotifyDTO>]
+    [Mock<INotifyDto>]
     public void ItShouldBePossibleToTriggerEventsFromAExposedConfiguration()
     {
         // Arrange
@@ -44,7 +44,7 @@ public class TriggerEventFromConfiguration
         Assert.Equal(new Version(2, 0, 0, 0), actual);
     }
 
-    public interface INotifyDTO : INotifyPropertyChanged
+    public interface INotifyDto : INotifyPropertyChanged
     {
         public string Value { get; set; }
     }

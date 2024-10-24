@@ -55,7 +55,7 @@ public class DiagnosticsTests(ITestOutputHelper testOutputHelper)
     }
 
     [Fact]
-    public void MockingSealedClasesWillRaiseTheMM0006Error()
+    public void MockingSealedClasesWillRaiseTheMm0006Error()
     {
         var source = Build.TestClass<SealedClass>();
 
