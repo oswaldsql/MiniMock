@@ -1,5 +1,7 @@
 namespace MiniMock.UnitTests;
 
+using Xunit.Sdk;
+
 public class PropertyTest(ITestOutputHelper testOutputHelper)
 {
     public interface IPropertyInterface
@@ -21,9 +23,9 @@ public class PropertyTest(ITestOutputHelper testOutputHelper)
         public abstract string AbstractGetOnly { get;  }
         public virtual string VirtualGetOnly { get;  } = "";
 
-        public string NotAbstractSetOnly { set { } }
+        public string NotAbstractSetOnly { set => throw new TestClassException("This should not be accessed"); }
         public abstract string AbstractSetOnly { set; }
-        public virtual string VirtualSetOnly { set{} }
+        public virtual string VirtualSetOnly { set => throw new TestClassException("This should not be accessed"); }
     }
 
     [Fact]

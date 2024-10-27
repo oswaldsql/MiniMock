@@ -14,8 +14,8 @@ public class AbstractClassesTest
         public abstract string AbstractGetOnly { get;  }
         public virtual string VirtualGetOnly => throw new TestClassException("this should never be called");
 
-        internal string? notAbstractSetOnly;
-        public string NotAbstractSetOnly { set => this.notAbstractSetOnly = value; }
+        internal string? _notAbstractSetOnly;
+        public string NotAbstractSetOnly { set => this._notAbstractSetOnly = value; }
         public abstract string AbstractSetOnly { set; }
         public virtual string VirtualSetOnly { set => throw new TestClassException("this should never be called"); }
     }
