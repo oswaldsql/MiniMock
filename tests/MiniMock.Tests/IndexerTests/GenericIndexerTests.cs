@@ -2,9 +2,9 @@
 
 public class GenericIndexerTests
 {
-    public interface IGenericIndexRepository<in T, U> where U : new() where T : notnull
+    public interface IGenericIndexRepository<in T, TU> where TU : new() where T : notnull
     {
-        U this[T index] { get; set; }
+        TU this[T index] { get; set; }
     }
 
     [Fact]

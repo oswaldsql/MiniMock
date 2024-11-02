@@ -78,7 +78,7 @@ public class TestClass{{
         T ReturnGeneric<T>(string value) where T : struct;
         IEnumerable<T> ReturnDerived<T>(string value) where T : struct;
         void ReturnVoid<T>(string value) where T : struct;
-        T ReturnTwoGenerics<T, U>(string value) where T : struct where U : struct;
+        T ReturnTwoGenerics<T, TU>(string value) where T : struct where TU : struct;
     }
 
     [Fact]

@@ -1,10 +1,12 @@
 ﻿namespace MiniMock.UnitTests;
 
+using Microsoft.CodeAnalysis;
+
 public class StaticInterfaceMembersTest(ITestOutputHelper testOutputHelper)
 {
     public interface ISupportedStaticInterfaceMembers
     {
-        static ISupportedStaticInterfaceMembers() { }
+        static ISupportedStaticInterfaceMembers() => StaticProperty = 10;
 
         static int StaticProperty { get; set; }
         static string StaticMethod() => "value";
@@ -34,6 +36,7 @@ public class StaticInterfaceMembersTest(ITestOutputHelper testOutputHelper)
         static abstract string AbstractProperty { get; set; }
         static abstract string AbstractMethod();
         static abstract event EventHandler StaticEvent;
+        static string AbstractMethod1() => "value";
     }
 
     [Fact]
@@ -46,9 +49,10 @@ public class StaticInterfaceMembersTest(ITestOutputHelper testOutputHelper)
         var generate = new MiniMockGenerator().Generate(source);
 
         // Assert
-        testOutputHelper.DumpResult(generate);
-
-        var actualTypeArgumentError = Assert.Single(generate.diagnostics, t => t.Id == "CS8920");
+        //testOutputHelper.DumpResult(generate);
+        Assert.Single(generate.diagnostics, t => t.Id == "CS8920");
         var actualAbstractPropertyError = Assert.Single(generate.diagnostics, t => t.Id == "MM0005");
+        Assert.Equal(DiagnosticSeverity.Error, actualAbstractPropertyError.Severity);
+        Assert.Equal("Static abstract members in interfaces or classes is not supported for 'AbstractMethod' in 'IStaticAbstractInterfaceMembers'",actualAbstractPropertyError.GetMessage());
     }
 }

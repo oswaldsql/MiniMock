@@ -4,16 +4,13 @@ public class StaticInterfaceTests
 {
     public interface ISupportedStaticInterfaceMembers
     {
-        static ISupportedStaticInterfaceMembers(){}
+        static ISupportedStaticInterfaceMembers() => StaticProperty = "Set from ctor";
 
-        static int StaticProperty { get; set; }
+        static string StaticProperty { get; set; }
         static string StaticMethod() => "value";
         static event EventHandler? StaticEvent;
 
-        static void DoStaticEvent()
-        {
-            StaticEvent?.Invoke(null, EventArgs.Empty);
-        }
+        static void DoStaticEvent() => StaticEvent?.Invoke(null, EventArgs.Empty);
 
         static virtual string Bar => "value";  // with implementation
     }
