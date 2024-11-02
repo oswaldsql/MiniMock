@@ -9,6 +9,8 @@ public class GenericInterfaceTests
         public void GenericParameter(TKey source);
 
         public TKey Name { get; set; }
+
+        public TValue Value { get; set; }
     }
 
     public interface IGeneric<T> where T : notnull
@@ -31,19 +33,31 @@ public class GenericInterfaceTests
         var sut = Mock.IGeneric<string>(mock => mock
             .Indexer([])
             .ReturnGenericType("Result")
-            .TryParse((string value, out string result) => { result = value.ToString(); return true; })
         );
 
         // Act
-        sut.EventWithArgs += (sender, e) => { };
+        sut.EventWithArgs += (_, _) => { };
         var actual = sut.ReturnGenericType();
-        var t = sut.TryParse("test", out var result2);
-
         sut["key"] = "value";
-
 
         // Assert
         Assert.Equal("Result", actual);
+    }
+
+    [Fact]
+    public void GenericStringClass_TryParseShouldReturnTrue()
+    {
+        // Arrange
+        var sut = Mock.IGeneric<string>(mock => mock
+            .TryParse((string value, out string result) => { result = "parsed " + value; return true; })
+        );
+
+        // Act
+        var actual = sut.TryParse("test", out var actualResult);
+
+        // Assert
+        Assert.True(actual);
+        Assert.Equal("parsed test", actualResult);
     }
 
     [Fact]
@@ -96,31 +110,32 @@ public class GenericMethodTest
         T ReturnGeneric<T>(string value) where T : struct;
         IEnumerable<T> ReturnDerived<T>(string value) where T : struct;
         void ReturnVoid<T>(string value) where T : struct;
-        T ReturnTwoGenerics<T, U>(string value) where T : struct where U : struct;
+        T ReturnTwoGenerics<T, TU>(string value) where T : struct where TU : struct;
     }
 
     [Mock<IGenericMethod>]
     [Fact]
-    public void METHOD()
+    public void MockCallFunctionGetTheTypeOfTheGenericAsParameter()
     {
-        // Arrange
-        var sut = Mock.IGenericMethod(config =>
-        {
-            object Call(string value, Type t)
-            {
-                if(t == typeof(int))
-                    return 10;
-                return true;
-            }
-
-            config.ReturnGeneric(10).ReturnGeneric(call: Call);
-        });
+        var sut = Mock.IGenericMethod(config => config.ReturnGeneric(call: ReturnGeneric));
 
         // ACT
-        sut.ReturnGeneric<int>("test");
-        sut.ReturnGeneric<bool>("test");
+        var actualInt = sut.ReturnGeneric<int>("test");
+        var actualBool = sut.ReturnGeneric<bool>("test");
 
         // Assert
+        Assert.Equal(10, actualInt);
+        Assert.True(actualBool);
+        return;
 
+        // Arrange
+        object ReturnGeneric(string value, Type t)
+        {
+            if (t == typeof(int))
+            {
+                return 10;
+            }
+            return true;
+        }
     }
 }

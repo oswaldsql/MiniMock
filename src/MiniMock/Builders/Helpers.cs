@@ -28,7 +28,7 @@ public static class Helpers
             Accessibility.Protected => "protected",
             Accessibility.ProtectedOrInternal => "protected internal",
             Accessibility.Public => "public",
-            _ => throw new UnsupportedAccessibilityException(accessibility)
+            _ => throw new UnsupportedAccessibilityException(accessibility),
         };
 
     internal static void BuildHelpers(this List<MethodSignature> helpers, CodeBuilder builder, string name)
@@ -44,21 +44,19 @@ public static class Helpers
 
         foreach (var grouping in signatures)
         {
-            builder.Add($"""
-                         /// <summary>
-                         """);
+            builder.Add("""/// <summary>""");
 
             grouping.Select(t => t.Documentation).Where(t => !string.IsNullOrWhiteSpace(t)).Distinct().ToList().ForEach(t => builder.Add("///     " + t));
             if (grouping.Any(t => t.SeeCref != ""))
             {
-                var crefs = grouping.Select(t => t.SeeCref).Where(t => !string.IsNullOrWhiteSpace(t)).Select(t => $" - <see cref=\"{t.EscapeToHtml()}\" />");
-                builder.Add("///<br/>     Applies to <br/>" + string.Join("<br/>", crefs));
+                var crefs = grouping.Select(t => t.SeeCref).Where(t => !string.IsNullOrWhiteSpace(t)).Select(t => $"<see cref=\"{t.EscapeToHtml()}\" />");
+                builder.Add("///     Configures " + string.Join(", ", crefs));
             }
 
-            builder.Add($"""
-                         /// </summary>
-                         /// <returns>The configured for further chaining.</returns>
-                         """);
+            builder.Add("""
+                        /// </summary>
+                        /// <returns>The updated configuration.</returns>
+                        """);
 
             builder.Add($"public Config {name}({grouping.Key}) {{").Indent();
             foreach (var mse in grouping)
@@ -74,14 +72,14 @@ public static class Helpers
         builder.Unindent().Add("}");
     }
 
-    internal static string OutString(this IParameterSymbol parameterSymbol) =>
+    internal static string OutAsString(this IParameterSymbol parameterSymbol) =>
         parameterSymbol.RefKind switch
         {
             RefKind.Out => "out ",
             RefKind.Ref => "ref ",
             RefKind.In => "in ",
             RefKind.RefReadOnlyParameter => "ref readonly ",
-            _ => ""
+            _ => "",
         };
 
     internal static bool HasParameters(this IMethodSymbol method) => method.Parameters.Length > 0;
@@ -112,7 +110,7 @@ public static class Helpers
 
     internal static (string methodParameters, string parameterList, string typeList, string nameList) ParameterStrings(this IMethodSymbol method)
     {
-        var parameters = method.Parameters.Select(t => new ParameterInfo(t.Type.ToString(), t.Name, t.OutString(), t.Name)).ToList();
+        var parameters = method.Parameters.Select(t => new ParameterInfo(t.Type.ToString(), t.Name, t.OutAsString(), t.Name)).ToList();
 
         var methodParameters = parameters.ToString(p => $"{p.OutString}{p.Type} {p.Name}");
 

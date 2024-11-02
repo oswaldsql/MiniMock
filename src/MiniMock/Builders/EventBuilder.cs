@@ -56,15 +56,15 @@ internal static class EventBuilder
 
         builder.Add($$"""
 
-                      private event {{typeSymbol}}? {{eventFunction}};
+                      private event {{typeSymbol}}? _{{eventFunction}};
                       {{accessibilityString}} event {{typeSymbol}}? {{containingSymbol}}{{eventName}}
                       {
-                          add => this.{{eventFunction}} += value;
-                          remove => this.{{eventFunction}} -= value;
+                          add => this._{{eventFunction}} += value;
+                          remove => this._{{eventFunction}} -= value;
                       }
                       private void trigger_{{eventFunction}}({{parameterList}})
                       {
-                          {{eventFunction}}?.Invoke({{nameList}});
+                          _{{eventFunction}}?.Invoke({{nameList}});
                       }
 
                       """);
@@ -86,8 +86,8 @@ internal static class EventBuilder
                 $"trigger = args => this.{eventName}(args);",
                 $"Returns an action that can be used for triggering {eventName}.", seeCref));
 
-            helpers.Add(new(types + " eventArgs",
-                $"target.trigger_{eventFunction}(target, eventArgs);",
+            helpers.Add(new(types + " raise",
+                $"target.trigger_{eventFunction}(target, raise);",
                 $"Trigger {eventName} directly.", seeCref));
         }
     }
