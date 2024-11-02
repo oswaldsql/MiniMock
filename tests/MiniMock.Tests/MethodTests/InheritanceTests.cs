@@ -15,7 +15,7 @@ public class InheritanceTests
 
     public interface IDerived : IBase
     {
-        bool ReturnBool();
+        new bool ReturnBool();
         new void Method2();
         new bool Method3(string name);
         new bool Method4(out string name);

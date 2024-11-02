@@ -10,12 +10,12 @@ public class AbstractClassesTest
         public abstract string Abstract { get; set; }
         public virtual string Virtual { get; set; } = "";
 
-        public string NotAbstractGetOnly => "";
+        public string NotAbstractGetOnly => this.abstractValue ?? "";
         public abstract string AbstractGetOnly { get;  }
         public virtual string VirtualGetOnly => throw new TestClassException("this should never be called");
 
-        internal string? _notAbstractSetOnly;
-        public string NotAbstractSetOnly { set => this._notAbstractSetOnly = value; }
+        private string? abstractValue;
+        public string NotAbstractSetOnly { set => this.abstractValue = value; }
         public abstract string AbstractSetOnly { set; }
         public virtual string VirtualSetOnly { set => throw new TestClassException("this should never be called"); }
     }

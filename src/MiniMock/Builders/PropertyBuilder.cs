@@ -19,11 +19,6 @@ internal static class PropertyBuilder
         {
             if (symbol.IsStatic)
             {
-                if (symbol.IsAbstract)
-                {
-                    throw new StaticAbstractMembersNotSupportedException(name, symbol.ContainingType);
-                }
-
                 builder.Add($"// Ignoring Static property {symbol}.");
             }else if (!symbol.IsAbstract && !symbol.IsVirtual)
             {

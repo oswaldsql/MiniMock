@@ -72,7 +72,7 @@ public static class Helpers
         builder.Unindent().Add("}");
     }
 
-    internal static string OutString(this IParameterSymbol parameterSymbol) =>
+    internal static string OutAsString(this IParameterSymbol parameterSymbol) =>
         parameterSymbol.RefKind switch
         {
             RefKind.Out => "out ",
@@ -110,7 +110,7 @@ public static class Helpers
 
     internal static (string methodParameters, string parameterList, string typeList, string nameList) ParameterStrings(this IMethodSymbol method)
     {
-        var parameters = method.Parameters.Select(t => new ParameterInfo(t.Type.ToString(), t.Name, t.OutString(), t.Name)).ToList();
+        var parameters = method.Parameters.Select(t => new ParameterInfo(t.Type.ToString(), t.Name, t.OutAsString(), t.Name)).ToList();
 
         var methodParameters = parameters.ToString(p => $"{p.OutString}{p.Type} {p.Name}");
 

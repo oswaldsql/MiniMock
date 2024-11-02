@@ -6,7 +6,7 @@ public class StaticInterfaceMembersTest(ITestOutputHelper testOutputHelper)
 {
     public interface ISupportedStaticInterfaceMembers
     {
-        static ISupportedStaticInterfaceMembers() { }
+        static ISupportedStaticInterfaceMembers() => StaticProperty = 10;
 
         static int StaticProperty { get; set; }
         static string StaticMethod() => "value";
@@ -36,6 +36,7 @@ public class StaticInterfaceMembersTest(ITestOutputHelper testOutputHelper)
         static abstract string AbstractProperty { get; set; }
         static abstract string AbstractMethod();
         static abstract event EventHandler StaticEvent;
+        static string AbstractMethod1() => "value";
     }
 
     [Fact]
