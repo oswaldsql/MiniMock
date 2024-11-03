@@ -4,6 +4,8 @@ MiniMock offers a _minimalistic_ approach to mocking in .NET. It is designed to 
 
 MiniMock is __extremely strict__, requiring you to specify all features you want to mock. This is by design to make sure you are aware of what you are mocking. Unmocked features will throw an exception if used.
 
+[View the documentation here](https://oswaldsql.github.io/MiniMock/)
+
 ## Table of Contents
 - [Simple Example](#simple-example)
 - [Key Feature Summary](#key-feature-summary)
