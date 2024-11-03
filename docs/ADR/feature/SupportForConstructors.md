@@ -2,13 +2,16 @@
 
 ## Context
 
-In the MiniMock framework, there is a need to determine the scope of support for mocking constructors. Initially, the framework will support only classes with parameterless constructors. This decision simplifies the initial implementation and allows for a gradual introduction of more complex constructor support.
+In the MiniMock framework, there is a need to determine the scope of support for mocking constructors. Initially, the framework will support only classes with parameterless constructors. 
+This decision simplifies the initial implementation and allows for a gradual introduction of more complex constructor support.
 
 ## Decision
 
-The MiniMock framework will initially support mocking only classes with parameterless constructors. A plan for adding support for classes with parameterized constructors is being developed and will be implemented in future iterations.
+The MiniMock framework will initially support mocking only classes with parameterless constructors. 
+A plan for adding support for classes with parameterized constructors is being developed and will be implemented in future iterations.
 
-Since the main focus of the framework is to provide a simple and easy-to-use mocking solution for interfaces and classes, the decision to start with parameterless constructors aligns with this goal. See ADR [Support For Classes and Interfaces](SupportForClassesAndInterfaces.md) for more information.
+Since the main focus of the framework is to provide a simple and easy-to-use mocking solution for interfaces and classes, 
+the decision to start with parameterless constructors aligns with this goal. See ADR [Support For Classes and Interfaces](SupportForClassesAndInterfaces.md) for more information.
 
 ## Consequences
 

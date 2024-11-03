@@ -25,4 +25,4 @@ We will not include any dependencies on shared libraries in our project. Instead
 
 ---
 
-More ADRs can be found in the [docs/ADR](../ADR/README.md) directory.
+More ADRs can be found in the [docs/ADR](../README.md) directory.

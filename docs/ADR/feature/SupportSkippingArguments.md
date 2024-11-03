@@ -22,4 +22,4 @@ We will allow the skipping of arguments when setting up mocks for methods. This 
 
 ---
 
-More ADRs can be found in the [docs/ADR](../ADR/README.md) directory.
+More ADRs can be found in the [docs/ADR](../README.md) directory.

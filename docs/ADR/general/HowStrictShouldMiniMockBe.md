@@ -23,4 +23,4 @@ The framework will be strict, throwing exceptions when a member that is not mock
 
 ---
 
-More ADRs can be found in the [docs/ADR](../ADR/README.md) directory.
+More ADRs can be found in the [docs/ADR](../README.md) directory.

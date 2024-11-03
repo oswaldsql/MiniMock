@@ -6,15 +6,14 @@ All the ADRs have been approved and are considered final decisions for the proje
 
 ## General ADRs
 
-- [Do We __Really__ Need a New Mocking Framework?](DoWeNeedANewMockingFramework.md) - Deciding whether to build a new mocking framework.
-- [Matching Target API in Mock API](MatchingTargetApi.md) - Ensures the mock API closely mirrors the target API.
-- [How Strict Should MiniMock Be?](HowStrictShouldMiniMockBe.md) - Deciding how strict the framework should be.
-- [No Built-in Assertion Feature](NoBuiltInAssertionFeature.md) - Users choose their preferred assertion framework.
-- [No Dependencies to Shared Libraries](NoDependencies.md) - Avoid dependencies on shared libraries.
-- [Documentation and Examples](DocumentationAndExamples.md) - Approach to documentation and examples for the framework.
-- [Logging and Debugging](LoggingAndDebugging.md) - Approach to logging and debugging within the framework.
-- [Allowing Skipping Arguments in Mock Setup](SupportSkippingArguments.md) - Allows skipping arguments in mock setups for flexibility.
-- [Creating Mocks](CreatingMocks.md) - Decision on how to create mocks in the framework.
+- [Do We __Really__ Need a New Mocking Framework?](general/DoWeNeedANewMockingFramework.md) - Deciding whether to build a new mocking framework.
+- [Matching Target API in Mock API](general/MatchingTargetApi.md) - Ensures the mock API closely mirrors the target API.
+- [How Strict Should MiniMock Be?](general/HowStrictShouldMiniMockBe.md) - Deciding how strict the framework should be.
+- [No Built-in Assertion Feature](general/NoBuiltInAssertionFeature.md) - Users choose their preferred assertion framework.
+- [No Dependencies to Shared Libraries](general/NoDependencies.md) - Avoid dependencies on shared libraries.
+- [Documentation and Examples](general/DocumentationAndExamples.md) - Approach to documentation and examples for the framework.
+- [Logging and Debugging](general/LoggingAndDebugging.md) - Approach to logging and debugging within the framework.
+- [Creating Mocks](general/CreatingMocks.md) - Decision on how to create mocks in the framework.
 
 ## Feature Specific ADRs
 
@@ -25,6 +24,7 @@ All the ADRs have been approved and are considered final decisions for the proje
 - [Support for Events](feature/SupportForEvents.md) - Decision on supporting events in the mocking framework.
 - [Support for Indexers](feature/SupportForIndexers.md) - Decision on supporting indexers in the mocking framework.
 - Special cases
+  - [Allowing Skipping Arguments in Mock Setup](general/SupportSkippingArguments.md) - Allows skipping arguments in mock setups for flexibility.
   - [Support for Protected Methods](feature/SupportingProtectedMethods.md) - Decision on whether to support mocking protected methods.
   - [Support for Generic Methods (WIP)](feature/SupportForGenericMethods.md) - Decision on supporting generic methods in the mocking framework.
   - [Support for Asynchronous Methods (WIP)](feature/SupportForAsynchronousMethods.md) - Handling asynchronous methods in the mocking framework.

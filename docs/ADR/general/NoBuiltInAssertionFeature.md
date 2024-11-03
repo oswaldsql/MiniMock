@@ -23,4 +23,4 @@ We will not include a built-in assertion feature in our mocking framework. Inste
 
 ---
 
-More ADRs can be found in the [docs/ADR](../ADR/README.md) directory.
+More ADRs can be found in the [docs/ADR](../README.md) directory.

@@ -23,4 +23,4 @@ Mocks will be created using a mock factory. The mock factory will provide a cent
 
 ---
 
-More ADRs can be found in the [docs/ADR](../ADR/README.md) directory.
+More ADRs can be found in the [docs/ADR](../README.md) directory.
