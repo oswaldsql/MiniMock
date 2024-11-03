@@ -25,3 +25,7 @@ Events must be mockable using the following parameters:
 
 - **Complexity**: Supporting all types of events adds complexity to the framework.
 - **Maintenance**: Requires ongoing maintenance to ensure that event mocking remains robust and up-to-date.
+
+---
+
+More ADRs can be found in the [docs/ADR](../README.md) directory.

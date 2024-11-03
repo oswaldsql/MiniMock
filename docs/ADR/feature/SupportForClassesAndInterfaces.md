@@ -21,3 +21,7 @@ The MiniMock framework will primarily focus on supporting interfaces but will al
 - **Complexity**: Adding support for classes may introduce additional complexity in the framework.
 - **Maintenance**: Requires ongoing maintenance to ensure both interfaces and classes are supported effectively.
 f mocking scenarios.
+
+---
+
+More ADRs can be found in the [docs/ADR](../README.md) directory.

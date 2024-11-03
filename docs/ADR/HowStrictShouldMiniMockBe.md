@@ -20,3 +20,7 @@ The framework will be strict, throwing exceptions when a member that is not mock
 
 - **Strictness**: The strict approach may require more effort to set up mocks, as all interactions must be explicitly defined.
 - **Event Handling**: Special handling for events may introduce some complexity in the framework.
+
+---
+
+More ADRs can be found in the [docs/ADR](../ADR/README.md) directory.

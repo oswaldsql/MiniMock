@@ -20,3 +20,7 @@ Mocks will be created using a mock factory. The mock factory will provide a cent
 
 - **Complexity**: Introduces an additional layer of abstraction, which may add some complexity to the framework.
 - **Maintenance**: Requires ongoing maintenance to ensure the mock factory remains up-to-date with any changes to the framework.
+
+---
+
+More ADRs can be found in the [docs/ADR](../ADR/README.md) directory.

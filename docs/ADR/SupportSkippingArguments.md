@@ -19,3 +19,7 @@ We will allow the skipping of arguments when setting up mocks for methods. This 
 - **Clarity**: May reduce the clarity of tests if arguments are skipped without proper documentation.
 - **Consistency**: Could lead to inconsistent mock setups across the codebase if not used judiciously.
 - **Error Potential**: Increases the risk of errors if skipped arguments are assumed incorrectly.~~~~
+
+---
+
+More ADRs can be found in the [docs/ADR](../ADR/README.md) directory.

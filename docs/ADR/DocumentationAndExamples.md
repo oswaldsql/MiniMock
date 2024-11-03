@@ -39,3 +39,7 @@ Accepted
 - **Basic Mocking**: Simple example showing how to create and use a mock.
 - **Advanced Mocking**: Examples of more complex scenarios, such as mocking protected methods and handling asynchronous methods.
 - **Integration**: Examples showing how to integrate the framework with other tools and libraries.
+
+---
+
+More ADRs can be found in the [docs/ADR](../ADR/README.md) directory.

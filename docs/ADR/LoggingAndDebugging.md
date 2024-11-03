@@ -30,25 +30,6 @@ Accepted
 1. **Logging**: Plan and design the logging mechanism to capture mock setup events and calls to mocks.
 2. **DebuggerStepThrough**: Apply the `DebuggerStepThrough` attribute to relevant methods and classes to improve the debugging experience.
 
-## Example
+---
 
-```csharp
-[System.Diagnostics.DebuggerStepThrough]
-public void SetupMock()
-{
-    // Setup mock logic
-    Log("Mock setup completed.");
-}
-
-[System.Diagnostics.DebuggerStepThrough]
-public void CallMock()
-{
-    // Call mock logic
-    Log("Mock method called.");
-}
-
-private void Log(string message)
-{
-    // Placeholder for logging implementation
-    Console.WriteLine(message);
-}
+More ADRs can be found in the [docs/ADR](../ADR/README.md) directory.

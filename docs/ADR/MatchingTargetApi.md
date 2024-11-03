@@ -20,3 +20,7 @@ Accepted
 ### Negative:
 - Limited flexibility in extending the mock API for advanced testing scenarios.
 - May require more effort to implement certain mocking features without additional methods.
+
+---
+
+More ADRs can be found in the [docs/ADR](../ADR/README.md) directory.

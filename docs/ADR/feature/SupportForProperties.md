@@ -31,3 +31,7 @@ if none of the above parameters are provided, Getting of setting the property mu
 - **Maintenance**: Requires ongoing maintenance to ensure that property mocking remains robust and up-to-date.
 
 This decision ensures that the MiniMock framework supports a wide range of property types, providing flexibility and comprehensive mocking capabilities.
+
+---
+
+More ADRs can be found in the [docs/ADR](../README.md) directory.

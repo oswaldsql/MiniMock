@@ -22,3 +22,7 @@ We will develop a new mocking framework, MiniMock, that focuses on providing a m
 - **Feature Limitations**: The framework may lack some advanced features found in more comprehensive mocking frameworks.
 - **Development Effort**: Additional effort will be required to develop and maintain the new framework.
 - **Adoption**: Convincing developers to switch to a new framework may be challenging, especially if they are accustomed to existing solutions.
+
+---
+
+More ADRs can be found in the [docs/ADR](../ADR/README.md) directory.

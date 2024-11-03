@@ -21,3 +21,7 @@ We will support the mocking of protected methods in our mocking framework. This 
 - **Complexity**: May introduce additional complexity in the mocking framework to handle protected methods.
 - **Maintenance**: Requires ongoing maintenance to ensure that mocking protected methods continues to work correctly with future updates.
 - **Potential Misuse**: Developers may misuse the feature by over-mocking, leading to tests that are too tightly coupled to implementation details.
+
+---
+
+More ADRs can be found in the [docs/ADR](../README.md) directory.

@@ -31,3 +31,7 @@ Special cases like [Overloads], [Generic Methods] and [Async Methods] have dedic
 
 - **Complexity**: Supporting all standard methods adds complexity to the framework.
 - **Ref Values**: Current issues with methods returning `ref` values need to be resolved, which may require significant effort.
+
+---
+
+More ADRs can be found in the [docs/ADR](../README.md) directory.

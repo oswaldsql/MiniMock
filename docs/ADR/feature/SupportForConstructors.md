@@ -22,3 +22,7 @@ Since the main focus of the framework is to provide a simple and easy-to-use moc
 
 - **Limited Scope**: Initial support is limited to classes with parameterless constructors, which may not cover all use cases.
 - **Future Work**: Additional effort will be required to implement support for parameterized constructors.
+
+---
+
+More ADRs can be found in the [docs/ADR](../README.md) directory.

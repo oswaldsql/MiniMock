@@ -26,3 +26,7 @@ if none of the above parameters are provided, accessing the indexer must throw a
 
 - **Complexity**: Supporting both read-only and read-write indexers adds complexity to the framework.
 - **Maintenance**: Requires ongoing maintenance to ensure that indexer mocking remains robust and up-to-date.
+
+---
+
+More ADRs can be found in the [docs/ADR](../README.md) directory.

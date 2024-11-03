@@ -20,3 +20,7 @@ We will not include a built-in assertion feature in our mocking framework. Inste
 
 - **Learning Curve**: Users may need to learn and integrate a separate assertion framework if they are not already familiar with one.
 - **Dependency Management**: Users will need to manage additional dependencies for their chosen assertion framework.
+
+---
+
+More ADRs can be found in the [docs/ADR](../ADR/README.md) directory.
