@@ -1,4 +1,5 @@
-﻿title: MiniMock
+﻿# _config.yml
+title: MiniMock
 logo: Troll.jpg
 description: Minimalistic approach to mocking in .NET
 remote_theme: pages-themes/hacker@v0.2.0
