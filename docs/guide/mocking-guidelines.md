@@ -8,9 +8,7 @@ Just as important as knowing what to mock is knowing what not to mock. This docu
 
 ## Good Candidates for Mocking
 
-When writing unit tests, it's important to mock certain components to isolate the unit of work being tested. Here are some good targets for mocking:
-
-Sure, here are the expanded sections for each line:
+When writing unit tests, it's important to mock certain components to isolate the unit of work being tested. Here are some good candidates for mocking:
 
 ### External Dependencies
 

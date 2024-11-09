@@ -8,10 +8,6 @@ Effective documentation and examples are crucial for the adoption and proper use
 
 We will create concise documentation and examples for the MiniMock framework. The documentation will cover essential aspects of the framework, including installation, configuration, and usage. Examples will be provided to demonstrate common use cases.
 
-## Status
-
-Accepted
-
 ## Consequences
 
 ### Positive:
