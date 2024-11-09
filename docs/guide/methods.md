@@ -1,20 +1,16 @@
 ﻿# Methods
 
-## Introduction
+Start by creating a mock of the interface or class you want to mock.
 
 ```csharp
 var mockVersionLibrary = Mock.IVersionLibrary(config => config.
     [Your mock setup here]
 );
 ```
+Please note
 
-- MiniMock allows you to intercept method calls and specify the return value, throw an exception, or return multiple values for a method. 
 - Multiple specifications for a method will overwrite each other with the last one taking precedence.
-- Specifying the Call which calls a lambda expression or local function offers the most flexibility and control.
-- A set of quality of life methods are available for common scenarios like returning a fixed values, throwing exceptions, or returning multiple values.
-- Async methods are supported by the common scenarios but also supports specifying the return value or values without the Task.
-- Overloaded methods can be specified by using the call parameter to specify the return value for a specific overload.
-- The "call", "returns", "returnValues" and "throws"  parameter-names can be omitted but makes the code more readable.
+- Parameter-names can be omitted but makes the code more readable.
 - Any method that is not explicitly specified will throw a `InvalidOperationException` when called.
 
 ## Common scenarios
