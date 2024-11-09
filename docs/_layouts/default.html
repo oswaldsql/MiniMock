@@ -27,9 +27,12 @@
             {% endif %}
             <a href="{{ site.github.repository_url }}" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
         </section>
+        <section id="links">
+            [<a href="{{ '/guide/getting-started.html' | relative_url }}">Getting started</a>] [<a href="{{ '/guide/mocking-guidelines.html' | relative_url }}">Guidelines</a>] [<a href="{{ '/ADR/' | relative_url }}" title="Architecture Decision Records">ADRs</a>]
+        </section>
     </div>
 </header>
-
+<hr/>
 <div class="container">
     <section id="main_content">
         {{ content }}
