@@ -42,6 +42,45 @@ public class RepoDemo
         public Task Delete(Guid id, CancellationToken token);
     }
 
+    public interface IBookRepository
+    {
+        Task<Guid> AddBook(Book book, CancellationToken token);
+        Book this[Guid index] { get; set; }
+        int BookCount { get; set; }
+        event EventHandler<Book> NewBookAdded;
+    }
+
+    [Fact]
+    [Mock<IBookRepository>]
+    public async Task BookCanBeCreated()
+    {
+        Action<Book> trigger = _ => { };
+
+        var mockRepo = Mock.IBookRepository(config => config
+            .AddBook(returns: Guid.NewGuid())
+            .BookCount(value: 10)
+            .Indexer(values: new Dictionary<Guid, Book>())
+            .NewBookAdded(trigger: out trigger));
+
+        var sut = new BookModel(mockRepo);
+        var actual = await sut.AddBook(new Book());
+
+        Assert.Equal("We now have 10 books", actual);
+    }
+
+    public class BookModel(IBookRepository repo)
+    {
+        public async Task<string> AddBook(Book book)
+        {
+            repo.NewBookAdded += ((sender, book1) => {repo.BookCount = repo.BookCount++;});
+            var id = await repo.AddBook(book, CancellationToken.None);
+            repo[id] = book;
+            return $"We now have {repo.BookCount} books";
+        }
+    }
+
+    public record Book();
+
     public interface IMailService
     {
         public Task SendMail(string to, string subject, string body, CancellationToken token);
@@ -49,3 +88,5 @@ public class RepoDemo
 
     public record Customer(string Name, Guid Id);
 }
+
+

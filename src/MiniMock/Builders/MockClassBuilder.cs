@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 
 public static class MockClassBuilder
 {
+
     public static string Build(IEnumerable<ISymbol> typeSymbols, SourceProductionContext context)
     {
         var mocks = typeSymbols.OfType<INamedTypeSymbol>().OrderBy(t => t.Name).ToArray();
@@ -33,43 +34,19 @@ public static class MockClassBuilder
 
         foreach (var symbol in mocks)
         {
-            var typeArguments = symbol.TypeArguments;
-            var containingNamespace = symbol.ContainingNamespace;
-            var symbolName = symbol.Name;
+            Func<Accessibility, bool> AccessibilityFilter = accessibility => (accessibility == Accessibility.Public);// || accessibility == Accessibility.Protected;
 
-            if (typeArguments.Length > 0)
+            if (symbol.Constructors.Length == 0)
             {
-                var types = string.Join(", ", typeArguments.Select(t => t.Name));
-                var name = $"MockOf_{symbolName}<{types}>";
-                var methodName = symbolName;
-                var constraints = typeArguments.ToConstraints();
-
-                var cref = symbol.ToString().Replace('<','{').Replace('>','}');
-                builder.Add(
-                    $"""
-
-                      /// <summary>
-                      /// Creates a mock object for <see cref="{cref}"/>.
-                      /// </summary>
-                      /// <param name="config">Optional configuration for the mock object.</param>
-                      /// <returns>The mock object for <see cref="{cref}"/>.</returns>
-                      """);
-                builder.Add($"internal static {symbol} {methodName}<{types}>(System.Action<{containingNamespace}.{name}.Config>? config = null) {constraints} => {containingNamespace}.{name}.Create(config);");
+                BuildFactoryMethod(symbol, builder);
             }
-            else
-            {
-                builder.Add(
-                    $"""
 
-                      /// <summary>
-                      /// Creates a mock object for <see cref="{symbol}"/>.
-                      /// </summary>
-                      /// <param name="config">Optional configuration for the mock object.</param>
-                      /// <returns>The mock object for <see cref="{symbol}"/>.</returns>
-                      """);
-                var name = "MockOf_" + symbolName;
-                var methodName = symbolName;
-                builder.Add($"internal static {symbol} {methodName}(System.Action<{containingNamespace}.{name}.Config>? config = null) => {containingNamespace}.{name}.Create(config);");
+            if (symbol.Constructors.Length > 0)
+            {
+                foreach (var constructor in symbol.Constructors.Where(t => AccessibilityFilter(t.DeclaredAccessibility)))
+                {
+                    BuildFactoryMethod(symbol, builder, constructor);
+                }
             }
         }
 
@@ -81,5 +58,48 @@ public static class MockClassBuilder
                    """);
 
         return builder.ToString();
+    }
+
+    private static void BuildFactoryMethod(INamedTypeSymbol symbol, CodeBuilder builder, IMethodSymbol? constructor = null)
+    {
+        if (constructor == null || constructor.Parameters.Length == 0)
+        {
+
+        }
+        else
+        {
+            builder.Add("/// " + constructor);
+//            return;
+        }
+
+        var typeArguments = symbol.TypeArguments;
+        var containingNamespace = symbol.ContainingNamespace;
+        var symbolName = symbol.Name;
+
+        var cref = symbol.ToString().Replace('<','{').Replace('>','}');
+
+        builder.Add(
+            $"""
+
+             /// <summary>
+             ///     Creates a mock object for <see cref="{cref}"/>.
+             /// </summary>
+             /// <param name="config">Optional configuration for the mock object.</param>
+             /// <returns>The mock object for <see cref="{cref}"/>.</returns>
+             """);
+
+        if (typeArguments.Length > 0)
+        {
+            var types = string.Join(", ", typeArguments.Select(t => t.Name));
+            var name = $"MockOf_{symbolName}<{types}>";
+            var constraints = typeArguments.ToConstraints();
+
+            builder.Add($"internal static {symbol} {symbolName}<{types}>(System.Action<{containingNamespace}.{name}.Config>? config = null) {constraints} => {containingNamespace}.{name}.Create(config);");
+        }
+        else
+        {
+            var name = "MockOf_" + symbolName;
+            builder.Add($"internal static {symbol} {symbolName}(System.Action<{containingNamespace}.{name}.Config>? config = null) => {containingNamespace}.{name}.Create(config);");
+        }
     }
 }
