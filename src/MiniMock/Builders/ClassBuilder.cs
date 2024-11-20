@@ -80,7 +80,7 @@ internal class ClassBuilder(ISymbol target)
         var symbol = (INamedTypeSymbol)target;
 
         var constructors = symbol.Constructors
-            .Where(c => this.AccessibilityFilter(c.DeclaredAccessibility))
+            .Where(c => this.accessibilityFilter(c.DeclaredAccessibility))
             .ToArray();
 
         builder.Add("#region constructors");
@@ -122,11 +122,11 @@ internal class ClassBuilder(ISymbol target)
 
     }
 
-    private Func<Accessibility, bool> AccessibilityFilter = accessibility => accessibility == Accessibility.Public;// || accessibility == Accessibility.Protected;
+    private readonly Func<Accessibility, bool> accessibilityFilter = accessibility => accessibility == Accessibility.Public || accessibility == Accessibility.Protected;
 
     private void BuildMembers(CodeBuilder builder)
     {
-        var memberCandidates = new List<ISymbol>(((INamedTypeSymbol)target).GetMembers().Where(t => AccessibilityFilter(t.DeclaredAccessibility)));
+        var memberCandidates = new List<ISymbol>(((INamedTypeSymbol)target).GetMembers().Where(t => this.accessibilityFilter(t.DeclaredAccessibility)));
 
         if (((INamedTypeSymbol)target).TypeKind == TypeKind.Interface)
         {

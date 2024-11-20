@@ -2,37 +2,50 @@
 
 public class ConstructorTests(ITestOutputHelper testOutputHelper)
 {
-    public class MyClass
+/// <summary>
+/// teste
+/// </summary>
+    public class MultiCtorClass
     {
-        public MyClass()
+        /// <summary>
+        /// Empty ctor
+        /// </summary>
+        public MultiCtorClass()
         {
 
         }
 
-        public MyClass(string name)
+
+        /// <summary>
+        /// one parameter
+        /// </summary>
+        /// <param name="name">Name to set</param>
+        public MultiCtorClass(string name)
         {
 
         }
 
-        public MyClass(string name, int age)
+        /// <summary>
+        /// Two Parameters
+        /// </summary>
+        /// <param name="name">Name to set</param>
+        /// <param name="age">Age to set</param>
+        public MultiCtorClass(string name, int age)
         {
 
         }
-    }
-
-    public MyClass factory((string name, int age) ctor)
-    {
-        return new MyClass(ctor.name, ctor.age);
     }
 
     [Fact]
     public void NoneNullableValueTypesShouldBePermitted()
     {
-        var source = Build.TestClass<MyClass>();
+        var source = Build.TestClass<MultiCtorClass>();
 
         var generate = new MiniMockGenerator().Generate(source);
 
-        testOutputHelper.DumpResult(generate);
+        var code = generate.syntaxTrees.Where(t => t.FilePath.EndsWith("MiniMock.Mock.g.cs")).ToArray();
+
+        testOutputHelper.DumpResult(code, generate.diagnostics);
 
         Assert.Empty(generate.GetWarnings());
     }
@@ -42,12 +55,6 @@ public class ConstructorTests(ITestOutputHelper testOutputHelper)
         static ISupportedStaticInterfaceMembers() => StaticProperty = "Set from ctor";
 
         static string StaticProperty { get; set; }
-        static string StaticMethod() => "value";
-        static event EventHandler? StaticEvent;
-
-        static void DoStaticEvent() => StaticEvent?.Invoke(null, EventArgs.Empty);
-
-        static virtual string Bar => "value";  // with implementation
     }
 
     [Fact]

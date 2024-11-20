@@ -6,13 +6,11 @@ public class ParameterLessTests
 {
     public class ParameterLessClass
     {
-        public bool CtorIsCalled;
-        public bool ImplicitCtorIsCalled { get; set; } = true;
+        public ParameterLessClass() => this.CtorIsCalled = true;
 
-        public ParameterLessClass()
-        {
-            this.CtorIsCalled = true;
-        }
+        public bool CtorIsCalled;
+
+        public bool ImplicitCtorIsCalled { get; set; } = true;
     }
 
     public interface IInterfaceWithoutCtor
@@ -52,9 +50,11 @@ public class AccessLevelTests
 {
     internal class AccessLevelTestClass
     {
-        public AccessLevelTestClass() { }
-
-//        public AccessLevelTestClass(bool publicCtor) { }
+         /// <summary>
+        /// test
+        /// </summary>
+        /// <param name="publicCtor">marker</param>
+        public AccessLevelTestClass(bool publicCtor) { }
 
         protected AccessLevelTestClass(string protectedCtor) { }
 
@@ -65,15 +65,12 @@ public class AccessLevelTests
 
     [Fact]
     [Mock<AccessLevelTestClass>]
-    public void OnlyPublicCtorCanBeUsed()
+    public void OnlyPublicAndProtectedCtorAreExposed()
     {
         // Arrange
 
         // ACT
-        var publicSut = new MockOf_AccessLevelTestClass();
-        var actual = publicSut.GetType().GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance);
-
-        //Mock.AccessLevelTestClass()
+        var actual = typeof(MockOf_AccessLevelTestClass).GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance);
 
         // Assert
         Assert.Equal(2, actual.Length);

@@ -2,6 +2,7 @@ namespace MiniMock.Builders;
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
@@ -34,14 +35,13 @@ public static class MockClassBuilder
 
         foreach (var symbol in mocks)
         {
-            Func<Accessibility, bool> AccessibilityFilter = accessibility => (accessibility == Accessibility.Public);// || accessibility == Accessibility.Protected;
+            bool AccessibilityFilter(Accessibility accessibility) => accessibility == Accessibility.Public || accessibility == Accessibility.Protected;
 
             if (symbol.Constructors.Length == 0)
             {
                 BuildFactoryMethod(symbol, builder);
             }
-
-            if (symbol.Constructors.Length > 0)
+            else
             {
                 foreach (var constructor in symbol.Constructors.Where(t => AccessibilityFilter(t.DeclaredAccessibility)))
                 {
@@ -62,15 +62,14 @@ public static class MockClassBuilder
 
     private static void BuildFactoryMethod(INamedTypeSymbol symbol, CodeBuilder builder, IMethodSymbol? constructor = null)
     {
-        if (constructor == null || constructor.Parameters.Length == 0)
-        {
+        var p = constructor?.Parameters.Select(t => $"{t.Type} {t.Name}, ") ?? ImmutableArray<string>.Empty;
+        var parameters = string.Join("", p);
 
-        }
-        else
-        {
-            builder.Add("/// " + constructor);
-//            return;
-        }
+        var n = constructor?.Parameters.Select(t => $"{t.Name}, ") ?? ImmutableArray<string>.Empty;
+        var names = string.Join("", n);
+
+        var doc = constructor?.GetDocumentationCommentXml() ?? "/// DOC";
+        builder.Add(doc);
 
         var typeArguments = symbol.TypeArguments;
         var containingNamespace = symbol.ContainingNamespace;
@@ -94,12 +93,12 @@ public static class MockClassBuilder
             var name = $"MockOf_{symbolName}<{types}>";
             var constraints = typeArguments.ToConstraints();
 
-            builder.Add($"internal static {symbol} {symbolName}<{types}>(System.Action<{containingNamespace}.{name}.Config>? config = null) {constraints} => {containingNamespace}.{name}.Create(config);");
+            builder.Add($"internal static {symbol} {symbolName}<{types}>({parameters}System.Action<{containingNamespace}.{name}.Config>? config = null) {constraints} => {containingNamespace}.{name}.Create({names}config);");
         }
         else
         {
             var name = "MockOf_" + symbolName;
-            builder.Add($"internal static {symbol} {symbolName}(System.Action<{containingNamespace}.{name}.Config>? config = null) => {containingNamespace}.{name}.Create(config);");
+            builder.Add($"internal static {symbol} {symbolName}({parameters}System.Action<{containingNamespace}.{name}.Config>? config = null) => {containingNamespace}.{name}.Create({names}config);");
         }
     }
 }
