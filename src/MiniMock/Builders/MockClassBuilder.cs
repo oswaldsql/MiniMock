@@ -35,15 +35,15 @@ public static class MockClassBuilder
 
         foreach (var symbol in mocks)
         {
-            bool AccessibilityFilter(Accessibility accessibility) => accessibility == Accessibility.Public || accessibility == Accessibility.Protected;
+            bool AccessibilityFilter(Accessibility accessibility) => accessibility is Accessibility.Public or Accessibility.Protected;
 
-            if (symbol.Constructors.Length == 0)
+            if (!symbol.Constructors.Any(t => !t.IsStatic))
             {
                 BuildFactoryMethod(symbol, builder);
             }
             else
             {
-                foreach (var constructor in symbol.Constructors.Where(t => AccessibilityFilter(t.DeclaredAccessibility)))
+                foreach (var constructor in symbol.Constructors.Where(t => AccessibilityFilter(t.DeclaredAccessibility) && !t.IsStatic))
                 {
                     BuildFactoryMethod(symbol, builder, constructor);
                 }
@@ -68,8 +68,8 @@ public static class MockClassBuilder
         var n = constructor?.Parameters.Select(t => $"{t.Name}, ") ?? ImmutableArray<string>.Empty;
         var names = string.Join("", n);
 
-        var doc = constructor?.GetDocumentationCommentXml() ?? "/// DOC";
-        builder.Add(doc);
+        //var doc = constructor?.GetDocumentationCommentXml() ?? "/// DOC";
+        //builder.Add(doc);
 
         var typeArguments = symbol.TypeArguments;
         var containingNamespace = symbol.ContainingNamespace;
@@ -83,7 +83,17 @@ public static class MockClassBuilder
              /// <summary>
              ///     Creates a mock object for <see cref="{cref}"/>.
              /// </summary>
-             /// <param name="config">Optional configuration for the mock object.</param>
+             """);
+
+        if(constructor != null)
+        foreach (var o in constructor?.Parameters)
+        {
+            builder.Add($"///     <param name=\"{o.Name}\">Base constructor parameter {o.Name}.</param>");
+        }
+
+        builder.Add(
+            $"""
+             ///     <param name="config">Optional configuration for the mock object.</param>
              /// <returns>The mock object for <see cref="{cref}"/>.</returns>
              """);
 
@@ -93,12 +103,21 @@ public static class MockClassBuilder
             var name = $"MockOf_{symbolName}<{types}>";
             var constraints = typeArguments.ToConstraints();
 
-            builder.Add($"internal static {symbol} {symbolName}<{types}>({parameters}System.Action<{containingNamespace}.{name}.Config>? config = null) {constraints} => {containingNamespace}.{name}.Create({names}config);");
+            builder.Add($"""
+                         internal static {symbol} {symbolName}<{types}>
+                             ({parameters}System.Action<{containingNamespace}.{name}.Config>? config = null)
+                                 {constraints}
+                             => {containingNamespace}.{name}.Create({names}config);
+                         """);
         }
         else
         {
             var name = "MockOf_" + symbolName;
-            builder.Add($"internal static {symbol} {symbolName}({parameters}System.Action<{containingNamespace}.{name}.Config>? config = null) => {containingNamespace}.{name}.Create({names}config);");
+            builder.Add($"""
+                         internal static {symbol} {symbolName}
+                             ({parameters}System.Action<{containingNamespace}.{name}.Config>? config = null)
+                             => {containingNamespace}.{name}.Create({names}config);
+                         """);
         }
     }
 }
