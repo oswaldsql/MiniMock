@@ -1,3 +1,5 @@
+// ReSharper disable ArrangeTypeMemberModifiers
+// ReSharper disable MemberCanBePrivate.Global
 namespace MiniMock.Tests;
 using System;
 using System.Threading.Tasks;
@@ -64,6 +66,7 @@ public class RepoDemo
 
         var sut = new BookModel(mockRepo);
         var actual = await sut.AddBook(new Book());
+        trigger(new Book());
 
         Assert.Equal("We now have 10 books", actual);
     }
@@ -72,14 +75,14 @@ public class RepoDemo
     {
         public async Task<string> AddBook(Book book)
         {
-            repo.NewBookAdded += ((sender, book1) => {repo.BookCount = repo.BookCount++;});
+            repo.NewBookAdded += (_, _) => {repo.BookCount = repo.BookCount++;};
             var id = await repo.AddBook(book, CancellationToken.None);
             repo[id] = book;
             return $"We now have {repo.BookCount} books";
         }
     }
 
-    public record Book();
+    public record Book;
 
     public interface IMailService
     {

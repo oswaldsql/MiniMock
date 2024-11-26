@@ -6,7 +6,7 @@ public class ParameterLessTests
     {
         public ParameterLessClass() => this.CtorIsCalled = true;
 
-        public bool CtorIsCalled;
+        public bool CtorIsCalled { get; set; }
 
         public bool ImplicitCtorIsCalled { get; set; } = true;
     }

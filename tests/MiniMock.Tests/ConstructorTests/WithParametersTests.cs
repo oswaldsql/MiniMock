@@ -29,10 +29,13 @@ public class WithParametersTests
 
         public static int CalculateAge(DateTimeOffset birthDate)
         {
-            DateTime today = DateTime.Today;
-            int age = today.Year - birthDate.Year;
+            var today = DateTime.Today;
+            var age = today.Year - birthDate.Year;
 
-            if (birthDate.Date > today.AddYears(-age)) age--;
+            if (birthDate.Date > today.AddYears(-age))
+            {
+                age--;
+            }
 
             return age;
         }
@@ -50,8 +53,8 @@ public class WithParametersTests
 
         // Assert
         Assert.Equal(25, actual.Age);
-        Assert.Equal(actual.Name, "oswald");
+        Assert.Equal("oswald", actual.Name);
 
-        Assert.Equal(false, sut.IsAgeValid());
+        Assert.False(sut.IsAgeValid());
     }
 }

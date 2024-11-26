@@ -1,4 +1,6 @@
-﻿// ReSharper disable UnusedParameter.Local
+﻿// ReSharper disable ArrangeTypeMemberModifiers
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable UnusedParameter.Local
 // ReSharper disable UnusedVariable
 // ReSharper disable RedundantLambdaParameterType
 namespace MiniMock.Tests;

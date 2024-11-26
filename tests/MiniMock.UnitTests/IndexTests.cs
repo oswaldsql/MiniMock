@@ -1,8 +1,10 @@
+// ReSharper disable ArrangeTypeMemberModifiers
+// ReSharper disable MemberCanBePrivate.Global
 namespace MiniMock.UnitTests;
 
 public class IndexTests(ITestOutputHelper testOutputHelper)
 {
-    public interface IIndexRepository
+    internal interface IIndexRepository
     {
         int this[uint index] { set; }
         int this[int index] { get; }

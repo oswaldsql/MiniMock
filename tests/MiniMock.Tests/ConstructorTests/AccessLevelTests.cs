@@ -1,4 +1,9 @@
-﻿namespace MiniMock.Tests.ConstructorTests;
+﻿// ReSharper disable EmptyConstructor
+// ReSharper disable MemberCanBeProtected.Global
+// ReSharper disable UnusedParameter.Local
+// ReSharper disable UnusedMember.Global
+// ReSharper disable UnusedMember.Local
+namespace MiniMock.Tests.ConstructorTests;
 
 using System.Reflection;
 
@@ -6,10 +11,8 @@ public class AccessLevelTests
 {
     internal class AccessLevelTestClass
     {
-        /// <summary>
-        /// test
-        /// </summary>
-        /// <param name="publicCtor">marker</param>
+        static AccessLevelTestClass() {}
+
         public AccessLevelTestClass(bool publicCtor) { }
 
         protected AccessLevelTestClass(string protectedCtor) { }

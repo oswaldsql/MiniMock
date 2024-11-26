@@ -1,4 +1,6 @@
-﻿namespace MiniMock.Tests.IndexerTests;
+﻿// ReSharper disable ArrangeTypeMemberModifiers
+// ReSharper disable MemberCanBePrivate.Global
+namespace MiniMock.Tests.IndexerTests;
 
 public class GenericIndexerTests
 {

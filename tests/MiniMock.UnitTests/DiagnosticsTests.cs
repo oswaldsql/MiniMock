@@ -1,4 +1,6 @@
-﻿namespace MiniMock.UnitTests;
+﻿// ReSharper disable ArrangeTypeMemberModifiers
+// ReSharper disable MemberCanBePrivate.Global
+namespace MiniMock.UnitTests;
 
 using Microsoft.CodeAnalysis;
 

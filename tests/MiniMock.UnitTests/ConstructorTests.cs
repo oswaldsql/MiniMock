@@ -1,4 +1,6 @@
-﻿namespace MiniMock.UnitTests;
+﻿// ReSharper disable ArrangeTypeMemberModifiers
+// ReSharper disable MemberCanBePrivate.Global
+namespace MiniMock.UnitTests;
 
 public class ConstructorTests(ITestOutputHelper testOutputHelper)
 {
@@ -7,6 +9,9 @@ public class ConstructorTests(ITestOutputHelper testOutputHelper)
 /// </summary>
     public class MultiCtorClass
     {
+        public string? Name { get; }
+        public int Age { get; }
+
         /// <summary>
         /// Empty ctor
         /// </summary>
@@ -20,10 +25,7 @@ public class ConstructorTests(ITestOutputHelper testOutputHelper)
         /// one parameter
         /// </summary>
         /// <param name="name">Name to set</param>
-        public MultiCtorClass(string name)
-        {
-
-        }
+        public MultiCtorClass(string name) => this.Name = name;
 
         /// <summary>
         /// Two Parameters
@@ -32,7 +34,8 @@ public class ConstructorTests(ITestOutputHelper testOutputHelper)
         /// <param name="age">Age to set</param>
         public MultiCtorClass(string name, int age)
         {
-
+            this.Name = name;
+            this.Age = age;
         }
     }
 

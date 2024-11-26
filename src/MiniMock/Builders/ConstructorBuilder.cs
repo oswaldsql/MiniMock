@@ -16,7 +16,7 @@ internal class ConstructorBuilder(ISymbol target)
             .Where(c => this.accessibilityFilter(c.DeclaredAccessibility))
             .ToArray();
 
-        builder.Add("#region constructors");
+        builder.Add("#region Constructors");
 
         if (constructors.Length == 0 || constructors.Any(t => t.Parameters.Length == 0))
         {

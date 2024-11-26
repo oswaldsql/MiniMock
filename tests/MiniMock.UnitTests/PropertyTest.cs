@@ -4,7 +4,7 @@ using Xunit.Sdk;
 
 public class PropertyTest(ITestOutputHelper testOutputHelper)
 {
-    public interface IPropertyInterface
+    internal  interface IPropertyInterface
     {
         string GetSet { get; set; }
         string GetInit { get; init; }
