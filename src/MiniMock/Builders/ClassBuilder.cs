@@ -47,15 +47,6 @@ internal class ClassBuilder(ISymbol target)
                       internal class {{name}} : {{fullName}} {{constraints}}
                       {
                       ->
-                      internal protected MockOf_{{target.Name}}(System.Action<Config>? config = null) {
-                          var result = new Config(this);
-                          config = config ?? new System.Action<Config>(t => { });
-                          config.Invoke(result);
-                          _config = result;
-                      }
-
-                      public static {{fullName}} Create(System.Action<Config>? config = null) => new {{name}}(config);
-
                       private Config _config { get; }
                       internal void GetConfig(out Config config) => config = _config;
 
@@ -70,6 +61,8 @@ internal class ClassBuilder(ISymbol target)
                       }
                       """);
 
+        new ConstructorBuilder(target).Build(builder, fullName, name);
+
         this.BuildMembers(builder);
 
         builder.Add("""
@@ -82,9 +75,11 @@ internal class ClassBuilder(ISymbol target)
         return builder.ToString();
     }
 
+    private readonly Func<Accessibility, bool> accessibilityFilter = accessibility => accessibility == Accessibility.Public || accessibility == Accessibility.Protected;
+
     private void BuildMembers(CodeBuilder builder)
     {
-        var memberCandidates = new List<ISymbol>(((INamedTypeSymbol)target).GetMembers());
+        var memberCandidates = new List<ISymbol>(((INamedTypeSymbol)target).GetMembers().Where(t => this.accessibilityFilter(t.DeclaredAccessibility)));
 
         if (((INamedTypeSymbol)target).TypeKind == TypeKind.Interface)
         {

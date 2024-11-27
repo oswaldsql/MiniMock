@@ -1,3 +1,5 @@
+// ReSharper disable ArrangeTypeMemberModifiers
+// ReSharper disable MemberCanBePrivate.Global
 namespace MiniMock.Tests.MethodTests;
 
 [Mock<IGeneric<int, int>>]

@@ -1,3 +1,5 @@
+// ReSharper disable ArrangeTypeMemberModifiers
+// ReSharper disable MemberCanBePrivate.Global
 namespace MiniMock.Tests.MethodTests;
 using System;
 using System.Threading.Tasks;

@@ -4,17 +4,17 @@ using Microsoft.CodeAnalysis;
 
 public class StaticInterfaceMembersTest(ITestOutputHelper testOutputHelper)
 {
-    public interface ISupportedStaticInterfaceMembers
+    internal interface ISupportedStaticInterfaceMembers
     {
         static ISupportedStaticInterfaceMembers() => StaticProperty = 10;
 
-        static int StaticProperty { get; set; }
-        static string StaticMethod() => "value";
+        internal static int StaticProperty { get; set; }
+        internal static string StaticMethod() => "value";
 
-        static event EventHandler? StaticEvent;
-        static void DoStaticEvent() => StaticEvent?.Invoke(null, EventArgs.Empty);
+        internal static event EventHandler? StaticEvent;
+        internal static void DoStaticEvent() => StaticEvent?.Invoke(null, EventArgs.Empty);
 
-        static virtual string Bar => "value"; // with implementation    }
+        internal static virtual string Bar => "value"; // with implementation    }
     }
 
     [Fact]
@@ -31,7 +31,7 @@ public class StaticInterfaceMembersTest(ITestOutputHelper testOutputHelper)
         Assert.Empty(generate.GetErrors());
     }
 
-    public interface IStaticAbstractInterfaceMembers
+    internal interface IStaticAbstractInterfaceMembers
     {
         static abstract string AbstractProperty { get; set; }
         static abstract string AbstractMethod();

@@ -1,3 +1,5 @@
+// ReSharper disable ArrangeTypeMemberModifiers
+// ReSharper disable MemberCanBePrivate.Global
 namespace MiniMock.UnitTests;
 
 public class InheritanceTests(ITestOutputHelper testOutputHelper)
