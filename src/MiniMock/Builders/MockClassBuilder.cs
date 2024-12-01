@@ -122,6 +122,20 @@ public static class MockClassBuilder
                              ({parameters}System.Action<{containingNamespace}.{name}.Config>? config = null)
                              => {containingNamespace}.{name}.Create({names}config);
                          """);
+
+            builder.Add($$"""
+
+                         internal static {{symbol}} {{symbolName}}
+                             ({{parameters}}out {{containingNamespace}}.{{name}}.Config config)
+                             {
+                                var result = new {{containingNamespace}}.{{name}}({{names}}_ => {});
+                                result.GetConfig(out config);
+                                return result;
+                             }
+                             //=>
+                         """);
         }
     }
+
+
 }

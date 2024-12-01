@@ -1,3 +1,5 @@
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable ArrangeTypeMemberModifiers
 namespace MiniMock.UnitTests;
 
 using Xunit.Sdk;

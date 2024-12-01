@@ -58,6 +58,13 @@ public class RepoDemo
     {
         Action<Book> trigger = _ => { };
 
+        Mock.IMailService(out _);
+
+        var iBookRepository = Mock.IBookRepository(out var config);
+        config
+            .AddBook(returns: Guid.NewGuid())
+            .BookCount(10);
+
         var mockRepo = Mock.IBookRepository(config => config
             .AddBook(returns: Guid.NewGuid())
             .BookCount(value: 10)
