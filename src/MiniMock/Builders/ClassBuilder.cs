@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis;
 
 internal class ClassBuilder(ISymbol target)
 {
-    private static readonly ISymbolBuilder[] Builders = [new EventBuilder(), new MethodBuilder(), new PropertyBuilder(), new IndexBuilder()];
+    private static readonly ISymbolBuilder[] Builders = [new ConstructorBuilder2(),  new EventBuilder(), new MethodBuilder(), new PropertyBuilder(), new IndexBuilder()];
 
     private readonly Func<Accessibility, bool> accessibilityFilter = accessibility => accessibility == Accessibility.Public || accessibility == Accessibility.Protected;
 
@@ -94,12 +94,9 @@ internal class ClassBuilder(ISymbol target)
         {
             var symbol = members.First();
             var wasBuild = Builders.FirstOrDefault(b => b.TryBuild(builder, members));
-            if (wasBuild != null)
+            if (wasBuild == null)
             {
-            }
-            else
-            {
-                Console.WriteLine("Unhandled type : " + symbol + " . " + symbol.Kind);
+                builder.Add("// Ignored " + symbol.Kind + " " + symbol);
             }
         }
     }

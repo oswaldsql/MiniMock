@@ -18,7 +18,7 @@ internal class ConstructorBuilder(ISymbol target)
 
         builder.Add("#region Constructors");
 
-        if (constructors.Length == 0)// || constructors.Any(t => t.Parameters.Length == 0))
+        if (constructors.Length == 0)
         {
             builder.Add($$"""
                           internal protected MockOf_{{target.Name}}(System.Action<Config>? config = null) {
@@ -52,5 +52,19 @@ internal class ConstructorBuilder(ISymbol target)
         }
 
         builder.Add("#endregion");
+    }
+}
+
+internal class ConstructorBuilder2 : ISymbolBuilder
+{
+    public bool TryBuild(CodeBuilder builder, IGrouping<string, ISymbol> symbols)
+    {
+        if (symbols.First().Kind == SymbolKind.Method)
+        {
+            if (((IMethodSymbol)symbols.First()).MethodKind == MethodKind.Constructor)
+                return true;
+        }
+
+        return false;
     }
 }
