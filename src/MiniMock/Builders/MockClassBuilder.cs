@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Util;
 
 public static class MockClassBuilder
 {
@@ -104,10 +105,10 @@ public static class MockClassBuilder
               {{doc}}///     <param name="config">Outputs configuration for the mock object.</param>
               /// <returns>The mock object for <see cref="{{cref}}"/>.</returns>
               internal static {{symbol}} {{symbolName}}
-                  ({{parameters}}out {{containingNamespace}}.{{name}}.Config config)
+                  ({{parameters}}out {{containingNamespace}}.{{name}}.Config config{{symbolName}})
                   {
                      var result = new {{containingNamespace}}.{{name}}({{names}}_ => {});
-                     result.GetConfig(out config);
+                     result.GetConfig(out config{{symbolName}});
                      return result;
                   }
                   //=>

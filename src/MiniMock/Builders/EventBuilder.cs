@@ -3,6 +3,7 @@ namespace MiniMock.Builders;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Util;
 
 internal class EventBuilder : ISymbolBuilder
 {

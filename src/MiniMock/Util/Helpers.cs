@@ -1,4 +1,4 @@
-namespace MiniMock.Builders;
+namespace MiniMock.Util;
 
 using System.Linq;
 using Microsoft.CodeAnalysis;

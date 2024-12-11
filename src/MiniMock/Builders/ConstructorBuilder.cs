@@ -1,8 +1,10 @@
 ﻿namespace MiniMock.Builders;
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Util;
 
 internal class ConstructorBuilder(ISymbol target)
 {
@@ -16,10 +18,10 @@ internal class ConstructorBuilder(ISymbol target)
             .Where(c => this.accessibilityFilter(c.DeclaredAccessibility))
             .ToArray();
 
-        builder.Add("#region Constructors");
-
         if (constructors.Length == 0)
         {
+            builder.Add("#region Constructors");
+
             builder.Add($$"""
                           internal protected MockOf_{{target.Name}}(System.Action<Config>? config = null) {
                               var result = new Config(this);
@@ -30,7 +32,38 @@ internal class ConstructorBuilder(ISymbol target)
 
                           public static {{fullName}} Create(System.Action<Config>? config = null) => new {{name}}(config);
                           """);
+            builder.Add("#endregion");
+
         }
+    }
+}
+
+internal class ConstructorBuilder2 : ISymbolBuilder
+{
+    public bool TryBuild(CodeBuilder builder, IGrouping<string, ISymbol> symbols)
+    {
+        var first = symbols.First();
+        if (first is IMethodSymbol { MethodKind: MethodKind.Constructor })
+        {
+            return BuildConstructors(builder, first.ContainingSymbol, symbols.OfType<IMethodSymbol>());
+        }
+
+        return false;
+    }
+
+    private static bool BuildConstructors(CodeBuilder builder, ISymbol target, IEnumerable<IMethodSymbol> constructors)
+    {
+        var fullName = target.ToString();
+        var name = "MockOf_" + target.Name;
+
+        var typeArguments = ((INamedTypeSymbol)target).TypeArguments;
+        if (typeArguments.Length > 0)
+        {
+            var types = string.Join(", ", typeArguments.Select(t => t.Name));
+            name = $"MockOf_{target.Name}<{types}>";
+        }
+
+        builder.Add("#region Constructors");
 
         foreach (var constructor in constructors)
         {
@@ -52,19 +85,7 @@ internal class ConstructorBuilder(ISymbol target)
         }
 
         builder.Add("#endregion");
-    }
-}
 
-internal class ConstructorBuilder2 : ISymbolBuilder
-{
-    public bool TryBuild(CodeBuilder builder, IGrouping<string, ISymbol> symbols)
-    {
-        if (symbols.First().Kind == SymbolKind.Method)
-        {
-            if (((IMethodSymbol)symbols.First()).MethodKind == MethodKind.Constructor)
-                return true;
-        }
-
-        return false;
+        return true;
     }
 }

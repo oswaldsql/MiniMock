@@ -1,7 +1,8 @@
-﻿namespace MiniMock.Builders;
+﻿namespace MiniMock.Util;
 
 using System.Collections.Generic;
 using System.Linq;
+using Builders;
 
 public static class HelperBuilder
 {

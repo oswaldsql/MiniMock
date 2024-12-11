@@ -1,4 +1,4 @@
-﻿namespace MiniMock.Builders;
+﻿namespace MiniMock.Util;
 
 public class ParameterInfo(string type, string name, string outString, string function)
 {

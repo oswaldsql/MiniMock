@@ -1,4 +1,4 @@
-﻿namespace MiniMock.Builders;
+﻿namespace MiniMock.Util;
 
 using System;
 using System.Collections.Generic;
@@ -18,7 +18,10 @@ public static class MergeHelpers
     internal static string ToString(this IEnumerable<IParameterSymbol>? m, Func<IParameterSymbol, string> selector,
         string separator = ", ")
     {
-        if (m == null || !m.Any()) return "";
+        if (m == null)
+        {
+            return "";
+        }
 
         var Parameters = m.Select(selector);
         var parameterList = string.Join(separator, Parameters);

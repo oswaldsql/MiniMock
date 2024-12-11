@@ -60,8 +60,8 @@ public class RepoDemo
 
         Mock.IMailService(out _);
 
-        var iBookRepository = Mock.IBookRepository(out var config);
-        config
+        var iBookRepository = Mock.IBookRepository(out var configIBookRepository);
+        configIBookRepository
             .AddBook(returns: Guid.NewGuid())
             .BookCount(10);
 

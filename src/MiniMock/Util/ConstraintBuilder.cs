@@ -1,4 +1,4 @@
-﻿namespace MiniMock.Builders;
+﻿namespace MiniMock.Util;
 
 using System.Collections.Immutable;
 using System.Linq;
