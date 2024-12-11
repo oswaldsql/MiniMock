@@ -46,7 +46,7 @@ public class ConstructorTests(ITestOutputHelper testOutputHelper)
 
         var generate = new MiniMockGenerator().Generate(source);
 
-        var code = generate.syntaxTrees.Where(t => t.FilePath.EndsWith("MiniMock.Mock.g.cs")).ToArray();
+        var code = generate.syntaxTrees.ToArray();
 
         testOutputHelper.DumpResult(code, generate.diagnostics);
 

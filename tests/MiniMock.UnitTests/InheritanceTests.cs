@@ -107,7 +107,6 @@ public class InheritanceTests(ITestOutputHelper testOutputHelper)
         testOutputHelper.DumpResult(generate);
 
         Assert.Empty(generate.GetWarnings());
-
     }
 
     public interface IBaseWithIndexer

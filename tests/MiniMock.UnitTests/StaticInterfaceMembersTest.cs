@@ -1,4 +1,5 @@
-﻿namespace MiniMock.UnitTests;
+﻿// ReSharper disable ArrangeTypeMemberModifiers
+namespace MiniMock.UnitTests;
 
 using Microsoft.CodeAnalysis;
 
@@ -14,7 +15,7 @@ public class StaticInterfaceMembersTest(ITestOutputHelper testOutputHelper)
         internal static event EventHandler? StaticEvent;
         internal static void DoStaticEvent() => StaticEvent?.Invoke(null, EventArgs.Empty);
 
-        internal static virtual string Bar => "value"; // with implementation    }
+        internal static virtual string Bar => "value"; // with implementation
     }
 
     [Fact]
