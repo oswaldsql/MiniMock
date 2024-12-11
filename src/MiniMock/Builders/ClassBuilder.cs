@@ -7,6 +7,10 @@ using Microsoft.CodeAnalysis;
 
 internal class ClassBuilder(ISymbol target)
 {
+    private static readonly ISymbolBuilder[] Builders = [new EventBuilder(), new MethodBuilder(), new PropertyBuilder(), new IndexBuilder()];
+
+    private readonly Func<Accessibility, bool> accessibilityFilter = accessibility => accessibility == Accessibility.Public || accessibility == Accessibility.Protected;
+
     public static string Build(ISymbol symbol) =>
         new ClassBuilder(symbol).BuildClass();
 
@@ -75,8 +79,6 @@ internal class ClassBuilder(ISymbol target)
         return builder.ToString();
     }
 
-    private readonly Func<Accessibility, bool> accessibilityFilter = accessibility => accessibility == Accessibility.Public || accessibility == Accessibility.Protected;
-
     private void BuildMembers(CodeBuilder builder)
     {
         var memberCandidates = new List<ISymbol>(((INamedTypeSymbol)target).GetMembers().Where(t => this.accessibilityFilter(t.DeclaredAccessibility)));
@@ -91,20 +93,13 @@ internal class ClassBuilder(ISymbol target)
         foreach (var members in memberGroups)
         {
             var symbol = members.First();
-            switch (symbol)
+            var wasBuild = Builders.FirstOrDefault(b => b.TryBuild(builder, members));
+            if (wasBuild != null)
             {
-                case IEventSymbol:
-                    EventBuilder.BuildEvents(builder, members.OfType<IEventSymbol>());
-                    break;
-                case IMethodSymbol { MethodKind: MethodKind.Ordinary }:
-                    MethodBuilder.BuildMethods(builder, members.OfType<IMethodSymbol>());
-                    break;
-                case IPropertySymbol { IsIndexer: false }:
-                    PropertyBuilder.BuildProperties(builder, members.OfType<IPropertySymbol>());
-                    break;
-                case IPropertySymbol { IsIndexer: true }:
-                    IndexBuilder.BuildIndexes(builder, members.OfType<IPropertySymbol>());
-                    break;
+            }
+            else
+            {
+                Console.WriteLine("Unhandled type : " + symbol + " . " + symbol.Kind);
             }
         }
     }

@@ -4,44 +4,53 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
-internal static class EventBuilder
+internal class EventBuilder : ISymbolBuilder
 {
-    public static void BuildEvents(CodeBuilder builder, IEnumerable<IEventSymbol> eventSymbols)
+    public bool TryBuild(CodeBuilder builder, IGrouping<string, ISymbol> symbols)
+    {
+        var first = symbols.First();
+
+        if (first is IMethodSymbol { MethodKind: MethodKind.EventAdd or MethodKind.EventRaise or MethodKind.EventRemove })
+        {
+            return true;
+        }
+
+        if (first is not IEventSymbol)
+        {
+            return false;
+        }
+
+        if (!(first.IsAbstract || first.IsVirtual) || first.IsStatic)
+        {
+            return true;
+        }
+
+        return this.BuildEvents(builder, symbols.OfType<IEventSymbol>());
+    }
+
+    private bool BuildEvents(CodeBuilder builder, IEnumerable<IEventSymbol> eventSymbols)
     {
         var enumerable = eventSymbols as IEventSymbol[] ?? eventSymbols.ToArray();
         var name = enumerable.First().Name;
-        var helpers = new List<MethodSignature>();
+        var helpers = new List<HelperMethod>();
 
         builder.Add($"#region event : {name}");
 
         var eventCount = 0;
         foreach (var symbol in enumerable)
         {
-            if(symbol.IsStatic) {
-                if (symbol.IsAbstract)
-                {
-                    throw new StaticAbstractMembersNotSupportedException(name, symbol.ContainingType);
-                }
-                builder.Add($"// Ignoring Static event {symbol}.");
-                continue;
-            }
-
-            if (!(symbol.IsAbstract || symbol.IsVirtual))
-            {
-                builder.Add().Add("// Ignoring " + symbol);
-                continue;
-            }
-
             eventCount++;
             BuildEvent(builder, symbol, helpers, eventCount);
         }
 
-        helpers.BuildHelpers(builder, name);
+        builder.Add(helpers.BuildHelpers(name));
 
         builder.Add("#endregion");
+
+        return eventCount > 0;
     }
 
-    private static void BuildEvent(CodeBuilder builder, IEventSymbol symbol, List<MethodSignature> helpers, int eventCount)
+    private static void BuildEvent(CodeBuilder builder, IEventSymbol symbol, List<HelperMethod> helpers, int eventCount)
     {
         var eventName = symbol.Name;
         var invokeMethod = symbol.Type.GetMembers().OfType<IMethodSymbol>().First(t => t.Name == "Invoke");
@@ -69,26 +78,33 @@ internal static class EventBuilder
 
                       """);
 
+        helpers.AddRange(BuildHelpers(symbol, types, eventFunction));
+    }
+
+    private static IEnumerable<HelperMethod> BuildHelpers(IEventSymbol symbol, string types, string eventFunction)
+    {
         var seeCref = symbol.ToString();
+        var eventName = symbol.Name;
+
         if (types == "System.EventArgs")
         {
-            helpers.Add(new("out System.Action trigger",
+            yield return new HelperMethod("out System.Action trigger",
                 $"trigger = () => this.{eventName}();",
-                $"Returns an action that can be used for triggering {eventName}.", seeCref));
+                $"Returns an action that can be used for triggering {eventName}.", seeCref);
 
-            helpers.Add(new("",
+            yield return new HelperMethod("",
                 $"target.trigger_{eventFunction}(target, System.EventArgs.Empty);",
-                $"Trigger {eventName} directly.", seeCref));
+                $"Trigger {eventName} directly.", seeCref);
         }
         else
         {
-            helpers.Add(new($"out System.Action<{types}> trigger",
+            yield return new HelperMethod($"out System.Action<{types}> trigger",
                 $"trigger = args => this.{eventName}(args);",
-                $"Returns an action that can be used for triggering {eventName}.", seeCref));
+                $"Returns an action that can be used for triggering {eventName}.", seeCref);
 
-            helpers.Add(new(types + " raise",
+            yield return new HelperMethod(types + " raise",
                 $"target.trigger_{eventFunction}(target, raise);",
-                $"Trigger {eventName} directly.", seeCref));
+                $"Trigger {eventName} directly.", seeCref);
         }
     }
 }

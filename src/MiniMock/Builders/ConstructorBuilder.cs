@@ -18,7 +18,7 @@ internal class ConstructorBuilder(ISymbol target)
 
         builder.Add("#region Constructors");
 
-        if (constructors.Length == 0 || constructors.Any(t => t.Parameters.Length == 0))
+        if (constructors.Length == 0)// || constructors.Any(t => t.Parameters.Length == 0))
         {
             builder.Add($$"""
                           internal protected MockOf_{{target.Name}}(System.Action<Config>? config = null) {
@@ -32,22 +32,22 @@ internal class ConstructorBuilder(ISymbol target)
                           """);
         }
 
-        foreach (var constructor in constructors.Where(t => t.Parameters.Length > 0))
+        foreach (var constructor in constructors)
         {
-            var parameters = constructor.Parameters.Select(p => $"{p.Type} {p.Name}").ToArray();
-            var parameterList = string.Join(", ", parameters);
-            var parameterNames = constructor.Parameters.Select(p => p.Name).ToArray();
-            var parameterNamesList = string.Join(", ", parameterNames);
+            var parameterList = constructor.Parameters.ToString(p => $"{p.Type} {p.Name}, " , "");
+            var argumentList = constructor.Parameters.ToString(p => p.Name);
+
+            var parameterNames = constructor.Parameters.ToString(p => p.Name + ", ", "");
 
             builder.Add($$"""
-                          internal protected MockOf_{{target.Name}}({{parameterList}}, System.Action<Config>? config = null) : base({{parameterNamesList}}) {
+                          internal protected MockOf_{{target.Name}}({{parameterList}}System.Action<Config>? config = null) : base({{argumentList}}) {
                               var result = new Config(this);
                               config = config ?? new System.Action<Config>(t => { });
                               config.Invoke(result);
                               _config = result;
                           }
 
-                          public static {{fullName}} Create({{parameterList}}, System.Action<Config>? config = null) => new {{name}}({{parameterNamesList}}, config);
+                          public static {{fullName}} Create({{parameterList}}System.Action<Config>? config = null) => new {{name}}({{parameterNames}}config);
                           """);
         }
 

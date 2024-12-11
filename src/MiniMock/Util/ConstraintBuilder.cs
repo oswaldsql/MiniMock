@@ -5,8 +5,13 @@ using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 
-public static class ConstraintHelpers
+public static class ConstraintBuilder
 {
+    /// <summary>
+    /// Converts an array of type arguments to a constraints string.
+    /// </summary>
+    /// <param name="typeArguments">The type arguments to convert.</param>
+    /// <returns>A string representing the constraints.</returns>
     public static string ToConstraints(this ImmutableArray<ITypeSymbol> typeArguments)
     {
         var result = new StringBuilder();
@@ -19,6 +24,11 @@ public static class ConstraintHelpers
         return result.ToString().Trim();
     }
 
+    /// <summary>
+    /// Converts a type parameter symbol to a constraint string.
+    /// </summary>
+    /// <param name="symbol">The type parameter symbol to convert.</param>
+    /// <returns>A string representing the constraints for the type parameter.</returns>
     private static string ToConstraintString(ITypeParameterSymbol symbol)
     {
         var result = symbol.ConstraintTypes.Select(t => t.ToString()).ToList();
