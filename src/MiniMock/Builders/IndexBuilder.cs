@@ -3,12 +3,35 @@ namespace MiniMock.Builders;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Util;
 
-internal static class IndexBuilder
+/// <summary>
+/// Represents a builder for indexers, implementing the ISymbolBuilder interface.
+/// </summary>
+internal class IndexBuilder : ISymbolBuilder
 {
-    public static void BuildIndexes(CodeBuilder builder, IEnumerable<IPropertySymbol> indexerSymbols)
+    /// <inheritdoc />
+    public bool TryBuild(CodeBuilder builder, IGrouping<string, ISymbol> symbols)
     {
-        var helpers = new List<MethodSignature>();
+        var first = symbols.First();
+
+        if (first is not IPropertySymbol { IsIndexer: true })
+        {
+            return false;
+        }
+
+        return BuildIndexes(builder, symbols.OfType<IPropertySymbol>().Where(t => t.IsIndexer));
+    }
+
+    /// <summary>
+    ///     Builds the indexers and adds them to the code builder.
+    /// </summary>
+    /// <param name="builder">The code builder to add the indexers to.</param>
+    /// <param name="indexerSymbols">The collection of indexer symbols to build.</param>
+    /// <returns>True if any indexers were built; otherwise, false.</returns>
+    private static bool BuildIndexes(CodeBuilder builder, IEnumerable<IPropertySymbol> indexerSymbols)
+    {
+        var helpers = new List<HelperMethod>();
         var symbols = indexerSymbols as IPropertySymbol[] ?? indexerSymbols.ToArray();
         var indexType = symbols.First().Parameters[0].Type.ToString();
 
@@ -21,16 +44,25 @@ internal static class IndexBuilder
             BuildIndex(builder, symbol, helpers, indexerCount);
         }
 
-        helpers.BuildHelpers(builder, "Indexer");
+        builder.Add(helpers.BuildHelpers("Indexer"));
 
         builder.Add("#endregion");
+
+        return indexerCount > 0;
     }
 
-    private static void BuildIndex(CodeBuilder builder, IPropertySymbol symbol, List<MethodSignature> helpers, int indexerCount)
+    /// <summary>
+    ///     Builds a single indexer and adds it to the code builder.
+    /// </summary>
+    /// <param name="builder">The code builder to add the indexer to.</param>
+    /// <param name="symbol">The property symbol representing the indexer.</param>
+    /// <param name="helpers">The list of helper methods to add to.</param>
+    /// <param name="indexerCount">The count of indexers built so far.</param>
+    private static void BuildIndex(CodeBuilder builder, IPropertySymbol symbol, List<HelperMethod> helpers, int indexerCount)
     {
         var returnType = symbol.Type.ToString();
         var indexType = symbol.Parameters[0].Type.ToString();
-        var exception = BuildNotMockedException(symbol);
+        var exception = symbol.BuildNotMockedExceptionForIndexer();
 
         var (containingSymbol, accessibilityString, _) = symbol.Overwrites();
 
@@ -48,36 +80,47 @@ internal static class IndexBuilder
 
                       """);
 
-        var dictionarySource = $"""
-                                target.On_IndexGet_{indexerCount} = s => values[s];
-                                target.On_IndexSet_{indexerCount} = (s, v) => values[s] = v;
-                                """;
-
-        var seeCref = symbol.ToString();
-        helpers.Add(new($"System.Collections.Generic.Dictionary<{indexType}, {returnType}> values",
-            dictionarySource,
-            "Gets and sets values in the dictionary when the indexer is called.", seeCref));
-
-        if (hasSet && !hasGet)
-        {
-            helpers.Add(new($"System.Action<{indexType}, {returnType}> set",
-                $"target.On_IndexSet_{indexerCount} = set;",
-                $"Specifies a setter method to call when the indexer for <see cref=\"{indexType}\"/> is called.", seeCref));
-        }
-        else if(!hasSet && hasGet)
-        {
-            helpers.Add(new($"System.Func<{indexType}, {returnType}> get",
-                $"target.On_IndexGet_{indexerCount} = get;",
-                $"Specifies a getter method to call when the indexer for <see cref=\"{indexType}\"/> is called.", seeCref));
-        }
-        else
-        {
-            helpers.Add(new($"System.Func<{indexType}, {returnType}> get, System.Action<{indexType}, {returnType}> set",
-                $"target.On_IndexGet_{indexerCount} = get;target.On_IndexSet_{indexerCount} = set;",
-                $"Specifies a getter and setter method to call when the indexer for <see cref=\"{indexType}\"/> is called.", seeCref));
-        }
+        helpers.AddRange(BuildHelpers(symbol, indexerCount));
     }
 
-    private static string BuildNotMockedException(this IPropertySymbol symbol) =>
-        $"throw new System.InvalidOperationException(\"The indexer '{symbol.Name}' in '{symbol.ContainingType.Name}' is not explicitly mocked.\") {{Source = \"{symbol}\"}};";
+    /// <summary>
+    ///     Builds helper methods for the indexer.
+    /// </summary>
+    /// <param name="symbol">The property symbol representing the indexer.</param>
+    /// <param name="indexerCount">The count of indexers built so far.</param>
+    /// <returns>A collection of helper methods for the indexer.</returns>
+    private static IEnumerable<HelperMethod> BuildHelpers(IPropertySymbol symbol, int indexerCount)
+    {
+        var hasGet = symbol.GetMethod != null;
+        var hasSet = symbol.SetMethod != null;
+        var returnType = symbol.Type.ToString();
+        var indexType = symbol.Parameters[0].Type.ToString();
+        var seeCref = symbol.ToString();
+
+        yield return new HelperMethod($"System.Collections.Generic.Dictionary<{indexType}, {returnType}> values",
+            $"""
+             target.On_IndexGet_{indexerCount} = s => values[s];
+             target.On_IndexSet_{indexerCount} = (s, v) => values[s] = v;
+             """,
+            "Gets and sets values in the dictionary when the indexer is called.", seeCref);
+
+        switch (hasSet, hasGet)
+        {
+            case (true, true):
+                yield return new HelperMethod($"System.Func<{indexType}, {returnType}> get, System.Action<{indexType}, {returnType}> set",
+                    $"target.On_IndexGet_{indexerCount} = get;target.On_IndexSet_{indexerCount} = set;",
+                    $"Specifies a getter and setter method to call when the indexer for <see cref=\"{indexType}\"/> is called.", seeCref);
+                break;
+            case (true, false):
+                yield return new HelperMethod($"System.Action<{indexType}, {returnType}> set",
+                    $"target.On_IndexSet_{indexerCount} = set;",
+                    $"Specifies a setter method to call when the indexer for <see cref=\"{indexType}\"/> is called.", seeCref);
+                break;
+            case (false, true):
+                yield return new HelperMethod($"System.Func<{indexType}, {returnType}> get",
+                    $"target.On_IndexGet_{indexerCount} = get;",
+                    $"Specifies a getter method to call when the indexer for <see cref=\"{indexType}\"/> is called.", seeCref);
+                break;
+        }
+    }
 }

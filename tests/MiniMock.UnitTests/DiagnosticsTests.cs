@@ -1,16 +1,12 @@
 ﻿// ReSharper disable ArrangeTypeMemberModifiers
 // ReSharper disable MemberCanBePrivate.Global
+
 namespace MiniMock.UnitTests;
 
 using Microsoft.CodeAnalysis;
 
 public class DiagnosticsTests(ITestOutputHelper testOutputHelper)
 {
-    public interface IRefProperty
-    {
-        ref string Name { get; }
-    }
-
     [Fact]
     public void RefPropertyTests()
     {
@@ -26,11 +22,6 @@ public class DiagnosticsTests(ITestOutputHelper testOutputHelper)
         Assert.Equal("Ref property not supported for 'Name' in 'IRefProperty'", actual.GetMessage());
 
         Assert.Equal("Mock<MiniMock.UnitTests.DiagnosticsTests.IRefProperty>", actual.Location.GetCode());
-    }
-
-    public interface IRefMethod
-    {
-        ref string GetName();
     }
 
     [Fact]
@@ -52,10 +43,6 @@ public class DiagnosticsTests(ITestOutputHelper testOutputHelper)
         Assert.Equal("Mock<MiniMock.UnitTests.DiagnosticsTests.IRefMethod>", actual.Location.GetCode());
     }
 
-    public sealed class SealedClass
-    {
-    }
-
     [Fact]
     public void MockingSealedClasesWillRaiseTheMm0006Error()
     {
@@ -73,5 +60,19 @@ public class DiagnosticsTests(ITestOutputHelper testOutputHelper)
         Assert.Equal("Cannot mock the sealed class 'SealedClass'", actual.GetMessage());
 
         Assert.Equal("Mock<MiniMock.UnitTests.DiagnosticsTests.SealedClass>", actual.Location.GetCode());
+    }
+
+    public interface IRefProperty
+    {
+        ref string Name { get; }
+    }
+
+    public interface IRefMethod
+    {
+        ref string GetName();
+    }
+
+    public sealed class SealedClass
+    {
     }
 }

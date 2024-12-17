@@ -1,20 +1,11 @@
 // ReSharper disable ArrangeTypeMemberModifiers
 // ReSharper disable MemberCanBePrivate.Global
-namespace MiniMock.Tests.MethodTests;
 
-using System;
+namespace MiniMock.Tests.MethodTests;
 
 [Mock<IBasicMethods>]
 public class BasicMethodTests
 {
-    public interface IBasicMethods
-    {
-        void VoidWithoutParameters();
-        void VoidWithParameters(string name);
-        string ReturnWithoutParameters();
-        string ReturnWithParameters(string name);
-    }
-
     [Fact]
     public void VoidWithoutParameters_WhenMockNotInitialized_ShouldThrowException()
     {
@@ -109,5 +100,13 @@ public class BasicMethodTests
 
         // Assert
         Assert.Equal("Whats in a name", actual);
+    }
+
+    public interface IBasicMethods
+    {
+        void VoidWithoutParameters();
+        void VoidWithParameters(string name);
+        string ReturnWithoutParameters();
+        string ReturnWithParameters(string name);
     }
 }

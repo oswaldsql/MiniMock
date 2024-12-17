@@ -22,7 +22,7 @@ internal class CodeBuilder(string prepend = "")
 
         if (this.indentation < 0)
         {
-            throw new("Indentation can not be less than 0");
+            throw new Exception("Indentation can not be less than 0");
         }
 
         return this;
