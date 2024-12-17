@@ -21,7 +21,8 @@ internal class MethodBuilder : ISymbolBuilder
             return false;
         }
 
-        return this.BuildMethods(builder, symbols.OfType<IMethodSymbol>().Where(t => t.MethodKind == MethodKind.Ordinary));
+        var methodSymbols = symbols.OfType<IMethodSymbol>().Where(t => t.MethodKind == MethodKind.Ordinary);
+        return this.BuildMethods(builder, methodSymbols);
     }
 
     private bool BuildMethods(CodeBuilder builder, IEnumerable<IMethodSymbol> methodSymbols)
@@ -38,18 +39,20 @@ internal class MethodBuilder : ISymbolBuilder
 
         builder.Add($"#region Method : {name}");
 
-        var methodCount = 0;
+        var methodCount = 1;
         foreach (var symbol in enumerable)
         {
-            methodCount++;
-            Build(builder, symbol, helpers, methodCount);
+            if (Build(builder, symbol, helpers, methodCount))
+            {
+                methodCount++;
+            }
         }
 
         builder.Add(helpers.BuildHelpers(name));
 
         builder.Add("#endregion");
 
-        return methodCount > 0;
+        return methodCount > 1;
     }
 
     private static bool Build(CodeBuilder builder, IMethodSymbol symbol, List<HelperMethod> helpers, int methodCount)

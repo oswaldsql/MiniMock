@@ -1,6 +1,5 @@
 ﻿namespace MiniMock.Builders;
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -56,8 +55,6 @@ internal class ConstructorBuilder : ISymbolBuilder
 
         return true;
     }
-
-    private static readonly Func<Accessibility, bool> accessibilityFilter = accessibility => accessibility == Accessibility.Public || accessibility == Accessibility.Protected;
 
     public static CodeBuilder BuildEmptyConstructor(ISymbol target)
     {

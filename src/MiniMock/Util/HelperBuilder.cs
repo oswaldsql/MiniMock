@@ -44,7 +44,7 @@ public static class HelperBuilder
         builder.Add();
     }
 
-    private static void AddDocumentation(CodeBuilder builder, IEnumerable<HelperMethod> methodSignatures)
+    private static void AddDocumentation(CodeBuilder builder, IGrouping<string, HelperMethod> methodSignatures)
     {
         builder.Add("/// <summary>");
 
