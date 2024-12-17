@@ -3,25 +3,13 @@
 // ReSharper disable UnusedParameter.Local
 // ReSharper disable UnusedMember.Global
 // ReSharper disable UnusedMember.Local
+
 namespace MiniMock.Tests.ConstructorTests;
 
 using System.Reflection;
 
 public class AccessLevelTests
 {
-    internal class AccessLevelTestClass
-    {
-        static AccessLevelTestClass() {}
-
-        public AccessLevelTestClass(bool publicCtor) { }
-
-        protected AccessLevelTestClass(string protectedCtor) { }
-
-        internal AccessLevelTestClass(int internalCtor) { }
-
-        private AccessLevelTestClass(double privateCtor) { }
-    }
-
     [Fact]
     [Mock<AccessLevelTestClass>]
     public void OnlyPublicAndProtectedCtorAreExposed()
@@ -33,5 +21,18 @@ public class AccessLevelTests
 
         // Assert
         Assert.Equal(2, actual.Length);
+    }
+
+    internal class AccessLevelTestClass
+    {
+        static AccessLevelTestClass() { }
+
+        public AccessLevelTestClass(bool publicCtor) { }
+
+        protected AccessLevelTestClass(string protectedCtor) { }
+
+        internal AccessLevelTestClass(int internalCtor) { }
+
+        private AccessLevelTestClass(double privateCtor) { }
     }
 }

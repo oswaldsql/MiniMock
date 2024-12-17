@@ -5,8 +5,12 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Util;
 
+/// <summary>
+/// Represents a builder for properties, implementing the ISymbolBuilder interface.
+/// </summary>
 internal class PropertyBuilder : ISymbolBuilder
 {
+    /// <inheritdoc />
     public bool TryBuild(CodeBuilder builder, IGrouping<string, ISymbol> symbols)
     {
         var first = symbols.First();
@@ -26,24 +30,24 @@ internal class PropertyBuilder : ISymbolBuilder
             return true;
         }
 
-        return this.BuildProperties(builder, symbols.OfType<IPropertySymbol>().Where(t => !t.IsIndexer));
-    }
-
-    private bool BuildProperties(CodeBuilder builder, IEnumerable<IPropertySymbol> propertySymbols)
-    {
-        var enumerable = propertySymbols as IPropertySymbol[] ?? propertySymbols.ToArray();
-        if (enumerable.Length == 0)
+        var propertySymbols = symbols.OfType<IPropertySymbol>().Where(t => !t.IsIndexer).ToArray();
+        if (propertySymbols.Length == 0)
         {
             return false;
         }
 
-        var name = enumerable.First().Name;
+        return BuildProperties(builder, propertySymbols);
+    }
+
+    private static bool BuildProperties(CodeBuilder builder, IPropertySymbol[] symbols)
+    {
+        var name = symbols.First().Name;
         var helpers = new List<HelperMethod>();
 
         builder.Add($"#region Property : {name}");
 
         var index = 0;
-        foreach (var symbol in enumerable)
+        foreach (var symbol in symbols)
         {
             if (symbol.IsStatic)
             {
@@ -67,8 +71,7 @@ internal class PropertyBuilder : ISymbolBuilder
         return index > 0;
     }
 
-    private static void BuildProperty(CodeBuilder builder, IPropertySymbol symbol, List<HelperMethod> helpers,
-        int index)
+    private static void BuildProperty(CodeBuilder builder, IPropertySymbol symbol, List<HelperMethod> helpers, int index)
     {
         if (symbol.ReturnsByRef || symbol.ReturnsByRefReadonly)
         {
@@ -104,6 +107,14 @@ internal class PropertyBuilder : ISymbolBuilder
         helpers.AddRange(BuildHelpers(symbol, type, internalName, propertyName));
     }
 
+    /// <summary>
+    /// Builds helper methods for the property.
+    /// </summary>
+    /// <param name="symbol">The property symbol representing the property.</param>
+    /// <param name="type">The type of the property.</param>
+    /// <param name="internalName">The internal name of the property.</param>
+    /// <param name="propertyName">The name of the property.</param>
+    /// <returns>A collection of helper methods for the property.</returns>
     private static IEnumerable<HelperMethod> BuildHelpers(IPropertySymbol symbol, string type, string internalName, string propertyName)
     {
         var seeCref = symbol.ToString();

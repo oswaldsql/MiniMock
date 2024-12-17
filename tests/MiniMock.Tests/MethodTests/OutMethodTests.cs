@@ -1,16 +1,10 @@
 // ReSharper disable ArrangeTypeMemberModifiers
 // ReSharper disable MemberCanBePrivate.Global
+
 namespace MiniMock.Tests.MethodTests;
 
 public class OutMethodTests
 {
-    public interface IMethodWithOutArgument
-    {
-        bool OutWithReturn(string s, out int value);
-        void OutWithVoid(string s, out int value);
-        bool OutWithRef(string s, ref int value);
-    }
-
     [Fact]
     [Mock<IMethodWithOutArgument>]
     public void OutParameterWithReturnValueShouldWork()
@@ -58,5 +52,12 @@ public class OutMethodTests
 
         Assert.True(result);
         Assert.Equal(11, actual);
+    }
+
+    public interface IMethodWithOutArgument
+    {
+        bool OutWithReturn(string s, out int value);
+        void OutWithVoid(string s, out int value);
+        bool OutWithRef(string s, ref int value);
     }
 }

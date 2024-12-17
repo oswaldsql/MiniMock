@@ -1,44 +1,10 @@
 ﻿// ReSharper disable ArrangeTypeMemberModifiers
 // ReSharper disable MemberCanBePrivate.Global
+
 namespace MiniMock.UnitTests;
 
 public class ConstructorTests(ITestOutputHelper testOutputHelper)
 {
-/// <summary>
-/// teste
-/// </summary>
-    public class MultiCtorClass
-    {
-        public string? Name { get; }
-        public int Age { get; }
-
-        /// <summary>
-        /// Empty ctor
-        /// </summary>
-        public MultiCtorClass()
-        {
-
-        }
-
-
-        /// <summary>
-        /// one parameter
-        /// </summary>
-        /// <param name="name">Name to set</param>
-        public MultiCtorClass(string name) => this.Name = name;
-
-        /// <summary>
-        /// Two Parameters
-        /// </summary>
-        /// <param name="name">Name to set</param>
-        /// <param name="age">Age to set</param>
-        public MultiCtorClass(string name, int age)
-        {
-            this.Name = name;
-            this.Age = age;
-        }
-    }
-
     [Fact]
     public void NoneNullableValueTypesShouldBePermitted()
     {
@@ -53,13 +19,6 @@ public class ConstructorTests(ITestOutputHelper testOutputHelper)
         Assert.Empty(generate.GetWarnings());
     }
 
-    public interface ISupportedStaticInterfaceMembers
-    {
-        static ISupportedStaticInterfaceMembers() => StaticProperty = "Set from ctor";
-
-        static string StaticProperty { get; set; }
-    }
-
     [Fact]
     public void StaticConstructorsDosNotCount()
     {
@@ -72,10 +31,6 @@ public class ConstructorTests(ITestOutputHelper testOutputHelper)
         Assert.Empty(generate.GetWarnings());
     }
 
-    public abstract class AbstractClass
-    {
-    }
-
     [Fact]
     public void AbstractClassTest()
     {
@@ -86,5 +41,50 @@ public class ConstructorTests(ITestOutputHelper testOutputHelper)
         testOutputHelper.DumpResult(generate);
 
         Assert.Empty(generate.GetWarnings());
+    }
+
+    /// <summary>
+    ///     teste
+    /// </summary>
+    public class MultiCtorClass
+    {
+        /// <summary>
+        ///     Empty ctor
+        /// </summary>
+        public MultiCtorClass()
+        {
+        }
+
+
+        /// <summary>
+        ///     one parameter
+        /// </summary>
+        /// <param name="name">Name to set</param>
+        public MultiCtorClass(string name) => this.Name = name;
+
+        /// <summary>
+        ///     Two Parameters
+        /// </summary>
+        /// <param name="name">Name to set</param>
+        /// <param name="age">Age to set</param>
+        public MultiCtorClass(string name, int age)
+        {
+            this.Name = name;
+            this.Age = age;
+        }
+
+        public string? Name { get; }
+        public int Age { get; }
+    }
+
+    public interface ISupportedStaticInterfaceMembers
+    {
+        static ISupportedStaticInterfaceMembers() => StaticProperty = "Set from ctor";
+
+        static string StaticProperty { get; set; }
+    }
+
+    public abstract class AbstractClass
+    {
     }
 }

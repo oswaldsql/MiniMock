@@ -1,32 +1,11 @@
 // ReSharper disable ArrangeTypeMemberModifiers
 // ReSharper disable MemberCanBePrivate.Global
+
 namespace MiniMock.Tests.MethodTests;
 
 [Mock<IGeneric<int, int>>]
 public class GenericInterfaceTests
 {
-    public interface IGeneric<TKey, TValue> where TKey : new() where TValue : new()
-    {
-        public TKey ReturnGenericType();
-        public void GenericParameter(TKey source);
-
-        public TKey Name { get; set; }
-
-        public TValue Value { get; set; }
-    }
-
-    public interface IGeneric<T> where T : notnull
-    {
-        T ReturnGenericType();
-        void GenericParameter(T source);
-
-        bool TryParse(string value, out T result);
-
-        string this[T key] { get; set; }
-
-        event EventHandler<T> EventWithArgs;
-    }
-
     [Fact]
     [Mock<IGeneric<string>>]
     public void GenericStringClass_ShouldReturnGenericType()
@@ -51,7 +30,11 @@ public class GenericInterfaceTests
     {
         // Arrange
         var sut = Mock.IGeneric<string>(mock => mock
-            .TryParse((string value, out string result) => { result = "parsed " + value; return true; })
+            .TryParse((string value, out string result) =>
+            {
+                result = "parsed " + value;
+                return true;
+            })
         );
 
         // Act
@@ -102,24 +85,35 @@ public class GenericInterfaceTests
         // Assert
         Assert.Equal(10, actual);
     }
+
+    public interface IGeneric<TKey, TValue> where TKey : new() where TValue : new()
+    {
+        public TKey Name { get; set; }
+
+        public TValue Value { get; set; }
+        public TKey ReturnGenericType();
+        public void GenericParameter(TKey source);
+    }
+
+    public interface IGeneric<T> where T : notnull
+    {
+        string this[T key] { get; set; }
+        T ReturnGenericType();
+        void GenericParameter(T source);
+
+        bool TryParse(string value, out T result);
+
+        event EventHandler<T> EventWithArgs;
+    }
 }
 
 public class GenericMethodTest
 {
-    public interface IGenericMethod
-    {
-        void ReturnGeneric(string value);
-        T ReturnGeneric<T>(string value) where T : struct;
-        IEnumerable<T> ReturnDerived<T>(string value) where T : struct;
-        void ReturnVoid<T>(string value) where T : struct;
-        T ReturnTwoGenerics<T, TU>(string value) where T : struct where TU : struct;
-    }
-
     [Mock<IGenericMethod>]
     [Fact]
     public void MockCallFunctionGetTheTypeOfTheGenericAsParameter()
     {
-        var sut = Mock.IGenericMethod(config => config.ReturnGeneric(call: ReturnGeneric));
+        var sut = Mock.IGenericMethod(config => config.ReturnGeneric(ReturnGeneric));
 
         // ACT
         var actualInt = sut.ReturnGeneric<int>("test");
@@ -137,7 +131,17 @@ public class GenericMethodTest
             {
                 return 10;
             }
+
             return true;
         }
+    }
+
+    public interface IGenericMethod
+    {
+        void ReturnGeneric(string value);
+        T ReturnGeneric<T>(string value) where T : struct;
+        IEnumerable<T> ReturnDerived<T>(string value) where T : struct;
+        void ReturnVoid<T>(string value) where T : struct;
+        T ReturnTwoGenerics<T, TU>(string value) where T : struct where TU : struct;
     }
 }

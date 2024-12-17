@@ -5,8 +5,12 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Util;
 
+/// <summary>
+///     Represents a builder for events, implementing the ISymbolBuilder interface.
+/// </summary>
 internal class EventBuilder : ISymbolBuilder
 {
+    /// <inheritdoc />
     public bool TryBuild(CodeBuilder builder, IGrouping<string, ISymbol> symbols)
     {
         var first = symbols.First();
@@ -26,10 +30,16 @@ internal class EventBuilder : ISymbolBuilder
             return true;
         }
 
-        return this.BuildEvents(builder, symbols.OfType<IEventSymbol>());
+        return BuildEvents(builder, symbols.OfType<IEventSymbol>());
     }
 
-    private bool BuildEvents(CodeBuilder builder, IEnumerable<IEventSymbol> eventSymbols)
+    /// <summary>
+    ///     Builds the events based on the given symbols and adds them to the code builder.
+    /// </summary>
+    /// <param name="builder">The code builder to add the events to.</param>
+    /// <param name="eventSymbols">The event symbols to build.</param>
+    /// <returns>True if any events were built; otherwise, false.</returns>
+    private static bool BuildEvents(CodeBuilder builder, IEnumerable<IEventSymbol> eventSymbols)
     {
         var enumerable = eventSymbols as IEventSymbol[] ?? eventSymbols.ToArray();
         var name = enumerable.First().Name;
@@ -37,21 +47,31 @@ internal class EventBuilder : ISymbolBuilder
 
         builder.Add($"#region event : {name}");
 
-        var eventCount = 0;
+        var eventCount = 1;
         foreach (var symbol in enumerable)
         {
-            eventCount++;
-            BuildEvent(builder, symbol, helpers, eventCount);
+            if (BuildEvent(builder, symbol, helpers, eventCount))
+            {
+                eventCount++;
+            }
         }
 
         builder.Add(helpers.BuildHelpers(name));
 
         builder.Add("#endregion");
 
-        return eventCount > 0;
+        return eventCount > 1;
     }
 
-    private static void BuildEvent(CodeBuilder builder, IEventSymbol symbol, List<HelperMethod> helpers, int eventCount)
+    /// <summary>
+    ///     Builds an individual event and adds it to the code builder.
+    /// </summary>
+    /// <param name="builder">The code builder to add the event to.</param>
+    /// <param name="symbol">The event symbol to build.</param>
+    /// <param name="helpers">A list of helper methods to add to.</param>
+    /// <param name="eventCount">The count of the event being built.</param>
+    /// <returns>True if any events were built; otherwise, false.</returns>
+    private static bool BuildEvent(CodeBuilder builder, IEventSymbol symbol, List<HelperMethod> helpers, int eventCount)
     {
         var eventName = symbol.Name;
         var invokeMethod = symbol.Type.GetMembers().OfType<IMethodSymbol>().First(t => t.Name == "Invoke");
@@ -80,6 +100,8 @@ internal class EventBuilder : ISymbolBuilder
                       """);
 
         helpers.AddRange(BuildHelpers(symbol, types, eventFunction));
+
+        return true;
     }
 
     private static IEnumerable<HelperMethod> BuildHelpers(IEventSymbol symbol, string types, string eventFunction)

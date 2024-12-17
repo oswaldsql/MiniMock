@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis;
 public static class ConstraintBuilder
 {
     /// <summary>
-    /// Converts an array of type arguments to a constraints string.
+    ///     Converts an array of type arguments to a constraints string.
     /// </summary>
     /// <param name="typeArguments">The type arguments to convert.</param>
     /// <returns>A string representing the constraints.</returns>
@@ -25,7 +25,7 @@ public static class ConstraintBuilder
     }
 
     /// <summary>
-    /// Converts a type parameter symbol to a constraint string.
+    ///     Converts a type parameter symbol to a constraint string.
     /// </summary>
     /// <param name="symbol">The type parameter symbol to convert.</param>
     /// <returns>A string representing the constraints for the type parameter.</returns>

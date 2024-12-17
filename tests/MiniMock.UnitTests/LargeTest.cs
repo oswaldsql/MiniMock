@@ -1,21 +1,10 @@
 // ReSharper disable ArrangeTypeMemberModifiers
 // ReSharper disable MemberCanBePrivate.Global
+
 namespace MiniMock.UnitTests;
 
 public class LargeTest(ITestOutputHelper testOutputHelper)
 {
-    public interface ILoveThisLibrary
-    {
-        Version Version { get; set; }
-
-        bool DownloadExists(string version);
-        Task<bool> DownloadExistsAsync(string version);
-
-        Version this[string key] { get; set; }
-
-        event EventHandler<Version> NewVersionAdded;
-    }
-
     [Fact]
     public void MethodWithOutArgumentTests()
     {
@@ -85,5 +74,17 @@ public class TestClass{
         testOutputHelper.DumpResult(generate);
 
         Assert.Empty(generate.GetErrors());
+    }
+
+    public interface ILoveThisLibrary
+    {
+        Version Version { get; set; }
+
+        Version this[string key] { get; set; }
+
+        bool DownloadExists(string version);
+        Task<bool> DownloadExistsAsync(string version);
+
+        event EventHandler<Version> NewVersionAdded;
     }
 }

@@ -8,7 +8,7 @@ using Util;
 
 internal class ClassBuilder(ISymbol target)
 {
-    private static readonly ISymbolBuilder[] Builders = [new ConstructorBuilder(),  new EventBuilder(), new MethodBuilder(), new PropertyBuilder(), new IndexBuilder()];
+    private static readonly ISymbolBuilder[] Builders = [new ConstructorBuilder(), new EventBuilder(), new MethodBuilder(), new PropertyBuilder(), new IndexBuilder()];
 
     private readonly Func<Accessibility, bool> accessibilityFilter = accessibility => accessibility == Accessibility.Public || accessibility == Accessibility.Protected;
 

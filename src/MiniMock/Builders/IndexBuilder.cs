@@ -5,8 +5,12 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Util;
 
+/// <summary>
+/// Represents a builder for indexers, implementing the ISymbolBuilder interface.
+/// </summary>
 internal class IndexBuilder : ISymbolBuilder
 {
+    /// <inheritdoc />
     public bool TryBuild(CodeBuilder builder, IGrouping<string, ISymbol> symbols)
     {
         var first = symbols.First();
@@ -16,10 +20,16 @@ internal class IndexBuilder : ISymbolBuilder
             return false;
         }
 
-        return this.BuildIndexes(builder, symbols.OfType<IPropertySymbol>().Where(t => t.IsIndexer));
+        return BuildIndexes(builder, symbols.OfType<IPropertySymbol>().Where(t => t.IsIndexer));
     }
 
-    private bool BuildIndexes(CodeBuilder builder, IEnumerable<IPropertySymbol> indexerSymbols)
+    /// <summary>
+    ///     Builds the indexers and adds them to the code builder.
+    /// </summary>
+    /// <param name="builder">The code builder to add the indexers to.</param>
+    /// <param name="indexerSymbols">The collection of indexer symbols to build.</param>
+    /// <returns>True if any indexers were built; otherwise, false.</returns>
+    private static bool BuildIndexes(CodeBuilder builder, IEnumerable<IPropertySymbol> indexerSymbols)
     {
         var helpers = new List<HelperMethod>();
         var symbols = indexerSymbols as IPropertySymbol[] ?? indexerSymbols.ToArray();
@@ -41,6 +51,13 @@ internal class IndexBuilder : ISymbolBuilder
         return indexerCount > 0;
     }
 
+    /// <summary>
+    ///     Builds a single indexer and adds it to the code builder.
+    /// </summary>
+    /// <param name="builder">The code builder to add the indexer to.</param>
+    /// <param name="symbol">The property symbol representing the indexer.</param>
+    /// <param name="helpers">The list of helper methods to add to.</param>
+    /// <param name="indexerCount">The count of indexers built so far.</param>
     private static void BuildIndex(CodeBuilder builder, IPropertySymbol symbol, List<HelperMethod> helpers, int indexerCount)
     {
         var returnType = symbol.Type.ToString();
@@ -66,6 +83,12 @@ internal class IndexBuilder : ISymbolBuilder
         helpers.AddRange(BuildHelpers(symbol, indexerCount));
     }
 
+    /// <summary>
+    ///     Builds helper methods for the indexer.
+    /// </summary>
+    /// <param name="symbol">The property symbol representing the indexer.</param>
+    /// <param name="indexerCount">The count of indexers built so far.</param>
+    /// <returns>A collection of helper methods for the indexer.</returns>
     private static IEnumerable<HelperMethod> BuildHelpers(IPropertySymbol symbol, int indexerCount)
     {
         var hasGet = symbol.GetMethod != null;

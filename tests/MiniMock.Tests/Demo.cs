@@ -3,6 +3,7 @@
 // ReSharper disable UnusedParameter.Local
 // ReSharper disable UnusedVariable
 // ReSharper disable RedundantLambdaParameterType
+
 namespace MiniMock.Tests;
 
 using Xunit.Abstractions;
@@ -14,7 +15,7 @@ public class Demo(ITestOutputHelper testOutputHelper)
     public void SimpleExample()
     {
         var library = Mock.IVersionLibrary(config =>
-            config.DownloadExists(returns: true));
+            config.DownloadExists(true));
 
         var actual = library.DownloadExists("2.0.0.0");
 
@@ -25,32 +26,28 @@ public class Demo(ITestOutputHelper testOutputHelper)
     [Mock<IVersionLibrary>]
     public async Task TestingAllTheOptions()
     {
-        var versions = new Dictionary<string, Version>() {{"current", new Version(2,0,0,0)}};
+        var versions = new Dictionary<string, Version> { { "current", new Version(2, 0, 0, 0) } };
         Action<Version> triggerNewVersionAdded = _ => { };
 
         var versionLibrary = Mock.IVersionLibrary(config => config
-                .DownloadExists(returns: true) // Returns true for all versions
-                .DownloadExists(throws: new IndexOutOfRangeException()) // Throws IndexOutOfRangeException for all versions
-                .DownloadExists(call: s => s.StartsWith("2.0.0")) // Returns true for version 2.0.0.x base on a string parameter
-                .DownloadExists(call: v => v is { Major: 2, Minor: 0, Revision: 0 }) // Returns true for version 2.0.0.x based on a version parameter
-                .DownloadExists(returnValues: [true, true, false]) // Returns true two times, then false
-
-                .DownloadLinkAsync(returns: Task.FromResult(new Uri("http://downloads/2.0.0"))) // Returns a task containing a download link for all versions
-                .DownloadLinkAsync(call: s => Task.FromResult(s.StartsWith("2.0.0") ? new Uri("http://downloads/2.0.0") : new Uri("http://downloads/UnknownVersion"))) // Returns a task containing a download link for version 2.0.0.x otherwise a error link
-                .DownloadLinkAsync(throws: new TaskCanceledException()) // Throws IndexOutOfRangeException for all parameters
-                .DownloadLinkAsync(returns: new Uri("http://downloads/2.0.0")) // Returns a task containing a download link for all versions
-                .DownloadLinkAsync(call: s => s.StartsWith("2.0.0") ? new Uri("http://downloads/2.0.0") : new Uri("http://downloads/UnknownVersion")) // Returns a task containing a download link for version 2.0.0.x otherwise a error link
-                .DownloadLinkAsync(returnValues: [Task.FromResult(new Uri("http://downloads/1.0.0")), Task.FromResult(new Uri("http://downloads/1.1.0")), Task.FromResult(new Uri("http://downloads/2.0.0"))]) // Returns a task with a download link
-                .DownloadLinkAsync(returnValues: [new Uri("http://downloads/2.0.0"), new Uri("http://downloads/2.0.0"), new Uri("http://downloads/2.0.0")]) // Returns a task with a download link
-
-                .CurrentVersion(get: () => new Version(2, 0, 0, 0), set: version => throw new IndexOutOfRangeException()) // Overwrites the property getter and setter
-                .CurrentVersion(value: new Version(2, 0, 0, 0)) // Sets the initial version to 2.0.0.0
-
-                .Indexer(get: key => new Version(2, 0, 0, 0), set: (key, value) => { }) // Overwrites the indexer getter and setter
-                .Indexer(values: versions) // Provides a dictionary to retrieve and store versions
-
-                .NewVersionAdded(raise: new Version(2, 0, 0, 0)) // Raises the event right away
-                .NewVersionAdded(trigger: out triggerNewVersionAdded) // Provides a trigger for when a new version is added
+                .DownloadExists(true) // Returns true for all versions
+                .DownloadExists(new IndexOutOfRangeException()) // Throws IndexOutOfRangeException for all versions
+                .DownloadExists(s => s.StartsWith("2.0.0")) // Returns true for version 2.0.0.x base on a string parameter
+                .DownloadExists(v => v is { Major: 2, Minor: 0, Revision: 0 }) // Returns true for version 2.0.0.x based on a version parameter
+                .DownloadExists([true, true, false]) // Returns true two times, then false
+                .DownloadLinkAsync(Task.FromResult(new Uri("http://downloads/2.0.0"))) // Returns a task containing a download link for all versions
+                .DownloadLinkAsync(s => Task.FromResult(s.StartsWith("2.0.0") ? new Uri("http://downloads/2.0.0") : new Uri("http://downloads/UnknownVersion"))) // Returns a task containing a download link for version 2.0.0.x otherwise a error link
+                .DownloadLinkAsync(new TaskCanceledException()) // Throws IndexOutOfRangeException for all parameters
+                .DownloadLinkAsync(new Uri("http://downloads/2.0.0")) // Returns a task containing a download link for all versions
+                .DownloadLinkAsync(s => s.StartsWith("2.0.0") ? new Uri("http://downloads/2.0.0") : new Uri("http://downloads/UnknownVersion")) // Returns a task containing a download link for version 2.0.0.x otherwise a error link
+                .DownloadLinkAsync([Task.FromResult(new Uri("http://downloads/1.0.0")), Task.FromResult(new Uri("http://downloads/1.1.0")), Task.FromResult(new Uri("http://downloads/2.0.0"))]) // Returns a task with a download link
+                .DownloadLinkAsync([new Uri("http://downloads/2.0.0"), new Uri("http://downloads/2.0.0"), new Uri("http://downloads/2.0.0")]) // Returns a task with a download link
+                .CurrentVersion(() => new Version(2, 0, 0, 0), version => throw new IndexOutOfRangeException()) // Overwrites the property getter and setter
+                .CurrentVersion(new Version(2, 0, 0, 0)) // Sets the initial version to 2.0.0.0
+                .Indexer(key => new Version(2, 0, 0, 0), (key, value) => { }) // Overwrites the indexer getter and setter
+                .Indexer(versions) // Provides a dictionary to retrieve and store versions
+                .NewVersionAdded(new Version(2, 0, 0, 0)) // Raises the event right away
+                .NewVersionAdded(out triggerNewVersionAdded) // Provides a trigger for when a new version is added
         );
 
         var actual = versionLibrary.DownloadExists("2.0.0.0");
@@ -77,14 +74,14 @@ public class Demo(ITestOutputHelper testOutputHelper)
     [Mock<IVersionLibrary>]
     public void SimpleReturnValue()
     {
-        var versions = new Dictionary<string, Version>() {{"current", new Version(2,0,0,0)}};
+        var versions = new Dictionary<string, Version> { { "current", new Version(2, 0, 0, 0) } };
 
         var versionLibrary = Mock.IVersionLibrary(config => config
-                .DownloadExists(returns: true) // Returns true for all versions
-                .DownloadLinkAsync(returns: Task.FromResult(new Uri("http://downloads/2.0.0"))) // Returns a task with a download link
-                .DownloadLinkAsync(returns: new Uri("http://downloads/2.0.0")) // Returns a task with a download link
-                .CurrentVersion(value: new Version(2, 0, 0, 0)) // Sets the initial version to 2.0.0.0
-                .Indexer(values: versions) // Provides a dictionary to retrieve and store versions
+                .DownloadExists(true) // Returns true for all versions
+                .DownloadLinkAsync(Task.FromResult(new Uri("http://downloads/2.0.0"))) // Returns a task with a download link
+                .DownloadLinkAsync(new Uri("http://downloads/2.0.0")) // Returns a task with a download link
+                .CurrentVersion(new Version(2, 0, 0, 0)) // Sets the initial version to 2.0.0.0
+                .Indexer(versions) // Provides a dictionary to retrieve and store versions
         );
     }
 
@@ -93,9 +90,9 @@ public class Demo(ITestOutputHelper testOutputHelper)
     public void MultipleReturnValue()
     {
         var versionLibrary = Mock.IVersionLibrary(config => config
-                .DownloadExists(returnValues: [true, true, false]) // Returns true two times, then false
-                .DownloadLinkAsync(returnValues: [Task.FromResult(new Uri("http://downloads/1.0.0")), Task.FromResult(new Uri("http://downloads/1.1.0")), Task.FromResult(new Uri("http://downloads/2.0.0"))]) // Returns a task with a download link
-                .DownloadLinkAsync(returnValues: [new Uri("http://downloads/2.0.0"), new Uri("http://downloads/2.0.0"), new Uri("http://downloads/2.0.0")]) // Returns a task with a download link
+                .DownloadExists([true, true, false]) // Returns true two times, then false
+                .DownloadLinkAsync([Task.FromResult(new Uri("http://downloads/1.0.0")), Task.FromResult(new Uri("http://downloads/1.1.0")), Task.FromResult(new Uri("http://downloads/2.0.0"))]) // Returns a task with a download link
+                .DownloadLinkAsync([new Uri("http://downloads/2.0.0"), new Uri("http://downloads/2.0.0"), new Uri("http://downloads/2.0.0")]) // Returns a task with a download link
         );
     }
 
@@ -103,11 +100,11 @@ public class Demo(ITestOutputHelper testOutputHelper)
     [Mock<IVersionLibrary>]
     public void Indexers()
     {
-        var versions = new Dictionary<string, Version>() {{"current", new Version(2,0,0,0)}};
+        var versions = new Dictionary<string, Version> { { "current", new Version(2, 0, 0, 0) } };
 
         var versionLibrary = Mock.IVersionLibrary(config => config
-                .Indexer(get: s => new Version(2,0,0,0), set: (s, version) => {}) // Overwrites the indexer getter and setter
-                .Indexer(values: versions) // Provides a dictionary to retrieve and store versions
+                .Indexer(s => new Version(2, 0, 0, 0), (s, version) => { }) // Overwrites the indexer getter and setter
+                .Indexer(versions) // Provides a dictionary to retrieve and store versions
         );
 
         var preCurrent = versionLibrary["current"];
@@ -124,17 +121,15 @@ public class Demo(ITestOutputHelper testOutputHelper)
 
         var versionLibrary = Mock.IVersionLibrary(config =>
                 config
-                    .DownloadExists(call: (string s) => s.StartsWith("2.0.0") ) // Returns true for version 2.0.0.x base on a string parameter
-                    .DownloadExists(call: (Version v) => v is { Major: 2, Minor: 0, Revision: 0 })// Returns true for version 2.0.0.x based on a version parameter
+                    .DownloadExists((string s) => s.StartsWith("2.0.0")) // Returns true for version 2.0.0.x base on a string parameter
+                    .DownloadExists((Version v) => v is { Major: 2, Minor: 0, Revision: 0 }) // Returns true for version 2.0.0.x based on a version parameter
                     //or
-                    .DownloadExists(call: LocalIntercept) // calls a local function
-                    .DownloadExists(call: version => this.ExternalIntercept(version, true)) // calls function in class
-
-                    .DownloadLinkAsync(call: s => Task.FromResult(new Uri($"http://downloads/{s}"))) // Returns a task containing a download link for version 2.0.0.x otherwise a error link
-                    .DownloadLinkAsync(call: s => new Uri($"http://downloads/{s}")) // Returns a task containing a download link for version 2.0.0.x otherwise a error link
-
-                    .CurrentVersion(get: () => currentVersionMock, set: version => currentVersionMock = version) // Overwrites the property getter and setter
-                    .Indexer(get: s => new Version(2,0,0,0), set: (s, version) => {}) // Overwrites the indexer getter and setter
+                    .DownloadExists(LocalIntercept) // calls a local function
+                    .DownloadExists(version => this.ExternalIntercept(version, true)) // calls function in class
+                    .DownloadLinkAsync(s => Task.FromResult(new Uri($"http://downloads/{s}"))) // Returns a task containing a download link for version 2.0.0.x otherwise a error link
+                    .DownloadLinkAsync(s => new Uri($"http://downloads/{s}")) // Returns a task containing a download link for version 2.0.0.x otherwise a error link
+                    .CurrentVersion(() => currentVersionMock, version => currentVersionMock = version) // Overwrites the property getter and setter
+                    .Indexer(s => new Version(2, 0, 0, 0), (s, version) => { }) // Overwrites the indexer getter and setter
         );
 
         return;
@@ -167,7 +162,7 @@ public class Demo(ITestOutputHelper testOutputHelper)
         Action<Version>? triggerNewVersionAdded = null;
 
         var versionLibrary = Mock.IVersionLibrary(config => config
-                .NewVersionAdded(trigger: out triggerNewVersionAdded) // Provides a trigger for when a new version is added
+                .NewVersionAdded(out triggerNewVersionAdded) // Provides a trigger for when a new version is added
         );
 
         versionLibrary.NewVersionAdded += (sender, version) => actual = version;
@@ -177,7 +172,7 @@ public class Demo(ITestOutputHelper testOutputHelper)
 
         // Assert
         Assert.NotNull(actual);
-        Assert.Equal(new Version(2,0,0,0), actual);
+        Assert.Equal(new Version(2, 0, 0, 0), actual);
     }
 
     [Fact]
@@ -186,12 +181,16 @@ public class Demo(ITestOutputHelper testOutputHelper)
         // Arrange
         var sut = Mock.IVersionLibrary(config =>
         {
-            bool DownloadExists(Version version) => version switch {
+            bool DownloadExists(Version version)
+            {
+                return version switch
+                {
                     { Major: 1, Minor: 0 } => true,
                     { Major: 2, Minor: 0, Revision: 0 } => true,
-                    { Major: 3, } => false,
+                    { Major: 3 } => false,
                     _ => throw new ArgumentException()
                 };
+            }
 
             config.DownloadExists(DownloadExists);
         });
@@ -204,12 +203,18 @@ public class Demo(ITestOutputHelper testOutputHelper)
     }
 
     /// <summary>
-    ///  Represents a library that can download versions.
+    ///     Represents a library that can download versions.
     /// </summary>
     public interface IVersionLibrary
     {
         /// <summary> Gets or sets the current version of the library. </summary>
         Version CurrentVersion { get; set; }
+
+        /// <summary>
+        ///     Gets the versoion for the specified key.
+        /// </summary>
+        /// <param name="key">The version key.</param>
+        Version this[string key] { get; set; }
 
         /// <summary> Gets a value indicating whether a download exists for the specified version. </summary>
         /// <param name="version">The version as a <c>string</c></param>
@@ -222,20 +227,14 @@ public class Demo(ITestOutputHelper testOutputHelper)
         bool DownloadExists(Version version);
 
         /// <summary>
-        /// Gets the download link for the specified version.
+        ///     Gets the download link for the specified version.
         /// </summary>
         /// <param name="version">The version</param>
         /// <returns>The uri to the specified version</returns>
         Task<Uri> DownloadLinkAsync(string version);
 
         /// <summary>
-        ///  Gets the versoion for the specified key.
-        /// </summary>
-        /// <param name="key">The version key.</param>
-        Version this[string key] { get; set; }
-
-        /// <summary>
-        ///  Occurs when a new version is added.
+        ///     Occurs when a new version is added.
         /// </summary>
         event EventHandler<Version> NewVersionAdded;
     }

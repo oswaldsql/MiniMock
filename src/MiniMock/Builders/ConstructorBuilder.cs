@@ -34,7 +34,7 @@ internal class ConstructorBuilder : ISymbolBuilder
 
         foreach (var constructor in constructors)
         {
-            var parameterList = constructor.Parameters.ToString(p => $"{p.Type} {p.Name}, " , "");
+            var parameterList = constructor.Parameters.ToString(p => $"{p.Type} {p.Name}, ", "");
             var argumentList = constructor.Parameters.ToString(p => p.Name);
 
             var parameterNames = constructor.Parameters.ToString(p => p.Name + ", ", "");

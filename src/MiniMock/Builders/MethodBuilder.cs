@@ -5,16 +5,15 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Util;
 
+/// <summary>
+///     Represents a builder for methods, implementing the ISymbolBuilder interface.
+/// </summary>
 internal class MethodBuilder : ISymbolBuilder
 {
+    /// <inheritdoc />
     public bool TryBuild(CodeBuilder builder, IGrouping<string, ISymbol> symbols)
     {
         var first = symbols.First();
-
-        if (first is IMethodSymbol { MethodKind: MethodKind.Constructor })
-        {
-            return false;
-        }
 
         if (first is not IMethodSymbol { MethodKind: MethodKind.Ordinary })
         {
@@ -28,10 +27,6 @@ internal class MethodBuilder : ISymbolBuilder
     private bool BuildMethods(CodeBuilder builder, IEnumerable<IMethodSymbol> methodSymbols)
     {
         var enumerable = methodSymbols as IMethodSymbol[] ?? methodSymbols.ToArray();
-        if (enumerable.Length == 0)
-        {
-            return false;
-        }
 
         var name = enumerable.First().Name;
 

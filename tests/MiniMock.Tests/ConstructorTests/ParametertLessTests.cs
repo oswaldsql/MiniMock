@@ -2,19 +2,6 @@
 
 public class ParameterLessTests
 {
-    public class ParameterLessClass
-    {
-        public ParameterLessClass() => this.CtorIsCalled = true;
-
-        public bool CtorIsCalled { get; set; }
-
-        public bool ImplicitCtorIsCalled { get; set; } = true;
-    }
-
-    public interface IInterfaceWithoutCtor
-    {
-    }
-
     [Fact]
     [Mock<ParameterLessClass>]
     public void ParameterlessConstructorCanBeUsed()
@@ -41,5 +28,18 @@ public class ParameterLessTests
 
         // Assert
         Assert.IsAssignableFrom<IInterfaceWithoutCtor>(sut);
+    }
+
+    public class ParameterLessClass
+    {
+        public ParameterLessClass() => this.CtorIsCalled = true;
+
+        public bool CtorIsCalled { get; set; }
+
+        public bool ImplicitCtorIsCalled { get; set; } = true;
+    }
+
+    public interface IInterfaceWithoutCtor
+    {
     }
 }
