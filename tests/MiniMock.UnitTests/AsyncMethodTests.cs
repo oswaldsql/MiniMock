@@ -1,17 +1,12 @@
 // ReSharper disable ArrangeTypeMemberModifiers
 // ReSharper disable MemberCanBePrivate.Global
+
 namespace MiniMock.UnitTests;
 
 using System.ComponentModel;
 
 public class AsyncMethodTests(ITestOutputHelper testOutputHelper)
 {
-    public interface ISimpleTaskMethods
-    {
-        Task WithParameter(string name);
-        Task WithoutParameter();
-    }
-
     [Fact]
     public void SimpleTaskMethodsTests()
     {
@@ -22,12 +17,6 @@ public class AsyncMethodTests(ITestOutputHelper testOutputHelper)
         testOutputHelper.DumpResult(generate);
 
         Assert.Empty(generate.GetErrors());
-    }
-
-    public interface IGenericTaskMethods
-    {
-        Task<string> WithParameter(string name);
-        Task<int> WithoutParameter();
     }
 
     [Fact]
@@ -52,5 +41,17 @@ public class AsyncMethodTests(ITestOutputHelper testOutputHelper)
         testOutputHelper.DumpResult(generate);
 
         Assert.Empty(generate.GetErrors());
+    }
+
+    public interface ISimpleTaskMethods
+    {
+        Task WithParameter(string name);
+        Task WithoutParameter();
+    }
+
+    public interface IGenericTaskMethods
+    {
+        Task<string> WithParameter(string name);
+        Task<int> WithoutParameter();
     }
 }

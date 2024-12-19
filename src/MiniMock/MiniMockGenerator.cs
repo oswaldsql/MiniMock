@@ -13,14 +13,17 @@ public sealed class MiniMockGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        context.RegisterPostInitializationOutput(static ctx => ctx.AddSource(
-            "MiniMock.MockAttribute.g.cs", Constants.MockAttributeCode));
+        context.RegisterPostInitializationOutput(static ctx =>
+        {
+            ctx.AddSource("MiniMock.MockAttribute.g.cs", Constants.MockAttributeCode);
+        });
 
         var enums = context.SyntaxProvider.ForAttributeWithMetadataName("MiniMock.MockAttribute`1",
                 (syntaxNode, _) => syntaxNode != null, this.GetAttributes)
             .Where(static enumData => enumData is not null)
             .SelectMany((enumerable, _) => enumerable)
-            .Collect();
+            .Collect()
+            .WithTrackingName("MockAttribute");
 
         context.RegisterSourceOutput(enums, this.Build);
     }
@@ -32,13 +35,13 @@ public sealed class MiniMockGenerator : IIncrementalGenerator
 
         foreach (var source in sources)
         {
-            if(source.Key != null)
+            if (source.Key != null)
             {
                 try
                 {
                     var code = ClassBuilder.Build(source.Key);
 
-                    var fileName = source.Key.ToString().Replace("<", "_").Replace(">", "").Replace(", ","_");
+                    var fileName = source.Key.ToString().Replace("<", "_").Replace(">", "").Replace(", ", "_");
 
                     context.AddSource(fileName + ".g.cs", code);
                     implemented.Add(source.Key);
@@ -59,7 +62,6 @@ public sealed class MiniMockGenerator : IIncrementalGenerator
                 {
                     context.CanNotMockASealedClass(GetSourceLocations(source), e.Message);
                 }
-
             }
         }
 
@@ -80,7 +82,11 @@ public sealed class MiniMockGenerator : IIncrementalGenerator
 }
 
 internal class UnsupportedAccessibilityException(Accessibility accessibility) : Exception($"Unsupported accessibility type '{accessibility}'");
-internal class RefPropertyNotSupportedException(IPropertySymbol propertySymbol, ITypeSymbol typeSymbol) : Exception($"Ref property not supported for '{propertySymbol.Name}' in '{typeSymbol.Name}'" );
-internal class RefReturnTypeNotSupportedException(IMethodSymbol methodSymbol, ITypeSymbol typeSymbol) : Exception($"Ref return type not supported for '{methodSymbol.Name}' in '{typeSymbol.Name}'" );
-internal class StaticAbstractMembersNotSupportedException(string name, ITypeSymbol typeSymbol) : Exception($"Static abstract members in interfaces or classes is not supported for '{name}' in '{typeSymbol.Name}'" );
-internal class CanNotMockASealedClassException(ITypeSymbol typeSymbol) : Exception($"Cannot mock the sealed class '{typeSymbol.Name}'" );
+
+internal class RefPropertyNotSupportedException(IPropertySymbol propertySymbol, ITypeSymbol typeSymbol) : Exception($"Ref property not supported for '{propertySymbol.Name}' in '{typeSymbol.Name}'");
+
+internal class RefReturnTypeNotSupportedException(IMethodSymbol methodSymbol, ITypeSymbol typeSymbol) : Exception($"Ref return type not supported for '{methodSymbol.Name}' in '{typeSymbol.Name}'");
+
+internal class StaticAbstractMembersNotSupportedException(string name, ITypeSymbol typeSymbol) : Exception($"Static abstract members in interfaces or classes is not supported for '{name}' in '{typeSymbol.Name}'");
+
+internal class CanNotMockASealedClassException(ITypeSymbol typeSymbol) : Exception($"Cannot mock the sealed class '{typeSymbol.Name}'");

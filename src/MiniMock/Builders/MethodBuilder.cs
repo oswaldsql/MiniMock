@@ -3,36 +3,73 @@ namespace MiniMock.Builders;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Util;
 
-internal static class MethodBuilder
+/// <summary>
+///     Represents a builder for methods, implementing the ISymbolBuilder interface.
+/// </summary>
+internal class MethodBuilder : ISymbolBuilder
 {
-    public static void BuildMethods(CodeBuilder builder, IEnumerable<IMethodSymbol> methodSymbols)
+    /// <inheritdoc />
+    public bool TryBuild(CodeBuilder builder, IGrouping<string, ISymbol> symbols)
+    {
+        var first = symbols.First();
+
+        if (first is not IMethodSymbol { MethodKind: MethodKind.Ordinary })
+        {
+            return false;
+        }
+
+        var methodSymbols = symbols.OfType<IMethodSymbol>().Where(t => t.MethodKind == MethodKind.Ordinary);
+        return BuildMethods(builder, methodSymbols);
+    }
+
+    /// <summary>
+    ///     Builds methods from the provided method symbols and adds them to the code builder.
+    /// </summary>
+    /// <param name="builder">The code builder to add the methods to.</param>
+    /// <param name="methodSymbols">The method symbols to build methods from.</param>
+    /// <returns>True if at least one method was built; otherwise, false.</returns>
+    private static bool BuildMethods(CodeBuilder builder, IEnumerable<IMethodSymbol> methodSymbols)
     {
         var enumerable = methodSymbols as IMethodSymbol[] ?? methodSymbols.ToArray();
+
         var name = enumerable.First().Name;
 
-        var helpers = new List<MethodSignature>();
+        var helpers = new List<HelperMethod>();
 
         builder.Add($"#region Method : {name}");
 
-        var methodCount = 0;
+        var methodCount = 1;
         foreach (var symbol in enumerable)
         {
-            methodCount++;
-            Build(builder, symbol, helpers, methodCount);
+            if (Build(builder, symbol, helpers, methodCount))
+            {
+                methodCount++;
+            }
         }
 
-        helpers.BuildHelpers(builder, name);
+        builder.Add(helpers.BuildHelpers(name));
 
         builder.Add("#endregion");
+
+        return methodCount > 1;
     }
 
-    private static void Build(CodeBuilder builder, IMethodSymbol symbol, List<MethodSignature> helpers, int methodCount)
+    /// <summary>
+    ///     Builds a method and adds it to the code builder.
+    /// </summary>
+    /// <param name="builder">The code builder to add the method to.</param>
+    /// <param name="symbol">The method symbol to build the method from.</param>
+    /// <param name="helpers">A list of helper methods to be added.</param>
+    /// <param name="methodCount">The count of methods built so far.</param>
+    /// <returns>True if the method was built; otherwise, false.</returns>
+    private static bool Build(CodeBuilder builder, IMethodSymbol symbol, List<HelperMethod> helpers, int methodCount)
     {
         if (!(symbol.IsAbstract || symbol.IsVirtual))
         {
             builder.Add().Add("// Ignoring " + symbol);
-            return;
+            return false;
         }
 
         if (symbol.ReturnsByRef || symbol.ReturnsByRefReadonly)
@@ -46,8 +83,9 @@ internal static class MethodBuilder
             {
                 throw new StaticAbstractMembersNotSupportedException(symbol.Name, symbol.ContainingType);
             }
+
             builder.Add($"// Ignoring Static method {symbol}.");
-            return;
+            return false;
         }
 
         var (methodParameters, parameterList, typeList, nameList) = symbol.ParameterStrings();
@@ -59,8 +97,8 @@ internal static class MethodBuilder
         var functionPointer = methodCount == 1 ? $"_{methodName}" : "_" + methodName + "_" + methodCount;
 
         var genericString = GenericString(symbol);
-        var delegateType = symbol.IsGenericMethod && !symbol.ReturnsVoid ? "object" : methodReturnType;
-        var castString = symbol.IsGenericMethod && !symbol.ReturnsVoid ? " (" + methodReturnType + ") " : "";
+        var delegateType = symbol is { IsGenericMethod: true, ReturnsVoid: false } ? "object" : methodReturnType;
+        var castString = symbol is { IsGenericMethod: true, ReturnsVoid: false } ? " (" + methodReturnType + ") " : "";
 
         builder.Add($$"""
                       public delegate {{delegateType}} {{functionPointer}}_Delegate({{parameterList}});
@@ -80,61 +118,78 @@ internal static class MethodBuilder
 
                       """);
 
+        helpers.AddRange(AddHelpers(symbol, functionPointer, parameterList, delegateType, typeList, nameList));
+
+        return true;
+    }
+
+    /// <summary>
+    ///     Adds helper methods for the given method symbol.
+    /// </summary>
+    /// <param name="symbol">The method symbol to add helpers for.</param>
+    /// <param name="functionPointer">The function pointer for the method.</param>
+    /// <param name="parameterList">The list of parameters for the method.</param>
+    /// <param name="delegateType">The delegate type for the method.</param>
+    /// <param name="typeList">The list of types for the method parameters.</param>
+    /// <param name="nameList">The list of names for the method parameters.</param>
+    /// <returns>An enumerable of helper methods.</returns>
+    private static IEnumerable<HelperMethod> AddHelpers(IMethodSymbol symbol, string functionPointer, string parameterList, string delegateType, string typeList, string nameList)
+    {
         var seeCref = symbol.ToString();
 
-        helpers.Add(new($"{functionPointer}_Delegate call", $"this.{functionPointer}(call);", Documentation.CallBack, seeCref));
+        yield return new HelperMethod($"{functionPointer}_Delegate call", $"this.{functionPointer}(call);", Documentation.CallBack, seeCref);
 
-        helpers.Add(new("System.Exception throws", $"this.{functionPointer}(({parameterList}) => throw throws);", Documentation.ThrowsException, seeCref));
+        yield return new HelperMethod("System.Exception throws", $"this.{functionPointer}(({parameterList}) => throw throws);", Documentation.ThrowsException, seeCref);
 
         if (symbol.ReturnsVoid)
         {
             if (symbol.Parameters.Length == 0)
             {
-                helpers.Add(new("", $"this.{functionPointer}(() => {{}});", Documentation.AcceptAny, seeCref));
+                yield return new HelperMethod("", $"this.{functionPointer}(() => {{}});", Documentation.AcceptAny, seeCref);
             }
             else if (!HasOutOrRef(symbol))
             {
-                helpers.Add(new("", $"this.{functionPointer}(({parameterList}) => {{}});", Documentation.AcceptAny, seeCref));
+                yield return new HelperMethod("", $"this.{functionPointer}(({parameterList}) => {{}});", Documentation.AcceptAny, seeCref);
             }
         }
 
         if (!HasOutOrRef(symbol) && !symbol.ReturnsVoid)
         {
-            helpers.Add(new($"{delegateType} returns", $"this.{functionPointer}(({parameterList}) => returns);", Documentation.SpecificValue, seeCref));
+            yield return new HelperMethod($"{delegateType} returns", $"this.{functionPointer}(({parameterList}) => returns);", Documentation.SpecificValue, seeCref);
 
             var code = $$"""
-                            var {{functionPointer}}_Values = returnValues.GetEnumerator();
-                            this.{{functionPointer}}(({{parameterList}}) =>
-                            {
-                                if ({{functionPointer}}_Values.MoveNext())
-                                {
-                                    return {{functionPointer}}_Values.Current;
-                                }
+                         var {{functionPointer}}_Values = returnValues.GetEnumerator();
+                         this.{{functionPointer}}(({{parameterList}}) =>
+                         {
+                             if ({{functionPointer}}_Values.MoveNext())
+                             {
+                                 return {{functionPointer}}_Values.Current;
+                             }
 
-                                {{symbol.BuildNotMockedException()}}
-                                });
-                            """;
-            helpers.Add(new($"System.Collections.Generic.IEnumerable<{delegateType}> returnValues", code, Documentation.SpecificValueList, seeCref));
+                             {{symbol.BuildNotMockedException()}}
+                             });
+                         """;
+            yield return new HelperMethod($"System.Collections.Generic.IEnumerable<{delegateType}> returnValues", code, Documentation.SpecificValueList, seeCref);
         }
 
         if (symbol.IsReturningTask())
         {
             if (symbol.HasParameters())
             {
-                helpers.Add(new($"System.Action<{typeList}> call", $$"""this.{{functionPointer}}(({{parameterList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""", Documentation.CallBack, seeCref));
+                yield return new HelperMethod($"System.Action<{typeList}> call", $$"""this.{{functionPointer}}(({{parameterList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""", Documentation.CallBack, seeCref);
             }
             else
             {
-                helpers.Add(new("System.Action call", $$"""this.{{functionPointer}}(({{nameList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""", Documentation.CallBack, seeCref));
+                yield return new HelperMethod("System.Action call", $$"""this.{{functionPointer}}(({{nameList}}) => {call({{nameList}});return System.Threading.Tasks.Task.CompletedTask;});""", Documentation.CallBack, seeCref);
             }
 
-            helpers.Add(new("", $$"""this.{{functionPointer}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""", Documentation.AcceptAny, seeCref));
+            yield return new HelperMethod("", $$"""this.{{functionPointer}}(({{nameList}}) => {return System.Threading.Tasks.Task.CompletedTask;});""", Documentation.AcceptAny, seeCref);
         }
 
         if (symbol.IsReturningGenericTask())
         {
             var genericType = ((INamedTypeSymbol)symbol.ReturnType).TypeArguments.First();
-            helpers.Add(new($"{genericType} returns", $"this.{functionPointer}(({parameterList}) => System.Threading.Tasks.Task.FromResult(returns));", Documentation.GenericTaskObject, seeCref));
+            yield return new HelperMethod($"{genericType} returns", $"this.{functionPointer}(({parameterList}) => System.Threading.Tasks.Task.FromResult(returns));", Documentation.GenericTaskObject, seeCref);
 
             var code = $$"""
                          var {{functionPointer}}_Values = returnValues.GetEnumerator();
@@ -148,21 +203,21 @@ internal static class MethodBuilder
                              {{symbol.BuildNotMockedException()}}
                              });
                          """;
-            helpers.Add(new($"System.Collections.Generic.IEnumerable<{genericType}> returnValues", code, Documentation.SpecificValueList, seeCref));
+            yield return new HelperMethod($"System.Collections.Generic.IEnumerable<{genericType}> returnValues", code, Documentation.SpecificValueList, seeCref);
 
             if (symbol.HasParameters())
             {
-                helpers.Add(new($"System.Func<{typeList},{genericType}> call", $"this.{functionPointer}(({nameList}) => System.Threading.Tasks.Task.FromResult(call({nameList})));", Documentation.GenericTaskFunction, seeCref));
+                yield return new HelperMethod($"System.Func<{typeList},{genericType}> call", $"this.{functionPointer}(({nameList}) => System.Threading.Tasks.Task.FromResult(call({nameList})));", Documentation.GenericTaskFunction, seeCref);
             }
             else
             {
-                helpers.Add(new($"System.Func<{genericType}> call", $"this.{functionPointer}(({nameList}) => System.Threading.Tasks.Task.FromResult(call({nameList})));", Documentation.GenericTaskFunction, seeCref));
+                yield return new HelperMethod($"System.Func<{genericType}> call", $"this.{functionPointer}(({nameList}) => System.Threading.Tasks.Task.FromResult(call({nameList})));", Documentation.GenericTaskFunction, seeCref);
             }
         }
     }
 
     private static bool HasOutOrRef(IMethodSymbol method) =>
-        method.Parameters.Any(p => p.RefKind == RefKind.Out || p.RefKind == RefKind.Ref);
+        method.Parameters.Any(p => p.RefKind is RefKind.Out or RefKind.Ref);
 
     private static (string methodName, string methodReturnType, string returnString) MethodName(
         IMethodSymbol method)

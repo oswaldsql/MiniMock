@@ -1,22 +1,11 @@
-﻿namespace MiniMock.UnitTests;
+﻿// ReSharper disable ArrangeTypeMemberModifiers
+
+namespace MiniMock.UnitTests;
 
 using Microsoft.CodeAnalysis;
 
 public class StaticInterfaceMembersTest(ITestOutputHelper testOutputHelper)
 {
-    internal interface ISupportedStaticInterfaceMembers
-    {
-        static ISupportedStaticInterfaceMembers() => StaticProperty = 10;
-
-        internal static int StaticProperty { get; set; }
-        internal static string StaticMethod() => "value";
-
-        internal static event EventHandler? StaticEvent;
-        internal static void DoStaticEvent() => StaticEvent?.Invoke(null, EventArgs.Empty);
-
-        internal static virtual string Bar => "value"; // with implementation    }
-    }
-
     [Fact]
     public void SomeStaticMembersAreSupported()
     {
@@ -29,14 +18,6 @@ public class StaticInterfaceMembersTest(ITestOutputHelper testOutputHelper)
         // Assert
         testOutputHelper.DumpResult(generate);
         Assert.Empty(generate.GetErrors());
-    }
-
-    internal interface IStaticAbstractInterfaceMembers
-    {
-        static abstract string AbstractProperty { get; set; }
-        static abstract string AbstractMethod();
-        static abstract event EventHandler StaticEvent;
-        static string AbstractMethod1() => "value";
     }
 
     [Fact]
@@ -53,6 +34,27 @@ public class StaticInterfaceMembersTest(ITestOutputHelper testOutputHelper)
         Assert.Single(generate.diagnostics, t => t.Id == "CS8920");
         var actualAbstractPropertyError = Assert.Single(generate.diagnostics, t => t.Id == "MM0005");
         Assert.Equal(DiagnosticSeverity.Error, actualAbstractPropertyError.Severity);
-        Assert.Equal("Static abstract members in interfaces or classes is not supported for 'AbstractMethod' in 'IStaticAbstractInterfaceMembers'",actualAbstractPropertyError.GetMessage());
+        Assert.Equal("Static abstract members in interfaces or classes is not supported for 'AbstractMethod' in 'IStaticAbstractInterfaceMembers'", actualAbstractPropertyError.GetMessage());
+    }
+
+    internal interface ISupportedStaticInterfaceMembers
+    {
+        static ISupportedStaticInterfaceMembers() => StaticProperty = 10;
+
+        internal static int StaticProperty { get; set; }
+
+        internal static virtual string Bar => "value"; // with implementation
+        internal static string StaticMethod() => "value";
+
+        internal static event EventHandler? StaticEvent;
+        internal static void DoStaticEvent() => StaticEvent?.Invoke(null, EventArgs.Empty);
+    }
+
+    internal interface IStaticAbstractInterfaceMembers
+    {
+        static abstract string AbstractProperty { get; set; }
+        static abstract string AbstractMethod();
+        static abstract event EventHandler StaticEvent;
+        static string AbstractMethod1() => "value";
     }
 }

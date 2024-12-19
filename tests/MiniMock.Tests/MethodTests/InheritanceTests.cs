@@ -1,31 +1,10 @@
 // ReSharper disable ArrangeTypeMemberModifiers
 // ReSharper disable MemberCanBePrivate.Global
+
 namespace MiniMock.Tests.MethodTests;
 
 public class InheritanceTests
 {
-    public interface IBase
-    {
-        bool ReturnBool();
-        void Method2();
-        bool Method3(string name);
-        bool Method4(out string name);
-        void Method5(string name);
-        string Method6() => "base";
-        bool Method7(ref string name);
-    }
-
-    public interface IDerived : IBase
-    {
-        new bool ReturnBool();
-        new void Method2();
-        new bool Method3(string name);
-        new bool Method4(out string name);
-        new void Method5(string name);
-        new string Method6() => "Derived ";
-        new bool Method7(ref string name);
-    }
-
     [Fact]
     [Mock<IDerived>]
     public void FactMethodName()
@@ -47,5 +26,27 @@ public class InheritanceTests
         Assert.Equal((string?)"Mocked", (string?)sut.Method6());
         Assert.Equal((string?)"Mocked", (string?)sut.Method6());
         Assert.Equal("Mocked", ((IBase)sut).Method6());
+    }
+
+    public interface IBase
+    {
+        bool ReturnBool();
+        void Method2();
+        bool Method3(string name);
+        bool Method4(out string name);
+        void Method5(string name);
+        string Method6() => "base";
+        bool Method7(ref string name);
+    }
+
+    public interface IDerived : IBase
+    {
+        new bool ReturnBool();
+        new void Method2();
+        new bool Method3(string name);
+        new bool Method4(out string name);
+        new void Method5(string name);
+        new string Method6() => "Derived ";
+        new bool Method7(ref string name);
     }
 }
