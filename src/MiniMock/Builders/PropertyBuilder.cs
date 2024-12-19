@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 using Util;
 
 /// <summary>
-/// Represents a builder for properties, implementing the ISymbolBuilder interface.
+///     Represents a builder for properties, implementing the ISymbolBuilder interface.
 /// </summary>
 internal class PropertyBuilder : ISymbolBuilder
 {
@@ -39,6 +39,12 @@ internal class PropertyBuilder : ISymbolBuilder
         return BuildProperties(builder, propertySymbols);
     }
 
+    /// <summary>
+    ///     Builds properties and adds them to the code builder.
+    /// </summary>
+    /// <param name="builder">The code builder to add the properties to.</param>
+    /// <param name="symbols">An array of property symbols representing the properties.</param>
+    /// <returns>True if at least one property was built; otherwise, false.</returns>
     private static bool BuildProperties(CodeBuilder builder, IPropertySymbol[] symbols)
     {
         var name = symbols.First().Name;
@@ -71,6 +77,13 @@ internal class PropertyBuilder : ISymbolBuilder
         return index > 0;
     }
 
+    /// <summary>
+    ///     Builds a property and adds it to the code builder.
+    /// </summary>
+    /// <param name="builder">The code builder to add the property to.</param>
+    /// <param name="symbol">The property symbol representing the property.</param>
+    /// <param name="helpers">A list of helper methods for the property.</param>
+    /// <param name="index">The index of the property.</param>
     private static void BuildProperty(CodeBuilder builder, IPropertySymbol symbol, List<HelperMethod> helpers, int index)
     {
         if (symbol.ReturnsByRef || symbol.ReturnsByRefReadonly)
@@ -108,7 +121,7 @@ internal class PropertyBuilder : ISymbolBuilder
     }
 
     /// <summary>
-    /// Builds helper methods for the property.
+    ///     Builds helper methods for the property.
     /// </summary>
     /// <param name="symbol">The property symbol representing the property.</param>
     /// <param name="type">The type of the property.</param>

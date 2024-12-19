@@ -21,10 +21,16 @@ internal class MethodBuilder : ISymbolBuilder
         }
 
         var methodSymbols = symbols.OfType<IMethodSymbol>().Where(t => t.MethodKind == MethodKind.Ordinary);
-        return this.BuildMethods(builder, methodSymbols);
+        return BuildMethods(builder, methodSymbols);
     }
 
-    private bool BuildMethods(CodeBuilder builder, IEnumerable<IMethodSymbol> methodSymbols)
+    /// <summary>
+    ///     Builds methods from the provided method symbols and adds them to the code builder.
+    /// </summary>
+    /// <param name="builder">The code builder to add the methods to.</param>
+    /// <param name="methodSymbols">The method symbols to build methods from.</param>
+    /// <returns>True if at least one method was built; otherwise, false.</returns>
+    private static bool BuildMethods(CodeBuilder builder, IEnumerable<IMethodSymbol> methodSymbols)
     {
         var enumerable = methodSymbols as IMethodSymbol[] ?? methodSymbols.ToArray();
 
@@ -50,6 +56,14 @@ internal class MethodBuilder : ISymbolBuilder
         return methodCount > 1;
     }
 
+    /// <summary>
+    ///     Builds a method and adds it to the code builder.
+    /// </summary>
+    /// <param name="builder">The code builder to add the method to.</param>
+    /// <param name="symbol">The method symbol to build the method from.</param>
+    /// <param name="helpers">A list of helper methods to be added.</param>
+    /// <param name="methodCount">The count of methods built so far.</param>
+    /// <returns>True if the method was built; otherwise, false.</returns>
     private static bool Build(CodeBuilder builder, IMethodSymbol symbol, List<HelperMethod> helpers, int methodCount)
     {
         if (!(symbol.IsAbstract || symbol.IsVirtual))
@@ -109,6 +123,16 @@ internal class MethodBuilder : ISymbolBuilder
         return true;
     }
 
+    /// <summary>
+    ///     Adds helper methods for the given method symbol.
+    /// </summary>
+    /// <param name="symbol">The method symbol to add helpers for.</param>
+    /// <param name="functionPointer">The function pointer for the method.</param>
+    /// <param name="parameterList">The list of parameters for the method.</param>
+    /// <param name="delegateType">The delegate type for the method.</param>
+    /// <param name="typeList">The list of types for the method parameters.</param>
+    /// <param name="nameList">The list of names for the method parameters.</param>
+    /// <returns>An enumerable of helper methods.</returns>
     private static IEnumerable<HelperMethod> AddHelpers(IMethodSymbol symbol, string functionPointer, string parameterList, string delegateType, string typeList, string nameList)
     {
         var seeCref = symbol.ToString();

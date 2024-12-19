@@ -104,6 +104,13 @@ internal class EventBuilder : ISymbolBuilder
         return true;
     }
 
+    /// <summary>
+    ///     Builds helper methods for the given event symbol.
+    /// </summary>
+    /// <param name="symbol">The event symbol to build helpers for.</param>
+    /// <param name="types">The types of the event parameters.</param>
+    /// <param name="eventFunction">The name of the event function.</param>
+    /// <returns>An enumerable of helper methods.</returns>
     private static IEnumerable<HelperMethod> BuildHelpers(IEventSymbol symbol, string types, string eventFunction)
     {
         var seeCref = symbol.ToString();

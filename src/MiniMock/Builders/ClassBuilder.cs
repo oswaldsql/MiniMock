@@ -1,20 +1,39 @@
-namespace MiniMock.Builders;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Util;
+using MiniMock;
+using MiniMock.Builders;
+using MiniMock.Util;
 
+/// <summary>
+/// ClassBuilder is responsible for generating mock classes for a given target symbol.
+/// </summary>
+/// <param name="target">The target symbol to build the mock class for.</param>
 internal class ClassBuilder(ISymbol target)
 {
+    /// <summary>
+    /// Array of builders for different member types.
+    /// </summary>
     private static readonly ISymbolBuilder[] Builders = [new ConstructorBuilder(), new EventBuilder(), new MethodBuilder(), new PropertyBuilder(), new IndexBuilder()];
 
+    /// <summary>
+    /// Filter to determine if a member's accessibility is public or protected.
+    /// </summary>
     private readonly Func<Accessibility, bool> accessibilityFilter = accessibility => accessibility == Accessibility.Public || accessibility == Accessibility.Protected;
 
+    /// <summary>
+    /// Builds a mock class for the given symbol.
+    /// </summary>
+    /// <param name="symbol">The symbol to build the mock class for.</param>
+    /// <returns>The generated mock class as a string.</returns>
     public static string Build(ISymbol symbol) =>
         new ClassBuilder(symbol).BuildClass();
 
+    /// <summary>
+    /// Generates the mock class code.
+    /// </summary>
+    /// <returns>The generated mock class as a string.</returns>
     private string BuildClass()
     {
         if (target.IsSealed && target is INamedTypeSymbol symbol)
@@ -57,10 +76,17 @@ internal class ClassBuilder(ISymbol target)
                       private Config _config { get; }
                       internal void GetConfig(out Config config) => config = _config;
 
+                      /// <summary>
+                      /// Configuration class for the mock.
+                      /// </summary>
                       internal partial class Config
                       {
                           private readonly {{name}} target;
 
+                          /// <summary>
+                          /// Initializes a new instance of the <see cref="Config"/> class.
+                          /// </summary>
+                          /// <param name="target">The target mock class.</param>
                           public Config({{name}} target)
                           {
                               this.target = target;
@@ -85,6 +111,10 @@ internal class ClassBuilder(ISymbol target)
         return builder.ToString();
     }
 
+    /// <summary>
+    /// Builds the members of the mock class.
+    /// </summary>
+    /// <param name="builder">The code builder to add the members to.</param>
     private void BuildMembers(CodeBuilder builder)
     {
         var memberCandidates = new List<ISymbol>(((INamedTypeSymbol)target).GetMembers().Where(t => this.accessibilityFilter(t.DeclaredAccessibility)));
@@ -107,6 +137,11 @@ internal class ClassBuilder(ISymbol target)
         }
     }
 
+    /// <summary>
+    /// Adds inherited interfaces to the member candidates list.
+    /// </summary>
+    /// <param name="memberCandidates">The list of member candidates.</param>
+    /// <param name="namedTypeSymbol">The named type symbol to add inherited interfaces from.</param>
     private void AddInheritedInterfaces(List<ISymbol> memberCandidates, INamedTypeSymbol namedTypeSymbol)
     {
         var allInterfaces = namedTypeSymbol.AllInterfaces;

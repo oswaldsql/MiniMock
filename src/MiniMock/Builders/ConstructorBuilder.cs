@@ -5,8 +5,17 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Util;
 
+/// <summary>
+/// Represents a builder for constructing mock constructors.
+/// </summary>
 internal class ConstructorBuilder : ISymbolBuilder
 {
+    /// <summary>
+    /// Tries to build constructors for the given symbols.
+    /// </summary>
+    /// <param name="builder">The code builder to add the constructors to.</param>
+    /// <param name="symbols">The symbols to build constructors for.</param>
+    /// <returns>True if constructors were built; otherwise, false.</returns>
     public bool TryBuild(CodeBuilder builder, IGrouping<string, ISymbol> symbols)
     {
         var first = symbols.First();
@@ -18,6 +27,13 @@ internal class ConstructorBuilder : ISymbolBuilder
         return false;
     }
 
+    /// <summary>
+    /// Builds constructors for the specified target and adds them to the code builder.
+    /// </summary>
+    /// <param name="builder">The code builder to add the constructors to.</param>
+    /// <param name="target">The target symbol for which to build constructors.</param>
+    /// <param name="constructors">The constructors to build.</param>
+    /// <returns>True if constructors were built; otherwise, false.</returns>
     private static bool BuildConstructors(CodeBuilder builder, ISymbol target, IEnumerable<IMethodSymbol> constructors)
     {
         var fullName = target.ToString();
@@ -56,6 +72,11 @@ internal class ConstructorBuilder : ISymbolBuilder
         return true;
     }
 
+    /// <summary>
+    /// Builds an empty constructor for the specified target.
+    /// </summary>
+    /// <param name="target">The target symbol for which to build an empty constructor.</param>
+    /// <returns>A code builder containing the empty constructor.</returns>
     public static CodeBuilder BuildEmptyConstructor(ISymbol target)
     {
         var fullName = target.ToString();
