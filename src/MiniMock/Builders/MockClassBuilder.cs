@@ -2,12 +2,21 @@ namespace MiniMock.Builders;
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Util;
 
+/// <summary>
+/// Provides methods to build mock classes.
+/// </summary>
 public static class MockClassBuilder
 {
+    /// <summary>
+    /// Builds the mock classes based on the provided type symbols.
+    /// </summary>
+    /// <param name="typeSymbols">The type symbols to generate mocks for.</param>
+    /// <param name="context">The source production context.</param>
+    /// <returns>A string containing the generated mock classes.</returns>
     public static string Build(IEnumerable<ISymbol> typeSymbols, SourceProductionContext context)
     {
         var mocks = typeSymbols.OfType<INamedTypeSymbol>().OrderBy(t => t.Name).ToArray();
@@ -24,7 +33,12 @@ public static class MockClassBuilder
                       #nullable enable
                       namespace MiniMock {
                       ->
+                      """);
 
+        /// <summary>
+        /// Factory for creating mock objects.
+        /// </summary>
+        builder.Add($$"""
                       /// <summary>
                       /// Factory for creating mock objects.
                       /// </summary>
@@ -34,18 +48,13 @@ public static class MockClassBuilder
 
         foreach (var symbol in mocks)
         {
-            bool AccessibilityFilter(Accessibility accessibility)
-            {
-                return accessibility is Accessibility.Public or Accessibility.Protected;
-            }
-
             if (!symbol.Constructors.Any(t => !t.IsStatic))
             {
                 BuildFactoryMethod(symbol, builder);
             }
             else
             {
-                foreach (var constructor in symbol.Constructors.Where(t => AccessibilityFilter(t.DeclaredAccessibility) && !t.IsStatic))
+                foreach (var constructor in symbol.Constructors.Where(Include))
                 {
                     BuildFactoryMethod(symbol, builder, constructor);
                 }
@@ -62,66 +71,127 @@ public static class MockClassBuilder
         return builder.ToString();
     }
 
+    /// <summary>
+    /// Determines whether the specified method symbol should be included.
+    /// </summary>
+    /// <param name="methodSymbol">The method symbol to check.</param>
+    /// <returns><c>true</c> if the method symbol should be included; otherwise, <c>false</c>.</returns>
+    private static bool Include(IMethodSymbol methodSymbol)
+        => methodSymbol.DeclaredAccessibility is Accessibility.Public or Accessibility.Protected && !methodSymbol.IsStatic;
+
+    /// <summary>
+    /// Builds the factory method for the specified symbol.
+    /// </summary>
+    /// <param name="symbol">The symbol to build the factory method for.</param>
+    /// <param name="builder">The code builder.</param>
+    /// <param name="constructor">The constructor symbol, if any.</param>
     private static void BuildFactoryMethod(INamedTypeSymbol symbol, CodeBuilder builder, IMethodSymbol? constructor = null)
     {
-        var p = constructor?.Parameters.Select(t => $"{t.Type} {t.Name}, ") ?? ImmutableArray<string>.Empty;
-        var parameters = string.Join("", p);
+        if (symbol.TypeArguments.Length > 0)
+        {
+            BuildGenericFactoryMethod(symbol, builder, constructor);
+        }
+        else
+        {
+            BuildNonGenericFactoryMethod(symbol, builder, constructor);
+        }
+    }
 
-        var n = constructor?.Parameters.Select(t => $"{t.Name}, ") ?? ImmutableArray<string>.Empty;
-        var names = string.Join("", n);
+    /// <summary>
+    /// Builds a non-generic factory method for the specified symbol.
+    /// </summary>
+    /// <param name="symbol">The symbol to build the factory method for.</param>
+    /// <param name="builder">The code builder.</param>
+    /// <param name="constructor">The constructor symbol, if any.</param>
+    private static void BuildNonGenericFactoryMethod(INamedTypeSymbol symbol, CodeBuilder builder, IMethodSymbol? constructor)
+    {
+        var constructorParameters = constructor?.Parameters ?? [];
 
-        //var doc = constructor?.GetDocumentationCommentXml() ?? "/// DOC";
-        //builder.Add(doc);
+        var parameters = constructorParameters.ToString(t => $"{t.Type} {t.Name}, ", "");
+        var names = constructorParameters.ToString(t => $"{t.Name}, ", "");
+        var doc = constructorParameters.ToString(t => $"///     <param name=\"{t.Name}\">Base constructor parameter {t.Name}.</param>\n", "");
 
-        var typeArguments = symbol.TypeArguments;
+        var containingNamespace = symbol.ContainingNamespace;
+        var symbolName = symbol.Name;
+
+        var name = "MockOf_" + symbolName;
+
+        var cref = symbol.ToString().Replace('<', '{').Replace('>', '}');
+
+        builder.Add(
+            $$"""
+              /// <summary>
+              ///     Creates a mock object for <see cref="{{cref}}"/>.
+              /// </summary>
+              {{doc}}///     <param name="config">Optional configuration for the mock object.</param>
+              /// <returns>The mock object for <see cref="{{cref}}"/>.</returns>
+              internal static {{symbol}} {{symbolName}}
+                  ({{parameters}}System.Action<{{containingNamespace}}.{{name}}.Config>? config = null)
+                  => {{containingNamespace}}.{{name}}.Create({{names}}config);
+
+              /// <summary>
+              ///     Creates a mock object for <see cref="{{cref}}"/>.
+              /// </summary>
+              {{doc}}///     <param name="config">Outputs configuration for the mock object.</param>
+              /// <returns>The mock object for <see cref="{{cref}}"/>.</returns>
+              internal static {{symbol}} {{symbolName}}
+                  ({{parameters}}out {{containingNamespace}}.{{name}}.Config config{{symbolName}})
+                  {
+                     var result = new {{containingNamespace}}.{{name}}({{names}}_ => {});
+                     result.GetConfig(out config{{symbolName}});
+                     return result;
+                  }
+              """);
+    }
+
+    /// <summary>
+    /// Builds a generic factory method for the specified symbol.
+    /// </summary>
+    /// <param name="symbol">The symbol to build the factory method for.</param>
+    /// <param name="builder">The code builder.</param>
+    /// <param name="constructor">The constructor symbol, if any.</param>
+    private static void BuildGenericFactoryMethod(INamedTypeSymbol symbol, CodeBuilder builder, IMethodSymbol? constructor = null)
+    {
+        var constructorParameters = constructor?.Parameters ?? [];
+
+        var parameters = constructorParameters.ToString(t => $"{t.Type} {t.Name}, ", "");
+        var names = constructorParameters.ToString(t => $"{t.Name}, ", "");
+        var doc = constructorParameters.ToString(t => $"///     <param name=\"{t.Name}\">Base constructor parameter {t.Name}.</param>\n", "");
+
         var containingNamespace = symbol.ContainingNamespace;
         var symbolName = symbol.Name;
 
         var cref = symbol.ToString().Replace('<', '{').Replace('>', '}');
 
-        builder.Add(
-            $"""
-
-             /// <summary>
-             ///     Creates a mock object for <see cref="{cref}"/>.
-             /// </summary>
-             """);
-
-        if (constructor != null)
-        {
-            foreach (var o in constructor.Parameters)
-            {
-                builder.Add($"///     <param name=\"{o.Name}\">Base constructor parameter {o.Name}.</param>");
-            }
-        }
+        var types = symbol.TypeArguments.ToString(t => t.Name);
+        var name = $"MockOf_{symbolName}<{types}>";
+        var constraints = symbol.TypeArguments.ToConstraints();
 
         builder.Add(
-            $"""
-             ///     <param name="config">Optional configuration for the mock object.</param>
-             /// <returns>The mock object for <see cref="{cref}"/>.</returns>
-             """);
+            $$"""
+              /// <summary>
+              ///     Creates a mock object for <see cref="{{cref}}"/>.
+              /// </summary>
+              {{doc}}///     <param name="config">Optional configuration for the mock object.</param>
+              /// <returns>The mock object for <see cref="{{cref}}"/>.</returns>
+              internal static {{symbol}} {{symbolName}}<{{types}}>
+                  ({{parameters}}System.Action<{{containingNamespace}}.{{name}}.Config>? config = null)
+                      {{constraints}}
+                  => {{containingNamespace}}.{{name}}.Create({{names}}config);
 
-        if (typeArguments.Length > 0)
-        {
-            var types = string.Join(", ", typeArguments.Select(t => t.Name));
-            var name = $"MockOf_{symbolName}<{types}>";
-            var constraints = typeArguments.ToConstraints();
-
-            builder.Add($"""
-                         internal static {symbol} {symbolName}<{types}>
-                             ({parameters}System.Action<{containingNamespace}.{name}.Config>? config = null)
-                                 {constraints}
-                             => {containingNamespace}.{name}.Create({names}config);
-                         """);
-        }
-        else
-        {
-            var name = "MockOf_" + symbolName;
-            builder.Add($"""
-                         internal static {symbol} {symbolName}
-                             ({parameters}System.Action<{containingNamespace}.{name}.Config>? config = null)
-                             => {containingNamespace}.{name}.Create({names}config);
-                         """);
-        }
+              /// <summary>
+              ///     Creates a mock object for <see cref="{{cref}}"/>.
+              /// </summary>
+              {{doc}}///     <param name="config">Outputs configuration for the mock object.</param>
+              /// <returns>The mock object for <see cref="{{cref}}"/>.</returns>
+              internal static {{symbol}} {{symbolName}}<{{types}}>
+                  ({{parameters}}out {{containingNamespace}}.{{name}}.Config config)
+                  {{constraints}}
+                  {
+                     var result = new {{containingNamespace}}.{{name}}({{names}}_ => {});
+                     result.GetConfig(out config);
+                     return result;
+                  }
+              """);
     }
 }

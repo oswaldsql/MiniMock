@@ -1,3 +1,3 @@
 using MiniMock;
 
-[assembly:Mock(MockFactoryName = "Mock")]
+[assembly: Mock(MockFactoryName = "Mock")]

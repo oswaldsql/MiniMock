@@ -1,6 +1,6 @@
 # MiniMock
 
-Mini mock offers a _minimalistic_ approach to mocking in .Net. It is designed to be simple to use and easy to understand. 
+Mini mock offers a _minimalistic_ approach to mocking in .Net. It is designed to be simple to use and easy to understand.
 It is not as feature rich as other mocking frameworks, but aims to solve __95%__ of the use cases. For the remaining __5%__ you should consider creating a custom mock.
 
 Mini mock is __extremely strict__ requiring you to specify all features you want to mock. This is by design to make sure you are aware of what you are mocking.
@@ -64,7 +64,7 @@ public void MyTest {
 }
 ```
 
-Create a mock by using the mock factory 
+Create a mock by using the mock factory
 
 ```csharp
 var mockRepository = Mock.IMyRepository();
@@ -207,7 +207,7 @@ Mocking indexers is supported either by overloading the get and set methods or b
     }
 ```
 
-### Raising events 
+### Raising events
 
 Raise events using an event trigger.
 
@@ -223,7 +223,7 @@ Raise events using an event trigger.
 
 ### Argument matching
 
-MiniMock does not support argument matching using matchers like other mocking frameworks. 
+MiniMock does not support argument matching using matchers like other mocking frameworks.
 Instead, you can use the call parameter to match arguments using predicates or internal functions.
 
 ```csharp
@@ -231,7 +231,7 @@ Instead, you can use the call parameter to match arguments using predicates or i
             .DownloadExists(call: version => version is { Major: 2, Minor: 0 }) // Returns true for version 2.0.x based on a version parameter
         );
 ```
-        
+
 __using internal functions__
 
 ```csharp

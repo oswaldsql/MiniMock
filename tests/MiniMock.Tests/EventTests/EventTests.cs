@@ -1,5 +1,6 @@
 ﻿// ReSharper disable ArrangeTypeMemberModifiers
 // ReSharper disable MemberCanBePrivate.Global
+
 namespace MiniMock.Tests.EventTests;
 
 public class EventTests

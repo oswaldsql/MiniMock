@@ -20,7 +20,7 @@ public static class TestGenerator
 
         var syntaxTree =
             sourceCode.Select((t, index) =>
-                CSharpSyntaxTree.ParseText(t, path: $"source{index}.Input.cs", options: new(Language)));
+                CSharpSyntaxTree.ParseText(t, path: $"source{index}.Input.cs", options: new CSharpParseOptions(Language)));
 
         var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
 
