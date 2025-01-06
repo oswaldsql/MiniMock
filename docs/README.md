@@ -32,8 +32,8 @@ MiniMock offers a _minimalistic_ approach to mocking in .NET with a focus on sim
 
 Try it out or continue with [Getting started](guide/getting-started.md) to learn more or read the [Mocking guidelines](guide/mocking-guidelines.md) to get a better understanding of when, why and how to mock and when not to.
 
-For more details on specific aspects you can read about [Methods](guide/methods.md), [Properties](guide/properties.md), [Events](guide/events.md) or 
-[Indexers](guide/indexers.md). 
+For more details on specific aspects you can read about [Construction](guide/construction.md) [Methods](guide/methods.md), [Properties](guide/properties.md), [Events](guide/events.md) or 
+[Indexers](guide/indexers.md).
 Or you shift into high gear with [Advanced Features](advanced-features.md), [FaQ](faq.md) or [Troubleshooting](troubleshooting.md).
 
-If you are more into the ins and outs of MiniMock you can read the [Motivation](motivation.md) behind MiniMock or the [ADRs](../ADR/README.md).
+If you are more into the ins and outs of MiniMock you can read the [Motivation](motivation.md) behind MiniMock or the [ADRs](ADR/README.md).

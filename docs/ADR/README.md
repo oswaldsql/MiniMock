@@ -24,7 +24,7 @@ All the ADRs have been approved and are considered final decisions for the proje
 - [Support for Events](feature/SupportForEvents.md) - Decision on supporting events in the mocking framework.
 - [Support for Indexers](feature/SupportForIndexers.md) - Decision on supporting indexers in the mocking framework.
 - Special cases
-  - [Allowing Skipping Arguments in Mock Setup](general/SupportSkippingArguments.md) - Allows skipping arguments in mock setups for flexibility.
+  - [Allowing Skipping Arguments in Mock Setup](feature/SupportSkippingArguments.md) - Allows skipping arguments in mock setups for flexibility.
   - [Support for Protected Methods](feature/SupportingProtectedMethods.md) - Decision on whether to support mocking protected methods.
   - [Support for Generic Methods (WIP)](feature/SupportForGenericMethods.md) - Decision on supporting generic methods in the mocking framework.
   - [Support for Asynchronous Methods (WIP)](feature/SupportForAsynchronousMethods.md) - Handling asynchronous methods in the mocking framework.

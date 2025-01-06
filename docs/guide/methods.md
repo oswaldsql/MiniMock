@@ -1,13 +1,35 @@
 ﻿# Methods
 
-Start by creating a mock of the interface or class you want to mock.
+__TL;DR__
 
 ```csharp
-var mockVersionLibrary = Mock.IVersionLibrary(config => config.
-    [Your mock setup here]
+public interface IVersionLibrary
+{
+        bool DownloadExists(string version);
+        bool DownloadExists(Version version);
+        Task<Uri> DownloadLinkAsync(string version);
+ }
+
+var versionLibrary = Mock.IVersionLibrary(config => config
+        .DownloadExists(returns: true) // Returns true for all versions
+        .DownloadExists(throws: new IndexOutOfRangeException()) // Throws IndexOutOfRangeException for all versions
+        .DownloadExists(call: s => s.StartsWith(value: "2.0.0")) // Returns true for version 2.0.0.x base on a string parameter
+        .DownloadExists(call: v => v is { Major: 2, Minor: 0, Revision: 0 }) // Returns true for version 2.0.0.x based on a version parameter
+        .DownloadExists(returnValues: [true, true, false]) // Returns true two times, then false
+
+        .DownloadLinkAsync(returns: Task.FromResult(result: new Uri(uriString: "http://downloads/2.0.0"))) // Returns a task containing a download link for all versions
+        .DownloadLinkAsync(call: s => Task.FromResult(result: s.StartsWith(value: "2.0.0") ? new Uri(uriString: "http://downloads/2.0.0") : new Uri(uriString: "http://downloads/UnknownVersion"))) // Returns a task containing a download link for version 2.0.0.x otherwise a error link
+        .DownloadLinkAsync(throws: new TaskCanceledException()) // Throws IndexOutOfRangeException for all parameters
+        .DownloadLinkAsync(returns: new Uri(uriString: "http://downloads/2.0.0")) // Returns a task containing a download link for all versions
+        .DownloadLinkAsync(call: s => s.StartsWith(value: "2.0.0") ? new Uri(uriString: "http://downloads/2.0.0") : new Uri(uriString: "http://downloads/UnknownVersion")) // Returns a task containing a download link for version 2.0.0.x otherwise a error link
+        .DownloadLinkAsync(returnValues: [Task.FromResult(result: new Uri(uriString: "http://downloads/1.0.0")), Task.FromResult(result: new Uri(uriString: "http://downloads/1.1.0")), Task.FromResult(result: new Uri(uriString: "http://downloads/2.0.0"))]) // Returns a task with a download link
+        .DownloadLinkAsync(returnValues: [new Uri(uriString: "http://downloads/2.0.0"), new Uri(uriString: "http://downloads/2.0.0"), new Uri(uriString: "http://downloads/2.0.0")]) // Returns a task with a download link
 );
+
+// Inject into system under test
 ```
-Please note
+
+__Please note__
 
 - Multiple specifications for a method will overwrite each other with the last one taking precedence.
 - Parameter-names can be omitted but makes the code more readable.
