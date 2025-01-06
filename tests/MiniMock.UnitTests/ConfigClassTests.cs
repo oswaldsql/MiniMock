@@ -16,10 +16,6 @@ namespace MiniMock.UnitTests;
  */
 public class ConfigClassTests(ITestOutputHelper testOutputHelper)
 {
-    internal interface IEmptyInterface
-    {
-    }
-
     [Fact]
     public void EmptyInterfaceTests()
     {
@@ -32,10 +28,6 @@ public class ConfigClassTests(ITestOutputHelper testOutputHelper)
         Assert.Empty(generate.GetErrors());
     }
 
-    internal class EmptyClass
-    {
-    }
-
     [Fact]
     public void EmptyClassTests()
     {
@@ -46,10 +38,6 @@ public class ConfigClassTests(ITestOutputHelper testOutputHelper)
         testOutputHelper.DumpResult(generate);
 
         Assert.Empty(generate.GetErrors());
-    }
-
-    internal sealed class SealedClass
-    {
     }
 
     [Fact]
@@ -65,19 +53,31 @@ public class ConfigClassTests(ITestOutputHelper testOutputHelper)
         Assert.Contains(generate.GetErrors(), t => t.Id == "MM0006"); // Inheritance of sealed class is not allowed
     }
 
-    internal abstract class AbstractClass
-    {
-    }
-
     [Fact]
     public void AbstractClassTests()
     {
         var source = Build.TestClass<AbstractClass>();
 
-        var generate= new MiniMockGenerator().Generate(source);
+        var generate = new MiniMockGenerator().Generate(source);
 
         testOutputHelper.DumpResult(generate);
 
         Assert.Empty(generate.GetErrors());
+    }
+
+    internal interface IEmptyInterface
+    {
+    }
+
+    internal class EmptyClass
+    {
+    }
+
+    internal sealed class SealedClass
+    {
+    }
+
+    internal abstract class AbstractClass
+    {
     }
 }

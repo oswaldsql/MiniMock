@@ -3,13 +3,6 @@ namespace MiniMock.Tests.MethodTests;
 [Mock<IMultipleReturnValues>]
 public class MultipleReturnValuesTests
 {
-    public interface IMultipleReturnValues
-    {
-        public string Method();
-        public string Method(string value);
-        public Task<string> MethodAsync(CancellationToken token);
-    }
-
     [Fact]
     public void ItShouldBePossibleToSpecifyMultipleReturnValues()
     {
@@ -67,7 +60,7 @@ public class MultipleReturnValuesTests
     public void EmptyValuesAreAllowedAndDefaultsToThrowException()
     {
         // Arrange
-        var enumerable = new string [] {};
+        var enumerable = new string[] { };
         var sut = Mock.IMultipleReturnValues(config =>
         {
             config.Method(enumerable);
@@ -116,5 +109,12 @@ public class MultipleReturnValuesTests
         Assert.NotNull(shouldFail);
 
         Assert.Equal("1", CallToMethodWithParameter);
+    }
+
+    public interface IMultipleReturnValues
+    {
+        public string Method();
+        public string Method(string value);
+        public Task<string> MethodAsync(CancellationToken token);
     }
 }

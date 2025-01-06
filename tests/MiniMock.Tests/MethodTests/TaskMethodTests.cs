@@ -1,16 +1,11 @@
+// ReSharper disable ArrangeTypeMemberModifiers
+// ReSharper disable MemberCanBePrivate.Global
+
 namespace MiniMock.Tests.MethodTests;
-using System;
-using System.Threading.Tasks;
 
 [Mock<IAsyncTaskMethods>]
 public class TaskMethodTests
 {
-    public interface IAsyncTaskMethods
-    {
-        Task SimpleTask(string name);
-        Task<string> TaskWithResult(string name);
-    }
-
     [Fact]
     public async Task SimpleTask_WhenMockNotInitialized_ShouldThrowException()
     {
@@ -157,5 +152,11 @@ public class TaskMethodTests
 
         // Assert
         Assert.Equal("Return", actual);
+    }
+
+    public interface IAsyncTaskMethods
+    {
+        Task SimpleTask(string name);
+        Task<string> TaskWithResult(string name);
     }
 }

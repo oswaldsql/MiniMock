@@ -1,23 +1,12 @@
+// ReSharper disable ArrangeTypeMemberModifiers
+// ReSharper disable MemberCanBePrivate.Global
+
 namespace MiniMock.UnitTests;
 
 using System.ComponentModel;
 
 public class EventTests(ITestOutputHelper testOutputHelper)
 {
-    public interface IEventRepository
-    {
-        delegate void SampleEventHandler(object sender, string pe);
-
-        event EventHandler SimpleEvent;
-        event EventHandler<string> EventWithArgs;
-        event SampleEventHandler CustomEvent;
-    }
-
-    public class TestNotifyPropertyChanged : INotifyPropertyChanged
-    {
-        public event PropertyChangedEventHandler? PropertyChanged;
-    }
-
     [Fact]
     public void EventRepositoryTests()
     {
@@ -40,5 +29,19 @@ public class EventTests(ITestOutputHelper testOutputHelper)
         testOutputHelper.DumpResult(generate);
 
         Assert.Empty(generate.GetErrors());
+    }
+
+    public interface IEventRepository
+    {
+        delegate void SampleEventHandler(object sender, string pe);
+
+        event EventHandler SimpleEvent;
+        event EventHandler<string> EventWithArgs;
+        event SampleEventHandler CustomEvent;
+    }
+
+    public class TestNotifyPropertyChanged : INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler? PropertyChanged;
     }
 }

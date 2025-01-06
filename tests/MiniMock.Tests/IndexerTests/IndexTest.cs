@@ -1,17 +1,11 @@
-﻿namespace MiniMock.Tests.IndexerTests;
+﻿// ReSharper disable ArrangeTypeMemberModifiers
+// ReSharper disable MemberCanBePrivate.Global
+
+namespace MiniMock.Tests.IndexerTests;
 
 [Mock<IIndexRepository>]
 public class IndexTest
 {
-    internal interface IIndexRepository
-    {
-        int this[uint index] { set; }
-        int this[int index] { get; }
-        int this[string index] { get; set; }
-        (string name, int age) this[Guid index] { get; set; }
-        string this[(string name, int age) index] { get; set; }
-    }
-
     [Fact]
     public void CallToUnConfiguredMockThrowsException()
     {
@@ -26,7 +20,7 @@ public class IndexTest
         Assert.Throws<InvalidOperationException>(() => sut["key"] = 10);
         Assert.Throws<InvalidOperationException>(() => { _ = sut["key"]; });
         Assert.Throws<InvalidOperationException>(() => sut[Guid.Empty] = ("name", 10));
-        Assert.Throws<InvalidOperationException>(() => {_ = sut[Guid.Empty]; });
+        Assert.Throws<InvalidOperationException>(() => { _ = sut[Guid.Empty]; });
         Assert.Throws<InvalidOperationException>(() => { _ = sut[("name", 10)]; });
         Assert.Throws<InvalidOperationException>(() => sut[("name", 10)] = "value");
     }
@@ -40,7 +34,11 @@ public class IndexTest
 
         var source = new Dictionary<uint, int>();
         var sut = Mock.IIndexRepository(config => config.Indexer(source));
-        var sut2 = Mock.IIndexRepository(config => config.Indexer(set : (key, value) => { actualKey = key;  actualValue = value; }));
+        var sut2 = Mock.IIndexRepository(config => config.Indexer((key, value) =>
+        {
+            actualKey = key;
+            actualValue = value;
+        }));
 
         // ACT
         sut[(uint)10] = 10;
@@ -57,9 +55,9 @@ public class IndexTest
     public void GetterOnlyIndexerCanBeConfigured()
     {
         // Arrange
-        var source = new Dictionary<int, int>() {{10,100}};
+        var source = new Dictionary<int, int> { { 10, 100 } };
         var sut = Mock.IIndexRepository(config => config.Indexer(source));
-        var sut2 = Mock.IIndexRepository(config => config.Indexer(get : i => i * 10));
+        var sut2 = Mock.IIndexRepository(config => config.Indexer(i => i * 10));
 
         // Act
         var actualFromDictionary = sut[10];
@@ -67,7 +65,7 @@ public class IndexTest
 
         // Assert
         Assert.Equal(100, actualFromDictionary);
-       Assert.Equal(100, actualFromFunction);
+        Assert.Equal(100, actualFromFunction);
     }
 
     [Fact]
@@ -77,9 +75,13 @@ public class IndexTest
         var actualKey = "";
         var actualValue = 0;
 
-        var source = new Dictionary<string, int>() {{"ti",10}};
+        var source = new Dictionary<string, int> { { "ti", 10 } };
         var sut = Mock.IIndexRepository(config => config.Indexer(source));
-        var sut2 = Mock.IIndexRepository(config => config.Indexer(get : _ => 10, set:(key, value) => { actualKey = key;  actualValue = value; }));
+        var sut2 = Mock.IIndexRepository(config => config.Indexer(_ => 10, (key, value) =>
+        {
+            actualKey = key;
+            actualValue = value;
+        }));
 
         // Act
         sut["to"] = 2;
@@ -93,5 +95,14 @@ public class IndexTest
         Assert.True(source.ContainsKey("to"));
         Assert.Equal("to", actualKey);
         Assert.Equal(2, actualValue);
+    }
+
+    internal interface IIndexRepository
+    {
+        int this[uint index] { set; }
+        int this[int index] { get; }
+        int this[string index] { get; set; }
+        (string name, int age) this[Guid index] { get; set; }
+        string this[(string name, int age) index] { get; set; }
     }
 }

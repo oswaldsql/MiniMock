@@ -1,3 +1,6 @@
+// ReSharper disable ArrangeTypeMemberModifiers
+// ReSharper disable MemberCanBePrivate.Global
+
 namespace MiniMock.UnitTests;
 
 public class OutArgumentTests(ITestOutputHelper testOutputHelper)
@@ -19,9 +22,5 @@ public class OutArgumentTests(ITestOutputHelper testOutputHelper)
         bool OutWithReturn(string s, out int value);
         void OutWithVoid(string s, out int value);
         int WithRef(string s, ref int value);
-
-        //        T OutGeneric<T>(T s, out T value);
-
-        //void RefMethod(ref int value);
     }
 }

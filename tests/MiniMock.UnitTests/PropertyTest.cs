@@ -1,33 +1,12 @@
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable ArrangeTypeMemberModifiers
+
 namespace MiniMock.UnitTests;
 
 using Xunit.Sdk;
 
 public class PropertyTest(ITestOutputHelper testOutputHelper)
 {
-    public interface IPropertyInterface
-    {
-        string GetSet { get; set; }
-        string GetInit { get; init; }
-        string? Nullable { get; set; }
-        string GetOnly { get; }
-        string SetOnly { set; }
-    }
-
-    public abstract class AbstractClassWithDifferentProperties
-    {
-        public string NotAbstract { get; set; } = "";
-        public abstract string Abstract { get; set; }
-        public virtual string Virtual { get; set; } = "";
-
-        public string NotAbstractGetOnly { get;  } = "";
-        public abstract string AbstractGetOnly { get;  }
-        public virtual string VirtualGetOnly { get;  } = "";
-
-        public string NotAbstractSetOnly { set => throw new TestClassException("This should not be accessed"); }
-        public abstract string AbstractSetOnly { set; }
-        public virtual string VirtualSetOnly { set => throw new TestClassException("This should not be accessed"); }
-    }
-
     [Fact]
     public void PropertyRepositoryTests()
     {
@@ -50,4 +29,29 @@ public class PropertyTest(ITestOutputHelper testOutputHelper)
         testOutputHelper.DumpResult(generate);
 
         Assert.Empty(generate.GetErrors());
-    }}
+    }
+
+    internal interface IPropertyInterface
+    {
+        string GetSet { get; set; }
+        string GetInit { get; init; }
+        string? Nullable { get; set; }
+        string GetOnly { get; }
+        string SetOnly { set; }
+    }
+
+    public abstract class AbstractClassWithDifferentProperties
+    {
+        public string NotAbstract { get; set; } = "";
+        public abstract string Abstract { get; set; }
+        public virtual string Virtual { get; set; } = "";
+
+        public string NotAbstractGetOnly { get; } = "";
+        public abstract string AbstractGetOnly { get; }
+        public virtual string VirtualGetOnly { get; } = "";
+
+        public string NotAbstractSetOnly { set => throw new TestClassException("This should not be accessed"); }
+        public abstract string AbstractSetOnly { set; }
+        public virtual string VirtualSetOnly { set => throw new TestClassException("This should not be accessed"); }
+    }
+}

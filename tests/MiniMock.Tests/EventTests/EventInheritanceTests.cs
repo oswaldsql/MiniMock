@@ -1,4 +1,7 @@
-﻿namespace MiniMock.Tests.EventTests;
+﻿// ReSharper disable ArrangeTypeMemberModifiers
+// ReSharper disable MemberCanBePrivate.Global
+
+namespace MiniMock.Tests.EventTests;
 
 public class EventInheritanceTests
 {
@@ -9,7 +12,7 @@ public class EventInheritanceTests
         // Arrange
         var eventTriggered = false;
         var baseEventTriggered = false;
-        Action<string> trigger = _ => {};
+        Action<string> trigger = _ => { };
         var sut = Mock.IDerivedWithEvent(config => config.Event1(out trigger));
 
         sut.Event1 += (_, _) => { eventTriggered = true; };

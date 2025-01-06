@@ -4,22 +4,6 @@ using Xunit.Sdk;
 
 public class AbstractClassesTest
 {
-    public abstract class AbstractClass
-    {
-        public string NotAbstract { get; set; } = "";
-        public abstract string Abstract { get; set; }
-        public virtual string Virtual { get; set; } = "";
-
-        public string NotAbstractGetOnly => this.abstractValue ?? "";
-        public abstract string AbstractGetOnly { get;  }
-        public virtual string VirtualGetOnly => throw new TestClassException("this should never be called");
-
-        private string? abstractValue;
-        public string NotAbstractSetOnly { set => this.abstractValue = value; }
-        public abstract string AbstractSetOnly { set; }
-        public virtual string VirtualSetOnly { set => throw new TestClassException("this should never be called"); }
-    }
-
     [Fact]
     [Mock<AbstractClass>]
     public void AbstractClassPropertiesCanBeSet()
@@ -28,23 +12,23 @@ public class AbstractClassesTest
         string? actualVirtualSetOnly = null;
 
         var sut = Mock.AbstractClass(config => config
-                .Abstract("Abstract")
-                .AbstractGetOnly("AbstractGetOnly")
-                .AbstractSetOnly("AbstractSetOnly")
-                .Virtual("Virtual")
-                .VirtualGetOnly("VirtualGetOnly")
-                .VirtualSetOnly(set: s => actualVirtualSetOnly = s)
+            .Abstract("Abstract")
+            .AbstractGetOnly("AbstractGetOnly")
+            .AbstractSetOnly("AbstractSetOnly")
+            .Virtual("Virtual")
+            .VirtualGetOnly("VirtualGetOnly")
+            .VirtualSetOnly(s => actualVirtualSetOnly = s)
         );
 
         // ACT
 
 
         // Assert
-        Assert.Equal("Abstract",sut.Abstract);
-        Assert.Equal("AbstractGetOnly",sut.AbstractGetOnly);
+        Assert.Equal("Abstract", sut.Abstract);
+        Assert.Equal("AbstractGetOnly", sut.AbstractGetOnly);
         sut.AbstractSetOnly = "AbstractSetOnly";
-        Assert.Equal("Virtual",sut.Virtual);
-        Assert.Equal("VirtualGetOnly",sut.VirtualGetOnly);
+        Assert.Equal("Virtual", sut.Virtual);
+        Assert.Equal("VirtualGetOnly", sut.VirtualGetOnly);
         sut.VirtualSetOnly = "VirtualSetOnly";
         Assert.Equal("VirtualSetOnly", actualVirtualSetOnly);
     }
@@ -63,7 +47,7 @@ public class AbstractClassesTest
 
         // Assert
         Assert.Equal("test", sut.NotAbstract);
-        Assert.Equal("",sutNotAbstractGetOnly);
+        Assert.Equal("", sutNotAbstractGetOnly);
     }
 
     [Fact]
@@ -76,12 +60,12 @@ public class AbstractClassesTest
         string? actualVirtualSetOnly = null;
         // Arrange
         var sut = Mock.AbstractClass(config => config
-            .Abstract(get: () => "Abstract", set:s => actualAbstract = s)
-            .AbstractGetOnly(get: () => "AbstractGetOnly")
-            .AbstractSetOnly(set: s => actualAbstractSetOnly = s)
-            .Virtual(get: () => "Virtual", set: s => actualVirtual = s)
-            .VirtualGetOnly(get:() => "VirtualGetOnly")
-            .VirtualSetOnly(set : s => actualVirtualSetOnly = s)
+            .Abstract(() => "Abstract", s => actualAbstract = s)
+            .AbstractGetOnly(() => "AbstractGetOnly")
+            .AbstractSetOnly(s => actualAbstractSetOnly = s)
+            .Virtual(() => "Virtual", s => actualVirtual = s)
+            .VirtualGetOnly(() => "VirtualGetOnly")
+            .VirtualSetOnly(s => actualVirtualSetOnly = s)
         );
 
         // ACT
@@ -91,17 +75,32 @@ public class AbstractClassesTest
         sut.VirtualSetOnly = "setVirtualSetOnly";
 
         // Assert
-        Assert.Equal("setAbstract",actualAbstract);
-        Assert.Equal("setAbstractSetOnly",actualAbstractSetOnly);
-        Assert.Equal("setVirtual",actualVirtual);
-        Assert.Equal("setVirtualSetOnly",actualVirtualSetOnly);
+        Assert.Equal("setAbstract", actualAbstract);
+        Assert.Equal("setAbstractSetOnly", actualAbstractSetOnly);
+        Assert.Equal("setVirtual", actualVirtual);
+        Assert.Equal("setVirtualSetOnly", actualVirtualSetOnly);
 
 
-        Assert.Equal("Abstract",sut.Abstract);
-        Assert.Equal("AbstractGetOnly",sut.AbstractGetOnly);
+        Assert.Equal("Abstract", sut.Abstract);
+        Assert.Equal("AbstractGetOnly", sut.AbstractGetOnly);
         sut.AbstractSetOnly = "AbstractSetOnly";
-        Assert.Equal("Virtual",sut.Virtual);
-        Assert.Equal("VirtualGetOnly",sut.VirtualGetOnly);
+        Assert.Equal("Virtual", sut.Virtual);
+        Assert.Equal("VirtualGetOnly", sut.VirtualGetOnly);
         sut.VirtualSetOnly = "VirtualSetOnly";
+    }
+
+    public abstract class AbstractClass
+    {
+        private string? abstractValue;
+        public string NotAbstract { get; set; } = "";
+        public abstract string Abstract { get; set; }
+        public virtual string Virtual { get; set; } = "";
+
+        public string NotAbstractGetOnly => this.abstractValue ?? "";
+        public abstract string AbstractGetOnly { get; }
+        public virtual string VirtualGetOnly => throw new TestClassException("this should never be called");
+        public string NotAbstractSetOnly { set => this.abstractValue = value; }
+        public abstract string AbstractSetOnly { set; }
+        public virtual string VirtualSetOnly { set => throw new TestClassException("this should never be called"); }
     }
 }

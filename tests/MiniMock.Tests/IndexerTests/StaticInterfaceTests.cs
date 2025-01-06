@@ -1,27 +1,10 @@
-﻿namespace MiniMock.Tests.IndexerTests;
+﻿// ReSharper disable ArrangeTypeMemberModifiers
+// ReSharper disable MemberCanBePrivate.Global
+
+namespace MiniMock.Tests.IndexerTests;
 
 public class StaticInterfaceTests
 {
-    public interface ISupportedStaticInterfaceMembers
-    {
-        static ISupportedStaticInterfaceMembers() => StaticProperty = "Set from ctor";
-
-        static string StaticProperty { get; set; }
-        static string StaticMethod() => "value";
-        static event EventHandler? StaticEvent;
-
-        static void DoStaticEvent() => StaticEvent?.Invoke(null, EventArgs.Empty);
-
-        static virtual string Bar => "value";  // with implementation
-    }
-
-    public interface IUnSipportedStaticAbstractInterfaceMembers
-    {
-        static abstract string AbstractProperty { get; set; }
-        static abstract string AbstractMethod();
-        static abstract event EventHandler StaticEvent;
-    }
-
     [Fact]
     [Mock<ISupportedStaticInterfaceMembers>]
     public void StaticInterfaceCanBeMocked()
@@ -33,5 +16,25 @@ public class StaticInterfaceTests
 
         // Assert
         Assert.NotNull(sut);
+    }
+
+    public interface ISupportedStaticInterfaceMembers
+    {
+        static ISupportedStaticInterfaceMembers() => StaticProperty = "Set from ctor";
+
+        static string StaticProperty { get; set; }
+
+        static virtual string Bar => "value"; // with implementation
+        static string StaticMethod() => "value";
+        static event EventHandler? StaticEvent;
+
+        static void DoStaticEvent() => StaticEvent?.Invoke(null, EventArgs.Empty);
+    }
+
+    public interface IUnSipportedStaticAbstractInterfaceMembers
+    {
+        static abstract string AbstractProperty { get; set; }
+        static abstract string AbstractMethod();
+        static abstract event EventHandler StaticEvent;
     }
 }

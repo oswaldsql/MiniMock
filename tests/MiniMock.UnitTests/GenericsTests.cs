@@ -1,4 +1,7 @@
-﻿namespace MiniMock.UnitTests;
+﻿// ReSharper disable ArrangeTypeMemberModifiers
+// ReSharper disable MemberCanBePrivate.Global
+
+namespace MiniMock.UnitTests;
 
 public class GenericsTests(ITestOutputHelper testOutputHelper)
 {
@@ -72,15 +75,6 @@ public class TestClass{{
         Assert.Empty(generate.GetWarnings());
     }
 
-    public interface IGenericMethod
-    {
-        void ReturnGeneric(string value);
-        T ReturnGeneric<T>(string value) where T : struct;
-        IEnumerable<T> ReturnDerived<T>(string value) where T : struct;
-        void ReturnVoid<T>(string value) where T : struct;
-        T ReturnTwoGenerics<T, TU>(string value) where T : struct where TU : struct;
-    }
-
     [Fact]
     public void GenericMethodsInNoGenericInterfaceIsNotSupported()
     {
@@ -94,6 +88,15 @@ public class TestClass{{
 
 //        Assert.Equal("Generic methods in non generic interfaces or classes is not currently supported for 'Parse' in 'IGenericMethod'", error.GetMessage());
 //        Assert.Equal("MM0004", error.Id);
+    }
+
+    public interface IGenericMethod
+    {
+        void ReturnGeneric(string value);
+        T ReturnGeneric<T>(string value) where T : struct;
+        IEnumerable<T> ReturnDerived<T>(string value) where T : struct;
+        void ReturnVoid<T>(string value) where T : struct;
+        T ReturnTwoGenerics<T, TU>(string value) where T : struct where TU : struct;
     }
 
     public interface IGeneric<out TKey, in TValue> where TKey : IComparable<TKey>? //, IEnumerable<string>?
