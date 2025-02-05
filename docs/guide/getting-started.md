@@ -32,15 +32,15 @@ public void MyTest() {
 
 ## Quality of Life
 
-MiniMock is __extremely strict__ but __fair__, requiring you to specify all features you want to mock but giving you fair warnings if you don't.
+MiniMock is **extremely strict** but **fair**, requiring you to specify all features you want to mock but giving you fair warnings if you don't.
 This is by design to make sure you are aware of what you are mocking and not introduce unexpected behaviour.
 
-![img.png](img.png)
+![exception](exception.png)
 
-All mockable members are available through a _fluent interface_ with _IntelliSense_, _type safety_, and _documentation_.
+All mockable members are available through a **fluent interface** with **IntelliSense**, **type safety**, and **documentation**.
 
-![img_2.png](img_2.png)
+![documentation](documentation.png)
 
-All code required to run MiniMock is _source generated_ within your test project and has _no runtime dependencies_. You can _inspect_, _step into_, and _debug_ the generated code which also allows for _security_ and _vulnerability 
-scanning_ of the code.
+All code required to run MiniMock is **source generated** within your test project and has **no runtime dependencies**. You can **inspect**, **step into**, and **debug** the generated code which also allows for **security** and **vulnerability 
+scanning** of the generated code.
 
