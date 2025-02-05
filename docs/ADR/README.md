@@ -26,6 +26,4 @@ All the ADRs have been approved and are considered final decisions for the proje
 
 ## Unsupported Features
 
-- [Support for Extension Methods (WIP)](Unsupported/SupportForExtensionMethods.md) - Decision on supporting extension methods in the mocking framework.
-- [Support for Sealed Classes (WIP)](Unsupported/SupportForSealedClasses.md) - Decision on supporting sealed classes in the mocking framework.
-- [Support for Static Members (WIP)](Unsupported/SupportForStaticMembers.md) - Decision on supporting static members in the mocking framework.
+- [Unsupported Features](Unsupported/UnsupportedFeatures.md) - Decision on which features not to support.
