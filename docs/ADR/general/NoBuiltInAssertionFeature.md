@@ -2,7 +2,8 @@
 
 ## Context
 
-In our mocking framework, there is a consideration to include a built-in assertion feature. However, there are numerous assertion frameworks available, each with its own strengths and user base. Including a built-in assertion feature may lead to redundancy and limit the flexibility for users to choose their preferred assertion framework.
+In our mocking framework, there is a consideration to include a built-in assertion feature. However, there are numerous assertion frameworks available, each with its own strengths and user base. 
+Including a built-in assertion feature may lead to redundancy and limit the flexibility for users to choose their preferred assertion framework.
 
 ## Decision
 

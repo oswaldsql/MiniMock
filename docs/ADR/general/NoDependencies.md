@@ -6,7 +6,7 @@ In our project, there is a consideration to include dependencies on shared libra
 
 ## Decision
 
-We will not include any dependencies on shared libraries in our project. Instead, we will aim to implement necessary functionality within the project itself or use static linking where appropriate.
+We will not include any dependencies on shared libraries in our project. Instead, we will aim to implement necessary functionality within the project itself using source generation.
 
 ## Consequences
 

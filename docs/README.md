@@ -1,6 +1,6 @@
 # MiniMock
 
-MiniMock offers a _minimalistic_ approach to mocking in .NET with a focus on simplicity and ease of use. 
+MiniMock offers a **minimalistic** approach to mocking in .NET with a focus on simplicity and ease of use. 
 
 ```csharp
     public interface IBookRepository
@@ -34,6 +34,5 @@ Try it out or continue with [Getting started](guide/getting-started.md) to learn
 
 For more details on specific aspects you can read about [Construction](guide/construction.md), [Methods](guide/methods.md), [Properties](guide/properties.md), [Events](guide/events.md) or 
 [Indexers](guide/indexers.md).
-Or you shift into high gear with [Advanced Features](advanced-features.md), [FaQ](faq.md) or [Troubleshooting](troubleshooting.md).
 
-If you are more into the ins and outs of MiniMock you can read the [Motivation](motivation.md) behind MiniMock or the [ADRs](ADR/README.md).
+If you are more into the ins and outs of MiniMock you can read the [ADRs](ADR/README.md).
