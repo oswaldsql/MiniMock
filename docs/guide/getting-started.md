@@ -35,11 +35,11 @@ public void MyTest() {
 MiniMock is **extremely strict** but **fair**, requiring you to specify all features you want to mock but giving you fair warnings if you don't.
 This is by design to make sure you are aware of what you are mocking and not introduce unexpected behaviour.
 
-![exception](exception.png)
+![exception](Exception.png)
 
 All mockable members are available through a **fluent interface** with **IntelliSense**, **type safety**, and **documentation**.
 
-![documentation](documentation.png)
+![documentation](Documentation.png)
 
 All code required to run MiniMock is **source generated** within your test project and has **no runtime dependencies**. You can **inspect**, **step into**, and **debug** the generated code which also allows for **security** and **vulnerability 
 scanning** of the generated code.
