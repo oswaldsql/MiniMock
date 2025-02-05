@@ -2,7 +2,14 @@
 
 ## Context
 
-In the MiniMock framework, there is a need to determine the scope of support for mocking methods. Supporting all standard ways of creating methods is essential to ensure the framework's flexibility and usability. However, there are currently issues with supporting methods that return `ref` values, which need to be addressed.
+In the MiniMock framework, there is a need to determine the scope of support for mocking methods. Supporting all standard ways of creating methods is essential to ensure the framework's 
+flexibility and usability. 
+
+The following type of methods must be supported
+- __Asynchronous__ with Task<>, Task, CancellationToken  
+- __Overloaded__ methods in a way that keeps the required effort to setup the mock to a minimum.
+- __Generic__ Including the 'where' __constraints__.
+- __Out__ and __ref__ attributes on the method parameters.
 
 ## Decision
 
@@ -18,7 +25,20 @@ Methods must be mockable using the following parameters
 
 if none of the above parameters are provided, calling the method must throw a InvalidOperationException with a message in the form "The method '__[method name]__' in '__[mocked class]__' is not explicitly mocked.".
 
-Special cases like [Overloads], [Generic Methods] and [Async Methods] have dedicated ADRs.
+__Asynchronous__ methods are supported. Helper methods are provided to simplify the testing of asynchronous methods. Overloads of the following helper methods are added
+
+- Return : Allows for returning either a Task object or the object to be wrapped in the task object.
+- ReturnValues : Allows for returning either a sequence of Task objects or a sequence of objects to be wrapped in task objects.
+- () : Methods returning Task can also use the empty delegate.
+
+__Overloaded__ methods can either be mocked explicitly by using `Call` or collectively using the following 
+
+- Throw : An exception to be thrown when calling any of the overwritten methods.
+- Return : A value to be returned when a method with that return type is called.
+- ReturnValues : A sequence of values to be returned when a method with those return types is called multiple times.
+- () : Methods returning `void` or `Task` can be mocked using an empty delegate.
+
+Generic methods are supported. The generic type is passed as a type parameter to the 'call' labmda method.
 
 ## Consequences
 

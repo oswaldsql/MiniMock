@@ -22,3 +22,4 @@ __Please note__
 - Multiple specifications for a property will overwrite each other with the last one taking precedence.
 - Parameter-names can be omitted but make the code more readable.
 - Any property that is not explicitly specified will throw an `InvalidOperationException` when called.
+- If the mocked interface or class only exposes get or set only the exposes parameter will be shown.

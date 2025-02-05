@@ -7,6 +7,7 @@ In the MiniMock framework, there is a need to establish a standardized approach 
 ## Decision
 
 Mocks will be created using a mock factory. The mock factory will provide a centralized and consistent way to create and configure mocks, ensuring that all mocks are created following the same process and standards.
+The constructors of the mock object will remain accessible but should only be used for limited purposes.  
 
 ## Consequences
 

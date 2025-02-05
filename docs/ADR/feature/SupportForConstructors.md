@@ -2,29 +2,33 @@
 
 ## Context
 
-In the MiniMock framework, there is a need to determine the scope of support for mocking constructors. Initially, the framework will support only classes with parameterless constructors. 
-This decision simplifies the initial implementation and allows for a gradual introduction of more complex constructor support.
+In the MiniMock framework, there is a need to determine the scope of support for mocking constructors.
 
 ## Decision
 
-The MiniMock framework will initially support mocking only classes with parameterless constructors. 
-A plan for adding support for classes with parameterized constructors is being developed and will be implemented in future iterations.
+All constructors with the supported access level should be accessible. If no constructor exists, a parameterless constructor is created.
+A factory for each option should be created.
 
-Since the main focus of the framework is to provide a simple and easy-to-use mocking solution for interfaces and classes, 
-the decision to start with parameterless constructors aligns with this goal. See ADR [Support For Classes and Interfaces](SupportForClassesAndInterfaces.md) for more information.
+If only internal or private constructors exist, the class is not generated and a warning is registered.
+
+Additionally, the framework should support the following:
+
+- **Parameterized Constructors**: Allow mocking of constructors with parameters, providing flexibility for more complex scenarios.
+- **Constructor Overloads**: Support multiple constructors with different parameter lists.
+- **Dependency Injection**: Enable mocking of constructors that use dependency injection, ensuring compatibility with modern design patterns.
 
 ## Consequences
 
 ### Positive:
 
 - **Simplicity**: Simplifies the initial implementation by focusing on parameterless constructors.
-- **Incremental Development**: Allows for a phased approach to adding more complex constructor support.
-- **Usability**: Provides immediate value by supporting a common use case.
+- **Flexibility**: Supporting parameterized constructors and overloads provides more flexibility for developers.
+- **Compatibility**: Ensures compatibility with dependency injection, making the framework more versatile.
 
 ### Negative:
 
-- **Limited Scope**: Initial support is limited to classes with parameterless constructors, which may not cover all use cases.
-- **Future Work**: Additional effort will be required to implement support for parameterized constructors.
+- **Complexity**: Adding support for parameterized constructors and overloads increases the complexity of the framework.
+- **Maintenance**: Requires ongoing maintenance to ensure that constructor mocking remains robust and up-to-date.
 
 ---
 
