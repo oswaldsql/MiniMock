@@ -70,6 +70,7 @@ internal class ClassBuilder(ISymbol target)
                       /// <summary>
                       /// Mock implementation of <see cref="{{documentationName}}"/>. Should only be used for testing purposes.
                       /// </summary>
+                      [System.CodeDom.Compiler.GeneratedCode("MiniMock","{{Constants.MiniMockVersion}}")]
                       internal class {{name}} : {{fullName}} {{constraints}}
                       {
                       ->

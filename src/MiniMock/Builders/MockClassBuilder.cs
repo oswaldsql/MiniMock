@@ -35,13 +35,11 @@ public static class MockClassBuilder
                       ->
                       """);
 
-        /// <summary>
-        /// Factory for creating mock objects.
-        /// </summary>
         builder.Add($$"""
                       /// <summary>
                       /// Factory for creating mock objects.
                       /// </summary>
+                      [System.CodeDom.Compiler.GeneratedCode("MiniMock","{{Constants.MiniMockVersion}}")]
                       internal static class Mock {
                       ->
                       """);
