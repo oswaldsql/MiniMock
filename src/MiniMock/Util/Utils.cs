@@ -3,7 +3,7 @@ namespace MiniMock.Util;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
-public static class Helpers
+public static class Utils
 {
     private static string AccessibilityString(this ISymbol method) =>
         method.DeclaredAccessibility.AccessibilityString();
@@ -31,16 +31,17 @@ public static class Helpers
             _ => ""
         };
 
-    internal static bool HasParameters(this IMethodSymbol method) => method.Parameters.Length > 0;
-
-    internal static string BuildNotMockedException(this IMethodSymbol symbol)
-        => $"throw new System.InvalidOperationException(\"The method '{symbol.Name}' in '{symbol.ContainingType.Name}' is not explicitly mocked.\") {{Source = \"{symbol}\"}};";
-
     internal static string BuildNotMockedException(this IPropertySymbol symbol)
         => $"throw new System.InvalidOperationException(\"The property '{symbol.Name}' in '{symbol.ContainingType.Name}' is not explicitly mocked.\") {{Source = \"{symbol}\"}};";
 
     public static string BuildNotMockedExceptionForIndexer(this IPropertySymbol symbol) =>
         $"throw new System.InvalidOperationException(\"The indexer '{symbol.Name}' in '{symbol.ContainingType.Name}' is not explicitly mocked.\") {{Source = \"{symbol}\"}};";
+
+    internal static string BuildNotMockedException(this IMethodSymbol symbol)
+        => $"throw new System.InvalidOperationException(\"The method '{symbol.Name}' in '{symbol.ContainingType.Name}' is not explicitly mocked.\") {{Source = \"{symbol}\"}};";
+
+    internal static bool HasOutOrRef(this IMethodSymbol method) =>
+            method.Parameters.Any(p => p.RefKind is RefKind.Out or RefKind.Ref);
 
     internal static bool IsReturningTask(this IMethodSymbol method) =>
         method.ReturnType.ToString().Equals("System.Threading.Tasks.Task");
@@ -49,17 +50,26 @@ public static class Helpers
         method.ReturnType.ToString().StartsWith("System.Threading.Tasks.Task<") &&
         ((INamedTypeSymbol)method.ReturnType).TypeArguments.Length > 0;
 
+    internal static bool IsReturningValueTask(this IMethodSymbol method) =>
+        method.ReturnType.ToString().Equals("System.Threading.Tasks.ValueTask");
+
+    internal static bool IsReturningGenericValueTask(this IMethodSymbol method) =>
+        method.ReturnType.ToString().StartsWith("System.Threading.Tasks.ValueTask<") &&
+        ((INamedTypeSymbol)method.ReturnType).TypeArguments.Length > 0;
+
+    internal static bool HasParameters(this IMethodSymbol method) => method.Parameters.Length > 0;
+
     internal static string EscapeToHtml(this string text) => text.Replace("<", "&lt;").Replace(">", "&gt;");
 
     internal static (string containingSymbol, string accessibilityString, string overrideString) Overwrites(
-        this ISymbol method)
+        this ISymbol symbol)
     {
-        if (method.ContainingType.TypeKind == TypeKind.Interface)
+        if (symbol.ContainingType.TypeKind == TypeKind.Interface)
         {
-            return (method.ContainingSymbol + ".", "", "");
+            return (symbol.ContainingSymbol + ".", "", "");
         }
 
-        return ("", method.AccessibilityString(), "override ");
+        return ("", symbol.AccessibilityString(), "override ");
     }
 
     internal static (string methodParameters, string parameterList, string typeList, string nameList) ParameterStrings(this IMethodSymbol method)

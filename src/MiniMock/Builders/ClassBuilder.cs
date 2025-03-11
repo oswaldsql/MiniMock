@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using MiniMock;
-using MiniMock.Builders;
 using MiniMock.Util;
+
+namespace MiniMock.Builders;
 
 /// <summary>
 /// ClassBuilder is responsible for generating mock classes for a given target symbol.

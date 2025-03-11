@@ -157,6 +157,7 @@ public class TaskMethodTests
     public interface IAsyncTaskMethods
     {
         Task SimpleTask(string name);
+
         Task<string> TaskWithResult(string name);
     }
 }

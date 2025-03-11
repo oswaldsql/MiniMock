@@ -2,7 +2,7 @@ namespace MiniMock;
 
 public static class Constants
 {
-    public const string MiniMockVersion = "0.9.14";
+    public const string MiniMockVersion = "0.9.15";
 
     public const string MockAttributeCode = $$"""
                                               namespace MiniMock {

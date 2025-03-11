@@ -147,13 +147,13 @@ internal class MethodBuilder : ISymbolBuilder
             {
                 yield return new HelperMethod("", $"this.{functionPointer}(() => {{}});", Documentation.AcceptAny, seeCref);
             }
-            else if (!HasOutOrRef(symbol))
+            else if (!symbol.HasOutOrRef())
             {
                 yield return new HelperMethod("", $"this.{functionPointer}(({parameterList}) => {{}});", Documentation.AcceptAny, seeCref);
             }
         }
 
-        if (!HasOutOrRef(symbol) && !symbol.ReturnsVoid)
+        if (!symbol.HasOutOrRef() && !symbol.ReturnsVoid)
         {
             yield return new HelperMethod($"{delegateType} returns", $"this.{functionPointer}(({parameterList}) => returns);", Documentation.SpecificValue, seeCref);
 
@@ -214,10 +214,50 @@ internal class MethodBuilder : ISymbolBuilder
                 yield return new HelperMethod($"System.Func<{genericType}> call", $"this.{functionPointer}(({nameList}) => System.Threading.Tasks.Task.FromResult(call({nameList})));", Documentation.GenericTaskFunction, seeCref);
             }
         }
-    }
 
-    private static bool HasOutOrRef(IMethodSymbol method) =>
-        method.Parameters.Any(p => p.RefKind is RefKind.Out or RefKind.Ref);
+        if (symbol.IsReturningValueTask())
+        {
+            if (symbol.HasParameters())
+            {
+                yield return new HelperMethod($"System.Action<{typeList}> call", $$"""this.{{functionPointer}}(({{parameterList}}) => {call({{nameList}});return System.Threading.Tasks.ValueTask.CompletedTask;});""", Documentation.CallBack, seeCref);
+            }
+            else
+            {
+                yield return new HelperMethod("System.Action call", $$"""this.{{functionPointer}}(({{nameList}}) => {call({{nameList}});return System.Threading.Tasks.ValueTask.CompletedTask;});""", Documentation.CallBack, seeCref);
+            }
+
+            yield return new HelperMethod("", $$"""this.{{functionPointer}}(({{nameList}}) => {return System.Threading.Tasks.ValueTask.CompletedTask;});""", Documentation.AcceptAny, seeCref);
+        }
+
+        if (symbol.IsReturningGenericValueTask())
+        {
+            var genericType = ((INamedTypeSymbol)symbol.ReturnType).TypeArguments.First();
+            yield return new HelperMethod($"{genericType} returns", $"this.{functionPointer}(({parameterList}) => System.Threading.Tasks.ValueTask.FromResult(returns));", Documentation.GenericTaskObject, seeCref);
+
+            var code = $$"""
+                         var {{functionPointer}}_Values = returnValues.GetEnumerator();
+                         this.{{functionPointer}}(({{parameterList}}) =>
+                         {
+                             if ({{functionPointer}}_Values.MoveNext())
+                             {
+                                 return System.Threading.Tasks.ValueTask.FromResult({{functionPointer}}_Values.Current);
+                             }
+
+                             {{symbol.BuildNotMockedException()}}
+                             });
+                         """;
+            yield return new HelperMethod($"System.Collections.Generic.IEnumerable<{genericType}> returnValues", code, Documentation.SpecificValueList, seeCref);
+
+            if (symbol.HasParameters())
+            {
+                yield return new HelperMethod($"System.Func<{typeList},{genericType}> call", $"this.{functionPointer}(({nameList}) => System.Threading.Tasks.ValueTask.FromResult(call({nameList})));", Documentation.GenericTaskFunction, seeCref);
+            }
+            else
+            {
+                yield return new HelperMethod($"System.Func<{genericType}> call", $"this.{functionPointer}(({nameList}) => System.Threading.Tasks.ValueTask.FromResult(call({nameList})));", Documentation.GenericTaskFunction, seeCref);
+            }
+        }
+    }
 
     private static (string methodName, string methodReturnType, string returnString) MethodName(
         IMethodSymbol method)
