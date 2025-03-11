@@ -5,7 +5,7 @@ using System.Reflection;
 
 public class GeneratedCodeAttributeTests
 {
-    private const string currentVersion = "0.9.14";
+    private const string CurrentVersion = "0.9.14";
 
     [Fact]
     public void MockAttributeShouldHaveAttribute()
@@ -16,12 +16,12 @@ public class GeneratedCodeAttributeTests
         // ACT
         var actual = sut.GetCustomAttributes<GeneratedCodeAttribute>();
 
-        // Assert 
+        // Assert
         var actualAttribute = Assert.Single(actual);
-        Assert.Equal(actualAttribute.Tool, "MiniMock");
-        Assert.Equal(actualAttribute.Version, currentVersion);
+        Assert.Equal("MiniMock", actualAttribute.Tool);
+        Assert.Equal(CurrentVersion, actualAttribute.Version);
     }
-    
+
     [Fact]
     public void MockClassShouldHaveAttribute()
     {
@@ -31,13 +31,13 @@ public class GeneratedCodeAttributeTests
         // ACT
         var actual = sut.GetCustomAttributes<GeneratedCodeAttribute>();
 
-        // Assert 
+        // Assert
         var actualAttribute = Assert.Single(actual);
-        Assert.Equal(actualAttribute.Tool, "MiniMock");
-        Assert.Equal(actualAttribute.Version, currentVersion);
+        Assert.Equal("MiniMock", actualAttribute.Tool);
+        Assert.Equal(CurrentVersion, actualAttribute.Version);
     }
 
-        
+
     [Fact]
     [Mock<IGeneratorTarget>]
     public void GeneratedMockClassShouldHaveAttribute()
@@ -48,14 +48,14 @@ public class GeneratedCodeAttributeTests
         // ACT
         var actual = sut.GetCustomAttributes<GeneratedCodeAttribute>();
 
-        // Assert 
+        // Assert
         var actualAttribute = Assert.Single(actual);
-        Assert.Equal(actualAttribute.Tool, "MiniMock");
-        Assert.Equal(actualAttribute.Version, currentVersion);
+        Assert.Equal("MiniMock", actualAttribute.Tool);
+        Assert.Equal(CurrentVersion, actualAttribute.Version);
     }
-    
+
     public interface IGeneratorTarget
     {
-        
+
     }
 }

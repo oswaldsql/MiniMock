@@ -83,8 +83,8 @@ public class Demo(ITestOutputHelper testOutputHelper)
         );
 
         // Mock with external configuration useful for more complex scenarios like testing events and modifying mock behaviour.
-        var externalMock = Mock.IVersionLibrary(out var config);
-        config.DownloadExists(true);
+        var externalMock = Mock.IVersionLibrary(out var configIVersionLibrary);
+        configIVersionLibrary.DownloadExists(true);
 
         // Direct access to the mock implementation.
         var implementationMock = new MockOf_IVersionLibrary(config => config
