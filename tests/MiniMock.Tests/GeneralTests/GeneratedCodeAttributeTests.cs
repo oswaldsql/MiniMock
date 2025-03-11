@@ -5,7 +5,7 @@ using System.Reflection;
 
 public class GeneratedCodeAttributeTests
 {
-    private const string currentVersion = "0.9.15";
+    private const string CurrentVersion = "0.9.15";
 
     [Fact]
     public void MockAttributeShouldHaveAttribute()
@@ -18,8 +18,8 @@ public class GeneratedCodeAttributeTests
 
         // Assert
         var actualAttribute = Assert.Single(actual);
-        Assert.Equal(actualAttribute.Tool, "MiniMock");
-        Assert.Equal(actualAttribute.Version, currentVersion);
+        Assert.Equal("MiniMock", actualAttribute.Tool);
+        Assert.Equal(CurrentVersion, actualAttribute.Version);
     }
 
     [Fact]
@@ -33,8 +33,8 @@ public class GeneratedCodeAttributeTests
 
         // Assert
         var actualAttribute = Assert.Single(actual);
-        Assert.Equal(actualAttribute.Tool, "MiniMock");
-        Assert.Equal(actualAttribute.Version, currentVersion);
+        Assert.Equal("MiniMock", actualAttribute.Tool);
+        Assert.Equal(CurrentVersion, actualAttribute.Version);
     }
 
 
@@ -50,8 +50,8 @@ public class GeneratedCodeAttributeTests
 
         // Assert
         var actualAttribute = Assert.Single(actual);
-        Assert.Equal(actualAttribute.Tool, "MiniMock");
-        Assert.Equal(actualAttribute.Version, currentVersion);
+        Assert.Equal("MiniMock", actualAttribute.Tool);
+        Assert.Equal(CurrentVersion, actualAttribute.Version);
     }
 
     public interface IGeneratorTarget

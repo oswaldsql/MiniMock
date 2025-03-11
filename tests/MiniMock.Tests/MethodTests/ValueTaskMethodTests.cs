@@ -85,19 +85,19 @@ public class ValueTaskMethodTests
     }
 
     [Fact]
-    public void SimpleValueTaskWithoutParametersCanBeCancled()
+    public async Task SimpleValueTaskWithoutParametersCanBeCancled()
     {
         // Arrange
         var sut = Mock.IValueTasks(t => t.SimpleTask(() => ValueTask.FromCanceled(new CancellationToken(true))));
 
         // ACT
-        var actual = Record.ExceptionAsync(async () =>
+        var actual = await Record.ExceptionAsync(async () =>
         {
             await sut.SimpleTask();
         });
 
         // Assert
-        Assert.IsType<TaskCanceledException>(actual.Result);
+        Assert.IsType<TaskCanceledException>(actual);
     }
 
     [Fact]
